@@ -27,6 +27,11 @@ export interface PricingPlan {
     amount:number;
 }
 
+export interface PlanByLabel {
+  monthly:PricingPlan,
+  yearly?:PricingPlan
+}
+
 const FREE_PRICES = {
   0: {
     monthly: {
@@ -141,7 +146,7 @@ export function getPlanId(label:PricePlanLabel, period:BillingPeriod) {
   return PLAN_IDS[`${uppLabel}_PLANS`][PRICE_VARIENT][period]?.[dev ? 'dev' : 'prod']
 }
 
-export function getPlanByLabel(label:PricePlanLabel) {
+export function getPlanByLabel(label:PricePlanLabel):PlanByLabel {
   const mId = getPlanId(label, 'monthly')
   const yId = getPlanId(label, 'yearly')
   return {
