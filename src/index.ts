@@ -8,7 +8,7 @@ export const dev = process.env.NODE_ENV == 'development'
  *
  * The value of `PRICE_VARIENT` determines the version of the pricing plan used in the application.
  */
-const PRICE_VARIENT = 0
+const PRICE_VARIENT = 1
 
 const FREE_DESC = '1 Social account, 1 Notion database, 10 posts.'
 const BASIC_DESC = '3 Social accounts, 1 Notion database, 30 posts, Post analytics, Publish actions, Reels, Stories & more.'
@@ -30,6 +30,7 @@ export interface PricingPlan {
 export interface PlanByLabel {
   monthly:PricingPlan,
   yearly?:PricingPlan
+  label:PricePlanLabel
 }
 
 const FREE_PRICES = {
@@ -152,6 +153,7 @@ export function getPlanByLabel(label:PricePlanLabel):PlanByLabel {
   return {
     monthly: PRICING_PLANS[mId],
     ...yId && {yearly: PRICING_PLANS[yId]},
+    label
   }
 }
 
