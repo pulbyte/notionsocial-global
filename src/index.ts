@@ -287,7 +287,3 @@ export function getPlanByLabel(label: PricePlanLabel, prVar?: PRICE_VARIANT, env
     label
   }
 }
-
-console.log(getPlanByLabel('basic'))
-console.log(getPlanByLabel('basic', 0, 'dev'))
-console.log(getPlanByLabel('basic', 1, 'prod'))
