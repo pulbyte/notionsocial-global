@@ -4,14 +4,15 @@ export const dev = process.env.NODE_ENV == 'development'
  * Variant for the pricing.
  *
  * - `0`: Represents the initial pricing structure from the beginning.
- * - `1`: Represents the first update to pricing starting from January 1, 2024.
+ * - `1`: Represents the first update to pricing starting from January 1, 2024, (Updated 12 Dec 2023)
  *
- * The value of `PRICE_VARIENT` determines the version of the pricing plan used in the application.
+ * The value of `PRICE_VARIANT` determines the version of the pricing plan used in the application.
  */
-const PRICE_VARIENT = 1
+type PRICE_VARIANT = 0 | 1
+const PRICE_VARIANT: PRICE_VARIANT = 1
 
 const FREE_DESC = '1 Social account, 1 Notion database, 10 posts.'
-const BASIC_DESC = '3 Social accounts, 1 Notion database, 30 posts, Post analytics, Publish actions, Reels, Stories & more.'
+const BASIC_DESC = '3 Social accounts, 1 Notion database, 30 posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.'
 const PREMIUM_DESC = '10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.'
 
 export type BillingPeriod = 'monthly' | 'yearly';
@@ -45,7 +46,7 @@ interface Price {
     smAccLimit: number;
     notionDbLimit: number;
     monthlyPosts: number;
-    dailyTwitterPosts?:number;
+    dailyTwitterPosts?: number;
     platforms: string[];
     postMetrics: boolean;
     publishActions: boolean;
@@ -53,11 +54,11 @@ interface Price {
     imageSizeLimit: number;
     videoSizeLimit: number;
   };
-  desc:string;
+  desc: string;
 }
-interface PriceVarients {
-  0:Price
-  1:Price
+interface PriceVariants {
+  0: Price
+  1: Price
 }
 export interface PricingPlan {
   id: string;
@@ -67,7 +68,9 @@ export interface PricingPlan {
   sm_acc_limit: number;
   desc: string;
   amount: number;
-  features:Features
+  features: Features
+  variant: PRICE_VARIANT,
+  live: boolean
 }
 
 export interface PlanByLabel {
@@ -76,7 +79,7 @@ export interface PlanByLabel {
   label: PricePlanLabel
 }
 
-const FREE_PRICES:PriceVarients = {
+const FREE_PRICES: PriceVariants = {
   0: {
     monthly: {
       dev: 'price_1LsHTLSDUoOtEG2MAQCGBlTy',
@@ -93,7 +96,7 @@ const FREE_PRICES:PriceVarients = {
       imageSizeLimit: 5,
       videoSizeLimit: 80
     },
-    desc:'1 Social account, 1 Notion database, 10 posts.'
+    desc: '1 Social account, 1 Notion database, 10 posts.'
   },
   1: {
     monthly: {
@@ -111,10 +114,10 @@ const FREE_PRICES:PriceVarients = {
       imageSizeLimit: 5,
       videoSizeLimit: 80
     },
-    desc:'1 Social account, 1 Notion database, 10 posts.'
+    desc: '1 Social account, 1 Notion database, 10 posts.'
   },
 }
-const BASIC_PRICES:PriceVarients = {
+const BASIC_PRICES: PriceVariants = {
   0: {
     monthly: {
       dev: 'price_1Ls6ksSDUoOtEG2MkXhhwxGn',
@@ -137,7 +140,7 @@ const BASIC_PRICES:PriceVarients = {
       imageSizeLimit: 30,
       videoSizeLimit: 80
     },
-    desc:'3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Reels, Stories & more.'
+    desc: '3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Reels, Stories & more.'
   },
   1: {
     monthly: {
@@ -162,10 +165,10 @@ const BASIC_PRICES:PriceVarients = {
       imageSizeLimit: 30,
       videoSizeLimit: 80
     },
-    desc:'3 Social accounts, 1 Notion database, 30 posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.'
+    desc: '3 Social accounts, 1 Notion database, 30 posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.'
   },
 }
-const PREMIUM_PRICES:PriceVarients = {
+const PREMIUM_PRICES: PriceVariants = {
   0: {
     monthly: {
       dev: 'price_1Ls6lXSDUoOtEG2M4UYxrbX1',
@@ -189,7 +192,7 @@ const PREMIUM_PRICES:PriceVarients = {
       imageSizeLimit: 30,
       videoSizeLimit: 80
     },
-    desc:'10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.'
+    desc: '10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.'
   },
   1: {
     monthly: {
@@ -214,7 +217,7 @@ const PREMIUM_PRICES:PriceVarients = {
       imageSizeLimit: 30,
       videoSizeLimit: 80
     },
-    desc:'10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.'
+    desc: '10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.'
   },
 }
 
@@ -224,7 +227,7 @@ const PLAN_IDS = {
   PREMIUM_PLANS: PREMIUM_PRICES,
 }
 
-function createPricingPlan(id, label: PricePlanLabel, period: BillingPeriod, notionDbLimit, smAccLimit, desc, amount, features:Features): PricingPlan {
+function createPricingPlan(id, label: PricePlanLabel, period: BillingPeriod, variant, live, notionDbLimit, smAccLimit, desc, amount, features: Features): PricingPlan {
   return {
     id,
     desc,
@@ -233,29 +236,31 @@ function createPricingPlan(id, label: PricePlanLabel, period: BillingPeriod, not
     notion_db_limit: notionDbLimit,
     sm_acc_limit: smAccLimit,
     amount,
-    features
+    features,
+    variant,
+    live
   }
 }
 
 export const PRICING_PLANS: { [key: string]: PricingPlan } = {} as const;
 const iterateAndCreatePlans = (label: PricePlanLabel) => {
   const uppL = label.toUpperCase()
-  const prices:PriceVarients = PLAN_IDS[`${uppL}_PLANS`]
-  Object.keys(prices).forEach((varient) => {
-    const priceVarient = prices[varient];
-    Object.keys(priceVarient).forEach((key:BillingPeriod) => {
+  const prices: PriceVariants = PLAN_IDS[`${uppL}_PLANS`]
+  Object.keys(prices).forEach((variant) => {
+    const priceVariant = prices[variant];
+    Object.keys(priceVariant).forEach((key: BillingPeriod) => {
 
       const isPeriod = ['yearly', 'monthly'].includes(key)
       if (isPeriod) {
-        const p = priceVarient[key]
+        const p = priceVariant[key]
         const devKey = p.dev;
         const prodKey = p.prod;
         const amount = p.amount;
-        const desc = priceVarient.desc;
-        const features:Features = priceVarient.features
+        const desc = priceVariant.desc;
+        const features: Features = priceVariant.features
 
-        PRICING_PLANS[devKey] = createPricingPlan(devKey, label, key, features.notionDbLimit, features.smAccLimit, desc, amount, features)
-        PRICING_PLANS[prodKey] = createPricingPlan(prodKey, label, key, features.notionDbLimit, features.smAccLimit, desc, amount, features)
+        PRICING_PLANS[devKey] = createPricingPlan(devKey, label, key, Number(variant), false, features.notionDbLimit, features.smAccLimit, desc, amount, features)
+        PRICING_PLANS[prodKey] = createPricingPlan(prodKey, label, key, Number(variant), true, features.notionDbLimit, features.smAccLimit, desc, amount, features)
       }
     });
   });
@@ -266,17 +271,23 @@ iterateAndCreatePlans('premium');
 
 export type PRICING_PLAN_ID = keyof typeof PRICING_PLANS
 
-export function getPlanId(label: PricePlanLabel, period: BillingPeriod) {
+export function getPlanId(label: PricePlanLabel, period: BillingPeriod, prVar?: PRICE_VARIANT, env?: 'dev' | 'prod') {
   const uppLabel = label.toUpperCase()
-  return PLAN_IDS[`${uppLabel}_PLANS`][PRICE_VARIENT][period]?.[dev ? 'dev' : 'prod']
+  const v = prVar >= 0 ? prVar : PRICE_VARIANT
+  const e = env ? env : dev ? 'dev' : 'prod'
+  return PLAN_IDS[`${uppLabel}_PLANS`][v][period]?.[e]
 }
 
-export function getPlanByLabel(label: PricePlanLabel): PlanByLabel {
-  const mId = getPlanId(label, 'monthly')
-  const yId = getPlanId(label, 'yearly')
+export function getPlanByLabel(label: PricePlanLabel, prVar?: PRICE_VARIANT, env?: 'dev' | 'prod'): PlanByLabel {
+  const mId = getPlanId(label, 'monthly', prVar, env)
+  const yId = getPlanId(label, 'yearly', prVar, env)
   return {
     monthly: PRICING_PLANS[mId],
     ...yId && { yearly: PRICING_PLANS[yId] },
     label
   }
 }
+
+console.log(getPlanByLabel('basic'))
+console.log(getPlanByLabel('basic', 0, 'dev'))
+console.log(getPlanByLabel('basic', 1, 'prod'))
