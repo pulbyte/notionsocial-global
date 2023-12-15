@@ -12,7 +12,7 @@ type PRICE_VARIANT = 0 | 1
 const PRICE_VARIANT: PRICE_VARIANT = 1
 
 const FREE_DESC = '1 Social account, 1 Notion database, 10 posts.'
-const BASIC_DESC = '3 Social accounts, 1 Notion database, 30 posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.'
+const BASIC_DESC = '3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.'
 const PREMIUM_DESC = '10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.'
 
 export type BillingPeriod = 'monthly' | 'yearly';
@@ -156,16 +156,16 @@ const BASIC_PRICES: PriceVariants = {
     features: {
       smAccLimit: 3,
       notionDbLimit: 1,
-      monthlyPosts: 30,
+      monthlyPosts: -1,
       platforms: ['facebook-page', 'instagram', 'linkedin-profile', 'twitter', 'pinterest'],
-      dailyTwitterPosts: 5,
+      dailyTwitterPosts: -1,
       publishActions: true,
       postMetrics: true,
       specialPosts: ['reel', 'story', 'document', 'thread'],
       imageSizeLimit: 30,
       videoSizeLimit: 80
     },
-    desc: '3 Social accounts, 1 Notion database, 30 posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.'
+    desc: '3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.'
   },
 }
 const PREMIUM_PRICES: PriceVariants = {
