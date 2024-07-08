@@ -1,6 +1,6 @@
 {
   "name": "notionsocial-global",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -13,7 +13,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup --watch",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "prepublish": "npm run build",
     "start": "npm run build && node ./dist/index.js"
   },
