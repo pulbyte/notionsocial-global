@@ -1,14 +1,16 @@
 {
-  "name": "notionsocial-global",
-  "version": "2.0.0",
+  "name": "@pulbyte/notionsocial-global",
+  "version": "1.0.0",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "url": "https://github.com/pulbyte/notionsocial-global"
+  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@pulbyte"
   },
-  "repository": "https://github.com/pulbyte/notionsocial-global",
   "files": [
     "dist"
   ],
