@@ -1,6 +1,6 @@
 {
   "name": "notionsocial-global",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -10,7 +10,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup --watch",
+    "rollup": "rollup -c",
     "prepublish": "npm run build",
     "start": "npm run build && node ./dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,9 +20,24 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@google-cloud/storage": "^7.11.2",
+    "@notion-stuff/blocks-markdown-parser": "^6.0.0",
+    "@notionhq/client": "^2.2.15",
+    "@redtea/format-axios-error": "^2.1.1",
     "@types/node": "^20.10.4",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.2.0",
+    "lodash": "^4.17.21",
+    "markdown-to-txt": "^2.0.1",
+    "marked": "^12.0.0",
+    "notion-types": "^6.16.0",
+    "open-graph-scraper": "^6.6.1",
+    "string-to-unicode-variant": "^1.0.9",
     "ts-node": "^10.9.1",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
+    "tsup": "^8.1.0",
+    "twitter-text": "^3.1.0",
+    "typescript": "^5.5.2",
+    "whatwg-url": "^14.0.0"
   }
 }
