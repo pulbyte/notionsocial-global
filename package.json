@@ -1,11 +1,14 @@
 {
   "name": "notionsocial-global",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "repository": "https://github.com/pulbee/notionsocial-global",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@pulbyte"
+  },
+  "repository": "https://github.com/pulbyte/notionsocial-global",
   "files": [
     "dist"
   ],
@@ -13,7 +16,7 @@
     "build": "tsup --watch",
     "prepublish": "npm run build",
     "start": "npm run build && node ./dist/index.js"
-    },
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -34,7 +37,6 @@
     "ts-node": "^10.9.1",
     "tsup": "^8.1.0",
     "twitter-text": "^3.1.0",
-    "typescript": "^5.5.2",
-    "whatwg-url": "^14.0.0"
+    "typescript": "^5.5.2"
   }
 }
