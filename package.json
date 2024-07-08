@@ -15,8 +15,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "prepare":"npm run build",
-    "prepublishOnly":"npm run build",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "start": "npm run build && node ./dist/index.js"
   },
   "author": "",
