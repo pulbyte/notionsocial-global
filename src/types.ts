@@ -1,5 +1,4 @@
-import {FormulaPropertyItemObjectResponse} from "./../../nextjs/src/lib/notion.d";
-import {PRICING_PLAN_ID, PricePlanLabel, PricingPlan} from "pricing";
+import {PRICING_PLAN_ID, PricingPlan} from "pricing";
 import {
   CheckboxPropertyItemObjectResponse,
   DatePropertyItemObjectResponse,
@@ -9,6 +8,7 @@ import {
   MultiSelectPropertyItemObjectResponse,
   NumberedListItemBlockObjectResponse,
   PhoneNumberPropertyItemObjectResponse,
+  FormulaPropertyItemObjectResponse,
   RichTextPropertyItemObjectResponse,
   SelectPropertyItemObjectResponse,
   StatusPropertyItemObjectResponse,

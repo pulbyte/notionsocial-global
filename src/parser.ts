@@ -1,4 +1,3 @@
-import {dev} from "./env";
 import {extractIframeUrl, hasText, matchIframe, notionRichTextParser} from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
