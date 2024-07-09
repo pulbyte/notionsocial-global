@@ -1,7 +1,6 @@
-import https from "https";
 import _ from "lodash";
 import {callFunctionsSequentially} from "./utils";
-import {formatBytesIntoReadable, notionRichTextParser} from "./text";
+import {notionRichTextParser} from "./text";
 import {
   ArrayElement,
   NotionFiles,
@@ -14,7 +13,10 @@ import {
   SocialPostOptimizedMediaSrc,
 } from "./types";
 import {isBase64String, alterGDriveLink, getResourceContentHeaders} from "./url";
+
 import {getCloudBucketFile} from "data";
+import https from "https";
+import {formatBytesIntoReadable} from "text";
 
 export const binaryUploadSocialPlatforms = ["twitter", "linkedin", "youtube", "tiktok"];
 export const urlUploadSocialPlatforms = ["facebook", "instagram", "pinterest", "threads"];
@@ -174,6 +176,77 @@ export const getMediaFromNotionFiles = (files: NotionFiles): Promise<PublishMedi
   }
 };
 
+export function filterPublishMedia(media: PublishMedia[]) {
+  let arr = media?.filter((v) => mediaMimeTypes.includes(v.mimeType));
+  // const vidMedias = arr.filter((m) => m.type == 'video')
+  const docMedias = arr.filter((m) => m.type == "doc");
+  if (docMedias.length > 0) arr = docMedias.slice(0, 1);
+  // else if (vidMedias.length > 0) arr = vidMedias.slice(0, 1)
+  else arr = arr.slice(0, 20);
+  return arr;
+}
+export function findOptimizedMedia(
+  file: PublishMedia,
+  postRecord?: PostRecord
+): OptimizedMedia & {mimeType: string; size: number} {
+  if (!postRecord) return null;
+  const optzed: SocialPostOptimizedMedia = _.find(postRecord?.optimized_media, {
+    mediaRef: file.mediaRef,
+  });
+  if (!optzed) return null;
+  const lossySrc: SocialPostOptimizedMediaSrc = _.find(optzed?.src, {
+    optimization: "lossy-compression",
+  });
+  const losslessSrc: SocialPostOptimizedMediaSrc = _.find(optzed?.src, {
+    optimization: "lossless-compression",
+  });
+  const optzdSrc = lossySrc || losslessSrc;
+  if (!optzdSrc) return null;
+  const mediaRef = optzed.mediaRef || optzdSrc.bucketFile;
+  if (optzed && optzdSrc) {
+    return {
+      mediaRef,
+      size: optzdSrc.size,
+      mimeType: optzed.mimeType,
+      optimizedLink: `https://storage.googleapis.com/optimized-post-media/${mediaRef}/${
+        lossySrc ? "lossy" : "lossless"
+      }-compression`,
+      optimization: optzdSrc.optimization,
+      optimizedSize: optzdSrc.size,
+    };
+  } else return null;
+}
+export function getMimeTypeExtensionFromContentType(cType) {
+  const _specialTypes = {
+    msword: "doc",
+    "vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+    "vnd.ms-powerpoint": "ppt",
+    "vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+    quicktime: "mov",
+  };
+  const mimeType = String(cType).split("/")[1];
+  return _specialTypes[mimeType] ? _specialTypes[mimeType] : mimeType;
+}
+
+export function getContentType(mt) {
+  switch (mt) {
+    case "mp4":
+      return "video/mp4";
+    case "gif":
+      return "image/gif";
+    case "png":
+      return "image/png";
+    case "jpeg":
+      return "image/jpeg";
+    case "webp":
+      return "image/webp";
+    case "jpg":
+      return "image/jpeg";
+    default:
+      return mt;
+  }
+}
+
 const maxMediaSizeInMB = Number(process.env.MAX_MEDIA_SIZE_LIMIT_MB) || 200;
 const maxMediaSizeInBytes = maxMediaSizeInMB * 1024 * 1024;
 export function getMediaBuffer(media: PublishMedia): Promise<PublishMediaBuffer> {
@@ -227,89 +300,6 @@ export function getMediaBuffer(media: PublishMedia): Promise<PublishMediaBuffer>
       });
   });
 }
-export function filterPublishMedia(media: PublishMedia[]) {
-  let arr = media?.filter((v) => mediaMimeTypes.includes(v.mimeType));
-  // const vidMedias = arr.filter((m) => m.type == 'video')
-  const docMedias = arr.filter((m) => m.type == "doc");
-  if (docMedias.length > 0) arr = docMedias.slice(0, 1);
-  // else if (vidMedias.length > 0) arr = vidMedias.slice(0, 1)
-  else arr = arr.slice(0, 20);
-  return arr;
-}
-export function findOptimizedMedia(
-  file: PublishMedia,
-  postRecord?: PostRecord
-): OptimizedMedia & {mimeType: string; size: number} {
-  if (!postRecord) return null;
-  const optzed: SocialPostOptimizedMedia = _.find(postRecord?.optimized_media, {
-    mediaRef: file.mediaRef,
-  });
-  if (!optzed) return null;
-  const lossySrc: SocialPostOptimizedMediaSrc = _.find(optzed?.src, {
-    optimization: "lossy-compression",
-  });
-  const losslessSrc: SocialPostOptimizedMediaSrc = _.find(optzed?.src, {
-    optimization: "lossless-compression",
-  });
-  const optzdSrc = lossySrc || losslessSrc;
-  if (!optzdSrc) return null;
-  const mediaRef = optzed.mediaRef || optzdSrc.bucketFile;
-  if (optzed && optzdSrc) {
-    return {
-      mediaRef,
-      size: optzdSrc.size,
-      mimeType: optzed.mimeType,
-      optimizedLink: `https://storage.googleapis.com/optimized-post-media/${mediaRef}/${
-        lossySrc ? "lossy" : "lossless"
-      }-compression`,
-      optimization: optzdSrc.optimization,
-      optimizedSize: optzdSrc.size,
-    };
-  } else return null;
-}
-export function getMimeTypeExtensionFromContentType(cType) {
-  const _specialTypes = {
-    msword: "doc",
-    "vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-    "vnd.ms-powerpoint": "ppt",
-    "vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
-    quicktime: "mov",
-  };
-  const mimeType = String(cType).split("/")[1];
-  return _specialTypes[mimeType] ? _specialTypes[mimeType] : mimeType;
-}
-export async function getMediaFile(media: PublishMedia): Promise<PublishMediaBuffer> {
-  return getMediaBuffer(media).then(({buffer, contentType, size, name}) => {
-    const mimeType = getMimeTypeExtensionFromContentType(contentType);
-    return {
-      buffer,
-      contentType,
-      mimeType,
-      type: getMediaType(mimeType),
-      size,
-      url: media.url,
-      ...(name && {name}),
-    };
-  });
-}
-export function getContentType(mt) {
-  switch (mt) {
-    case "mp4":
-      return "video/mp4";
-    case "gif":
-      return "image/gif";
-    case "png":
-      return "image/png";
-    case "jpeg":
-      return "image/jpeg";
-    case "webp":
-      return "image/webp";
-    case "jpg":
-      return "image/jpeg";
-    default:
-      return mt;
-  }
-}
 export async function getOptimizedMedia(
   mediaRef,
   size,
@@ -324,5 +314,20 @@ export async function getOptimizedMedia(
       fileName
     );
     return {buffer, mimeType, type: getMediaType(mimeType), size, url: file.publicUrl()};
+  });
+}
+
+export async function getMediaFile(media: PublishMedia): Promise<PublishMediaBuffer> {
+  return getMediaBuffer(media).then(({buffer, contentType, size, name}) => {
+    const mimeType = getMimeTypeExtensionFromContentType(contentType);
+    return {
+      buffer,
+      contentType,
+      mimeType,
+      type: getMediaType(mimeType),
+      size,
+      url: media.url,
+      ...(name && {name}),
+    };
   });
 }

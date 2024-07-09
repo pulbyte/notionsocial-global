@@ -1,9 +1,10 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
+  "browser": "./dist/browser.mjs",
   "types": "./dist/index.d.ts",
   "repository": {
     "url": "https://github.com/pulbyte/notionsocial-global"
@@ -14,6 +15,13 @@
   "files": [
     "dist"
   ],
+  "exports": {
+    "browser": "./dist/browser.mjs",
+    "default": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

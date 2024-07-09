@@ -1,8 +1,17 @@
 const tt = require("twitter-text");
 const parseTweet = tt.parseTweet;
 import ogs from "open-graph-scraper";
-import {Readable} from "stream";
 
+import {Readable} from "stream";
+export function bufferToStream(binary) {
+  const readableInstanceStream = new Readable({
+    read() {
+      this.push(binary);
+      this.push(null);
+    },
+  });
+  return readableInstanceStream;
+}
 export function callFunctionsSequentially<T>(
   functions: Array<() => Promise<any>>
 ): Promise<T[] | any[]> {
@@ -248,7 +257,7 @@ export function getOGData(url): Promise<{ogTitle; ogImage; ogSiteName}> {
         resolve(toReturn);
       })
       .catch((e) => {
-        console.error("Error in gettting URL OG data", e?.result?.errorDetails);
+        console.log("Error in gettting URL OG data", e?.result?.errorDetails);
         reject(e);
       });
   });
@@ -298,13 +307,4 @@ export function safeStringify(obj, maxLength = 50) {
     },
     2
   );
-}
-export function bufferToStream(binary) {
-  const readableInstanceStream = new Readable({
-    read() {
-      this.push(binary);
-      this.push(null);
-    },
-  });
-  return readableInstanceStream;
 }

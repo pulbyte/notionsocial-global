@@ -43,7 +43,7 @@ export async function getContentFromNotionBlocksAsync(
     text: caption,
     paragraphs: textArray,
     thread,
-    tweetExceededCharLimit: checkTextExceedsTweetCharLimit(caption),
+    tweetExceededCharLimit: textArray.some((text) => checkTextExceedsTweetCharLimit(text)),
     twitter: [],
   };
 
@@ -161,7 +161,6 @@ function convertTextToThreads(textArray, mediaArray): TwitterThread {
   let threads: TwitterThread = [];
   textArray.forEach((str, index) => {
     const [_limitSplitted, url] = tweetifyString(str);
-    console.log(_limitSplitted, url);
     const _firstSplittedText = _limitSplitted.splice(0, 1)[0];
     threads.push({text: _firstSplittedText, media: mediaArray[index], url: url});
     _limitSplitted.forEach((t) => {

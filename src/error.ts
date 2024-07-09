@@ -1,5 +1,5 @@
 import {NotionClientError} from "@notionhq/client";
-import {Axios, AxiosError} from "axios";
+import {AxiosError} from "axios";
 import {getNotionError} from "notion";
 import {freeMonthlyPostLimit} from "pricing";
 import {postPublishStages, publishStageIndex} from "publish";
