@@ -38,6 +38,7 @@ import {
 import {getUserDoc, getUserPostCount} from "data";
 import {PRICING_PLANS, freeMonthlyPostLimit, isPlanPaid, isSubscriptionActive} from "pricing";
 import {auth} from "firebase-admin";
+import {dev} from "env";
 
 export const postPublishStages = [
   "get-ndb-data",
@@ -244,9 +245,11 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
 }
 
 export function examinePostConfig(queueEta: number, config: NotionPagePostConfig) {
+  const allowdStatus = [config.nsFilter, config._data.publish_changes?.schedule_status];
+  if (dev) console.log("allowdStatus", allowdStatus);
   if (config.schTime > queueEta) {
     return PublishError.reject("post-postponed");
-  } else if (config.status != config.nsFilter) {
+  } else if (!allowdStatus.includes(config.status)) {
     return PublishError.reject("post-cancelled");
   }
   return Promise.resolve(config);

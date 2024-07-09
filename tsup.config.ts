@@ -10,10 +10,10 @@ export default defineConfig([
   },
   {
     entry: ["src/browser.ts"],
-    format: ["esm"],
+    format: ["esm", "cjs"],
     outDir: "dist",
     dts: true,
     clean: false,
-    platform: "browser",
+    // platform: "browser",
   },
 ]);

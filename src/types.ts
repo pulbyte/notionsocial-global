@@ -81,6 +81,8 @@ export interface NotionDatabase {
   publish_changes?: {
     post_url_prop?: string;
     publish_status?: string;
+    schedule_status?: string;
+    first_comment_prop?: string;
   };
   options?: PostOptionsSchema;
 }
@@ -110,32 +112,6 @@ export interface PlatformPublishResponse extends Partial<PlatformError> {
   isTknError?: boolean;
   error?: any;
   response?: any;
-}
-
-export interface UpdateNdbPayload {
-  props?: {
-    media: string;
-    sch_time: string;
-    sm_accs: string;
-    ns: string;
-    status: string;
-    alt_text?: string;
-    caption?: string;
-  };
-  ns_filter?: string;
-  sm_accs?: {platform_uid: string; tag: string}[];
-  rules?: {[name: string]: any};
-  stat_props?: {
-    likes?: string;
-    comments?: string;
-    shares?: string;
-  };
-  publish_changes?: {
-    post_url_prop?: string;
-    publish_status?: string;
-    first_comment_prop?: string;
-  };
-  options?: PostOptionsSchema;
 }
 export interface PostOptionsSchema {
   "tweet-cross-limit-action": "split-thread" | "throw-error" | "long-tweet";
@@ -406,6 +382,7 @@ export interface UpdateNdbPayload {
   publish_changes?: {
     post_url_prop?: string;
     publish_status?: string;
+    schedule_status?: string;
     first_comment_prop?: string;
   };
   options?: PostOptionsSchema;
