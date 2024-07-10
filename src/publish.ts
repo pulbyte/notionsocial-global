@@ -296,14 +296,14 @@ function getSelectedSocialAccounts(
   };
 }
 export function examineNdb(data: NotionDatabase): Promise<NotionDatabase> {
-  if (!data) return PublishError.reject("notion-database-deleted");
-  return new Promise((res) => {
+  return new Promise((res, rej) => {
+    if (!data) return rej(PublishError.create("notion-database-deleted"))
     const {state} = data;
     const disconnected = !state || !["active", "dev-active"].includes(state);
     if (data["locked"]) {
-      return PublishError.reject("notion-database-locked");
+      return rej(PublishError.create("notion-database-locked"))
     } else if (disconnected) {
-      return PublishError.reject("notion-database-disconnected");
+      return rej(PublishError.create("notion-database-disconnected"));
     } else res(data);
   });
 }

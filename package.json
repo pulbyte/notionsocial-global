@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -19,16 +19,19 @@
     ".": {
       "browser": {
         "import": "./dist/browser.mjs",
-        "require": "./dist/browser.js"
+        "require": "./dist/browser.js",
+        "types": "./dist/browser.d.ts"
       },
       "default": {
         "import": "./dist/index.mjs",
-        "require": "./dist/index.js"
+        "require": "./dist/index.js",
+        "types": "./dist/index.d.ts"
       }
     },
     "./browser": {
       "import": "./dist/browser.mjs",
-      "require": "./dist/browser.js"
+      "require": "./dist/browser.js",
+       "types": "./dist/index.d.ts"
     }
   },
   "scripts": {
