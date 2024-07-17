@@ -143,6 +143,7 @@ function convertRecordMapRichTextToNotionApiBlock(unofficialBlock) {
     },
   };
 }
+
 function convertRecordMapImageToNotionApiBlock(unofficialBlock) {
   return {
     ...createBlockMetadata(unofficialBlock),

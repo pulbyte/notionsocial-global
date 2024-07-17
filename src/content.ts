@@ -1,6 +1,5 @@
 import {checkTextExceedsTweetCharLimit, hasText, trimString, tweetifyString} from "./text";
-import {getMediaFromNotionBlock} from "./media";
-import {parseNotionBlockToText} from "./parser";
+import {getMediaFromNotionBlock, parseNotionBlockToText} from "./parser";
 import {Content, PublishMedia, TwitterThread} from "./types";
 
 import {

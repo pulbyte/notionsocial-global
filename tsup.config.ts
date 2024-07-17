@@ -14,6 +14,6 @@ export default defineConfig([
     outDir: "dist",
     dts: true,
     clean: false,
-    // platform: "browser",
+    platform: "browser",
   },
 ]);

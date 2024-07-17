@@ -1,6 +1,6 @@
 import axios from "axios";
 import {getFileNameFromContentDisposition} from "./file";
-import {getMediaType} from "./media";
+import {getMediaType} from "./parser";
 
 export function isBase64String(str) {
   // Regular expression to match data URI with base64 encoding

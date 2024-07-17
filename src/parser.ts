@@ -2,10 +2,12 @@ import {extractIframeUrl, hasText, matchIframe, notionRichTextParser} from "./te
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
 import {marked} from "marked";
+import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "env";
 const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
   emptyParagraphToNonBreakingSpace: false,
 });
 import {string_to_unicode_variant} from "string-to-unicode-variant";
+import {NotionMediaFile} from "types";
 
 const toUnicodeVariant = string_to_unicode_variant;
 
@@ -78,3 +80,32 @@ renderer.em = (text) => {
   const transformedText = toUnicodeVariant(text, "italic sans");
   return transformedText;
 };
+export function getMediaFromNotionBlock(block) {
+  const {type} = block;
+  if (type == "image" || type == "video") {
+    const caption = notionRichTextParser(block[type]?.caption);
+
+    const url = block[type]["file"]?.["url"];
+    if (!url) return null;
+    const urlData = new URL(url);
+    const _pathSplit = urlData.pathname.split("/");
+    const name = _pathSplit[_pathSplit.length - 1];
+    const nameSplit = name.split(".");
+    const mimeType = nameSplit[nameSplit.length - 1];
+    const mediaType = getMediaType(mimeType);
+    const obj: NotionMediaFile = {mimeType, url, name, type: undefined, caption};
+    if (mediaType == "image") {
+      Object.assign(obj, {type: "image"});
+    } else if (mediaType == "video") {
+      Object.assign(obj, {type: "video"});
+    } else if (mediaType == "doc") {
+      Object.assign(obj, {type: "doc"});
+    }
+    return obj;
+  } else return null;
+}
+export function getMediaType(mt) {
+  if (imageMimeTypes.includes(mt)) return "image";
+  else if (videoMimeTypes.includes(mt)) return "video";
+  else if (docMimeTypes.includes(mt)) return "doc";
+}

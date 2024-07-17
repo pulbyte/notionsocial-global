@@ -17,62 +17,19 @@ import {isBase64String, alterGDriveLink, getResourceContentHeaders} from "./url"
 import {getCloudBucketFile} from "data";
 import https from "https";
 import {formatBytesIntoReadable} from "text";
+import {getMediaType} from "parser";
+import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "env";
 
 export const binaryUploadSocialPlatforms = ["twitter", "linkedin", "youtube", "tiktok"];
 export const urlUploadSocialPlatforms = ["facebook", "instagram", "pinterest", "threads"];
 
-export const imageMimeTypes = ["png", "jpg", "jpeg", "webp", "gif"];
-export const videoMimeTypes = [
-  "mp4",
-  "mov",
-  "avi",
-  "m4v",
-  "webm",
-  "wmv",
-  "mpg",
-  "ogv",
-  "3gp",
-  "3g2",
-];
-export const docMimeTypes = ["ppt", "pptx", "doc", "docx", "pdf", "xls", "xlsx", "txt", "csv"];
 export const mediaMimeTypes = imageMimeTypes.concat(videoMimeTypes).concat(docMimeTypes);
-
-export function getMediaType(mt) {
-  if (imageMimeTypes.includes(mt)) return "image";
-  else if (videoMimeTypes.includes(mt)) return "video";
-  else if (docMimeTypes.includes(mt)) return "doc";
-}
 
 export function getMediaMimeType(file) {
   const split = file.split(".");
   let mimetype = split[split.length - 1];
   if (mimetype == "jpg") mimetype = "jpeg";
   return mimetype;
-}
-
-export function getMediaFromNotionBlock(block) {
-  const {type} = block;
-  if (type == "image" || type == "video") {
-    const caption = notionRichTextParser(block[type]?.caption);
-
-    const url = block[type]["file"]?.["url"];
-    if (!url) return null;
-    const urlData = new URL(url);
-    const _pathSplit = urlData.pathname.split("/");
-    const name = _pathSplit[_pathSplit.length - 1];
-    const nameSplit = name.split(".");
-    const mimeType = nameSplit[nameSplit.length - 1];
-    const mediaType = getMediaType(mimeType);
-    const obj: NotionMediaFile = {mimeType, url, name, type: undefined, caption};
-    if (mediaType == "image") {
-      Object.assign(obj, {type: "image"});
-    } else if (mediaType == "video") {
-      Object.assign(obj, {type: "video"});
-    } else if (mediaType == "doc") {
-      Object.assign(obj, {type: "doc"});
-    }
-    return obj;
-  } else return null;
 }
 
 export function getPublishMediaFromNotionFile(
