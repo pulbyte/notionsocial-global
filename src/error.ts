@@ -139,7 +139,7 @@ type PublishFunctionError = Error | PublishError | AxiosError | NotionClientErro
 export function catchPublishError(
   e: PublishFunctionError,
   stage: PostPublishStage,
-  messageUpdateCallback: (message: string | null) => Promise<any>
+  messageUpdateCallback: (message: string | null, code: PublishErrorCode) => Promise<any>
 ) {
   PublishError.log(e);
   const {
@@ -150,6 +150,7 @@ export function catchPublishError(
     isCancelled,
     isPostPoned,
     isNotionPageDeleted,
+    code,
   } = decodePublishError(e, stage);
 
   // If a server error occurs during publishing, return error, so that it can be retried
@@ -161,7 +162,7 @@ export function catchPublishError(
   const canUpdateNsProp =
     !isNotionDatabaseDeleted && !isNotionDatabaseDisconnected && !isNotionPageDeleted;
   const toClearNsProp = isCancelled || isPostPoned;
-  if (canUpdateNsProp) return messageUpdateCallback(toClearNsProp ? null : message);
+  if (canUpdateNsProp) return messageUpdateCallback(toClearNsProp ? null : message, code);
   else return Promise.resolve(message);
 }
 
@@ -202,5 +203,6 @@ export function decodePublishError(e: PublishFunctionError, stage: PostPublishSt
     isAlreadyCompleted: code == "post-already-completed",
     isNotionPageDeleted: isPageDltError || code == "notion-page-deleted",
     message,
+    code,
   };
 }
