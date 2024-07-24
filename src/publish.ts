@@ -244,12 +244,12 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
   });
 }
 
-export function examinePostConfig(queueEta: number, config: NotionPagePostConfig) {
-  const allowdStatus = [config.nsFilter, config._data.publish_changes?.schedule_status];
+export function examinePostConfig(queueEta: number, config?: NotionPagePostConfig) {
+  const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
   if (dev) console.log("allowdStatus", allowdStatus);
-  if (config.schTime > queueEta) {
+  if (config?.schTime > queueEta) {
     return PublishError.reject("post-postponed");
-  } else if (!allowdStatus.includes(config.status)) {
+  } else if (!allowdStatus.includes(config?.status)) {
     return PublishError.reject("post-cancelled");
   }
   return Promise.resolve(config);
@@ -297,11 +297,11 @@ function getSelectedSocialAccounts(
 }
 export function examineNdb(data: NotionDatabase): Promise<NotionDatabase> {
   return new Promise((res, rej) => {
-    if (!data) return rej(PublishError.create("notion-database-deleted"))
+    if (!data) return rej(PublishError.create("notion-database-deleted"));
     const {state} = data;
     const disconnected = !state || !["active", "dev-active"].includes(state);
     if (data["locked"]) {
-      return rej(PublishError.create("notion-database-locked"))
+      return rej(PublishError.create("notion-database-locked"));
     } else if (disconnected) {
       return rej(PublishError.create("notion-database-disconnected"));
     } else res(data);
