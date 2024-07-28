@@ -206,7 +206,7 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
       let __: Content = {
         text: "",
         paragraphs: [""],
-        thread: [],
+        threads: [],
         altText: config.altText,
         tweetExceededCharLimit: false,
         twitter: [],

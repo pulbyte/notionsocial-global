@@ -1,7 +1,7 @@
 import twitterText from "twitter-text";
 import {format as formatAxiosError} from "@redtea/format-axios-error";
 import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
-import {NotionTitleProperty} from "types";
+import {NotionTitleProperty, SocialPlatformTypes} from "types";
 const {parseTweet} = twitterText;
 
 export function dashifyNotionId(input) {
@@ -65,7 +65,22 @@ export function extractTweetUrlFromString(text) {
 
   return [firstUrl, text];
 }
-
+export function threadifyString(text, maxTweetLength = 500) {
+  const words = text.split(" ");
+  const threads: string[] = [];
+  let currentThread = "";
+  for (const word of words) {
+    const newTweet = currentThread + " " + word;
+    if (newTweet.length > maxTweetLength) {
+      threads.push(currentThread.trim());
+      currentThread = word;
+    } else {
+      currentThread = newTweet.trim();
+    }
+  }
+  threads.push(currentThread);
+  return threads;
+}
 export function tweetifyString(text, maxTweetLength = 280) {
   const [url, satanizedText] = extractTweetUrlFromString(text);
   const words = satanizedText.split(" ");
@@ -102,7 +117,7 @@ export function getNotionBlockId(pagelink) {
   const pathArr = pagelink.split("/")[3].split("-");
   return pathArr[pathArr.length - 1];
 }
-export function getSmShortName(platform) {
+export function getSmShortName(platform: SocialPlatformTypes) {
   switch (platform) {
     case "facebook":
       return "FB";
@@ -118,6 +133,8 @@ export function getSmShortName(platform) {
       return "TIKTOK";
     case "pinterest":
       return "PIN";
+    case "threads":
+      return "THREADS";
     default:
       return String(platform).toUpperCase();
   }
@@ -129,7 +146,6 @@ export const getSmAccTag = (platform, username, accType?: "page" | "group") => {
     includeGroup ? "-GROUP" : ""
   }@${username}`;
 };
-
 export function notionRichTextParser(
   text: RichTextItemResponse | NotionTitleProperty,
   trim?: boolean

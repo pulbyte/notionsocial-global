@@ -1,28 +1,40 @@
-import {checkTextExceedsTweetCharLimit, hasText, trimString, tweetifyString} from "./text";
+import {
+  checkTextExceedsTweetCharLimit,
+  hasText,
+  threadifyString,
+  trimString,
+  tweetifyString,
+} from "./text";
 import {getMediaFromNotionBlock, parseNotionBlockToText} from "./parser";
-import {Content, PublishMedia, TwitterThread} from "./types";
+import {Content, PublishMedia, Thread, TwitterContent} from "./types";
 
 import {
   BlockObjectResponse,
   PartialBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
+import {isObjectEmpty} from "utils";
 type NotionBlocksIter = AsyncIterableIterator<
   PartialBlockObjectResponse | BlockObjectResponse
 >;
 export function getContentFromTextProperty(string, limit = 63206): Content {
-  const thread: TwitterThread = [];
   const text = string.substring(0, limit);
-  // ? Auto divide the caption text into Thread.
+
+  const twitter: TwitterContent = [];
   const [tweets, url] = tweetifyString(text);
   tweets.forEach((tweet, index) => {
-    thread.push({text: tweet, media: [], ...(index == 0 && url && {url})});
+    twitter.push({text: tweet, media: [], ...(index == 0 && url && {url})});
+  });
+
+  let texts = threadifyString(text);
+  const threads = texts.map((text, index) => {
+    return {text, media: []};
   });
   return {
-    thread,
     text,
     tweetExceededCharLimit: checkTextExceedsTweetCharLimit(string),
-    twitter: [],
+    twitter,
     paragraphs: [text],
+    threads,
   };
 }
 export async function getContentFromNotionBlocksAsync(
@@ -36,14 +48,15 @@ export async function getContentFromNotionBlocksAsync(
     listIndex = processNotionBlock(rawContentArray, block, listIndex, limit);
   }
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
-  const thread = convertTextToThreads(textArray, mediaArray);
+  const twitter = convertTextToTwitterThread(textArray, mediaArray);
+  const threads = convertTextToThreads(textArray, mediaArray);
 
   const content: Content = {
     text: caption,
     paragraphs: textArray,
-    thread,
+    threads,
     tweetExceededCharLimit: textArray.some((text) => checkTextExceedsTweetCharLimit(text)),
-    twitter: [],
+    twitter,
   };
 
   return content;
@@ -58,14 +71,15 @@ export async function getContentFromNotionBlocksSync(blocks): Promise<Content> {
   });
 
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
-  const thread = convertTextToThreads(textArray, mediaArray);
+  const twitter = convertTextToTwitterThread(textArray, mediaArray);
+  const threads = convertTextToThreads(textArray, mediaArray);
 
   const content: Content = {
     text: caption,
     paragraphs: textArray,
-    thread,
+    threads,
     tweetExceededCharLimit: checkTextExceedsTweetCharLimit(caption),
-    twitter: [],
+    twitter,
   };
 
   return content;
@@ -108,8 +122,12 @@ function processRawContentBlock(
   mediaBuffer,
   rawContentArray
 ) {
-  if (block == "---") {
-    if (textArrayLast.length > 0) {
+  const isDivider = block == "---";
+  const previewsOneWasDivider = rawContentArray[i - 1] == "---";
+  if (isDivider) {
+    if (previewsOneWasDivider) {
+      block = "\n";
+    } else if (textArrayLast.length > 0) {
       textArray.push(textArrayLast);
       mediaArray.push([...mediaBuffer]);
       mediaBuffer = [];
@@ -156,8 +174,8 @@ function processRawContentBlocks(rawContentArray): [string, string[], PublishMed
   const caption = textArray.join("\n").trim();
   return [caption, textArray, mediaArray];
 }
-function convertTextToThreads(textArray, mediaArray): TwitterThread {
-  let threads: TwitterThread = [];
+function convertTextToTwitterThread(textArray, mediaArray): TwitterContent {
+  let threads: TwitterContent = [];
   textArray.forEach((str, index) => {
     const [_limitSplitted, url] = tweetifyString(str);
     const _firstSplittedText = _limitSplitted.splice(0, 1)[0];
@@ -170,6 +188,21 @@ function convertTextToThreads(textArray, mediaArray): TwitterThread {
   threads = threads.filter((obj) => {
     return hasText(obj.text) || hasText(obj.url);
   });
-
   return threads;
+}
+function convertTextToThreads(textArray, mediaArray): Thread[] {
+  let __: Thread[] = [];
+  textArray.forEach((str, index) => {
+    const threads = threadifyString(str);
+    const firstThread = threads.splice(0, 1)[0];
+    __.push({text: firstThread, media: mediaArray[index]});
+    threads.forEach((t) => {
+      const trimmedString = t.trim();
+      __.push({text: trimmedString, media: []});
+    });
+  });
+  __ = __.filter((obj) => {
+    return hasText(obj.text) || obj.media?.length > 0;
+  });
+  return __;
 }

@@ -174,6 +174,7 @@ export type PinterestBoard = {
 };
 
 export interface SocialAccountData {
+  state: "active" | "expired";
   author_uid: string;
   platform_uid: string;
   platform: SocialPlatformTypes;
@@ -209,7 +210,8 @@ export type SocialPlatformTypes =
   | "instagram"
   | "youtube"
   | "tiktok"
-  | "pinterest";
+  | "pinterest"
+  | "threads";
 export interface NotionDBDataType {
   uid: string;
   link_id: string;
@@ -323,7 +325,7 @@ export interface Content {
   paragraphs: string[];
   title?: string;
   altText?: string;
-  thread: TwitterThread;
+  threads: Thread[];
   twitter: TwitterContent;
   tweetExceededCharLimit: boolean;
   media?: PublishMedia[];
@@ -345,6 +347,8 @@ export interface SocialMediaPostData {
   views?: number;
   retweets?: number;
   url?: string;
+  quotes?: number;
+  impressions?: number;
 }
 
 export interface NotionAuthData {
@@ -435,14 +439,13 @@ export type NotionFiles = NotionFilesProperty["files"];
 export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
-export type TwitterThread = {
+export type Thread = {
   media: Array<PublishMedia>;
   text: string;
-  url?: string;
-}[];
+};
 export type TwitterContent = {
   text: string;
-  media: Array<PublishMediaBuffer>;
+  media: Array<PublishMediaBuffer | PublishMedia>;
   url?: string;
 }[];
 export interface NotionPagePropertiesForPost {
