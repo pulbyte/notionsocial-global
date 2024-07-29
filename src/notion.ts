@@ -53,6 +53,14 @@ export function NotionAPI(accessToken) {
           ...(nextCursor && {start_cursor: nextCursor}),
         })
       ),
+    query: (dbId, query, limit?: number) =>
+      retry<SearchResponse>(() =>
+        notion.databases.query({
+          database_id: dbId,
+          page_size: limit || 100,
+          ...query,
+        })
+      ),
   };
 }
 
