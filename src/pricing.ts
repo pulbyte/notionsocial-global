@@ -334,8 +334,8 @@ export type PRICING_PLAN_ID = keyof typeof PRICING_PLANS;
 export function getPlanId(
   label: PricePlanLabel,
   period: BillingPeriod,
-  prVar?: PRICE_VARIANT,
-  env?: "dev" | "prod"
+  env?: "dev" | "prod",
+  prVar?: PRICE_VARIANT
 ) {
   const uppLabel = label.toUpperCase();
   const v = prVar >= 0 ? prVar : PRICE_VARIANT;
@@ -345,11 +345,11 @@ export function getPlanId(
 
 export function getPlanByLabel(
   label: PricePlanLabel,
-  prVar?: PRICE_VARIANT,
-  env?: "dev" | "prod"
+  env?: "dev" | "prod",
+  prVar?: PRICE_VARIANT
 ): PlanByLabel {
-  const mId = getPlanId(label, "monthly", prVar, env);
-  const yId = getPlanId(label, "yearly", prVar, env);
+  const mId = getPlanId(label, "monthly", env, prVar);
+  const yId = getPlanId(label, "yearly", env, prVar);
   return {
     monthly: PRICING_PLANS[mId],
     ...(yId && {yearly: PRICING_PLANS[yId]}),

@@ -3,6 +3,7 @@ const parseTweet = tt.parseTweet;
 import ogs from "open-graph-scraper";
 
 import {Readable} from "stream";
+import {SocialPlatformTypes} from "types";
 export function bufferToStream(binary) {
   const readableInstanceStream = new Readable({
     read() {
@@ -90,6 +91,29 @@ export function getSmAccColor(platform) {
       return "default";
   }
 }
+export const getSocialPlatformImage = (platform: SocialPlatformTypes, imageUrl?: string) => {
+  if (imageUrl) return imageUrl;
+  switch (platform) {
+    case "facebook":
+      return "https://res.cloudinary.com/pul/image/upload/v1675157338/icons/facebook.svg";
+    case "twitter":
+      return "https://res.cloudinary.com/pul/image/upload/v1675157336/icons/twitter.svg";
+    case "linkedin":
+      return "https://res.cloudinary.com/pul/image/upload/v1675157341/icons/linkedin.svg";
+    case "instagram":
+      return "https://res.cloudinary.com/pul/image/upload/v1675157339/icons/Instagram.svg";
+    case "youtube":
+      return "https://res.cloudinary.com/pul/image/upload/v1676906720/icons/youtube.svg";
+    case "tiktok":
+      return "https://res.cloudinary.com/pul/image/upload/v1689234905/icons/tiktok.svg";
+    case "pinterest":
+      return "https://res.cloudinary.com/pul/image/upload/v1696496110/icons/pinterest.svg";
+    case "threads":
+      return "https://res.cloudinary.com/pul/image/upload/v1719118919/icons/threads.svg";
+    default:
+      return "https://cdn.dribbble.com/users/1787323/screenshots/16418683/media/b698712269a006ae2b97c8cb787a6c14.png?compress=1&resize=1200x900&vertical=top";
+  }
+};
 
 export function resolvePromisesSequentially(promises) {
   return new Promise((resolve, reject) => {
