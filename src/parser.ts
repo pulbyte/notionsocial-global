@@ -1,7 +1,6 @@
 import {extractIframeUrl, hasText, matchIframe, notionRichTextParser} from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
-import {marked} from "marked";
 import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "env";
 const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
   emptyParagraphToNonBreakingSpace: false,
@@ -28,7 +27,7 @@ export function parseNotionBlockToText(block) {
   const transformed = transformMarkdown(parsedMkdwn);
   parsedMkdwn = transformed;
 
-  let parsedContent = markdownToTxt(parsedMkdwn, {renderer, gfm: false});
+  let parsedContent = markdownToTxt(parsedMkdwn, {gfm: false});
   return parsedContent.split("\n\n").join("\n");
 }
 
@@ -46,12 +45,19 @@ function isTextEmpty(block) {
 
 export function transformMarkdown(markdown) {
   // Transform bold text
+  // Match both bold and italic
+  const boldItalicRegex = /(\*\*_|_\*\*)([^*_]+?)(\*\*_|_\*\*)/g;
+  markdown = markdown.replace(boldItalicRegex, (_, start, p1, end) => {
+    return toUnicodeVariant(p1, "bold italic sans");
+  });
+
+  // Transform bold text
   markdown = markdown.replace(/\*\*([^*]+?)\*\*/g, (_, p1) => {
     return toUnicodeVariant(p1, "bold sans");
   });
 
   // Transform italic text enclosed in underscores
-  markdown = markdown.replace(/__([^*_]+?)__/g, (_, p1) => {
+  markdown = markdown.replace(/_([^_]+?)_/g, (_, p1) => {
     return toUnicodeVariant(p1, "italic sans");
   });
 
@@ -66,19 +72,6 @@ export function transformMarkdown(markdown) {
   return markdown;
 }
 
-export const renderer = new marked.Renderer();
-
-renderer.strong = (text) => {
-  // Transform the bold text using the 'scriptBold' font
-  const transformedText = toUnicodeVariant(text, "bold sans");
-  return transformedText;
-};
-
-renderer.em = (text) => {
-  // Transform the italic text using the 'scriptItalic' font
-  const transformedText = toUnicodeVariant(text, "italic sans");
-  return transformedText;
-};
 export function getMediaFromNotionBlock(block): Promise<PublishMedia | null> {
   const {type} = block;
   if (type == "image" || type == "video") {
