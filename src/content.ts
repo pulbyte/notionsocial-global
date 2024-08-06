@@ -12,7 +12,6 @@ import {
   BlockObjectResponse,
   PartialBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import {isObjectEmpty} from "utils";
 type NotionBlocksIter = AsyncIterableIterator<
   PartialBlockObjectResponse | BlockObjectResponse
 >;
@@ -45,7 +44,7 @@ export async function getContentFromNotionBlocksAsync(
 
   let listIndex = 0;
   for await (const block of blocksIter) {
-    listIndex = processNotionBlock(rawContentArray, block, listIndex, limit);
+    listIndex = await processNotionBlock(rawContentArray, block, listIndex, limit);
   }
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
   const twitter = convertTextToTwitterThread(textArray, mediaArray);
@@ -66,8 +65,8 @@ export async function getContentFromNotionBlocksSync(blocks): Promise<Content> {
   let rawContentArray = [];
 
   let listIndex = 0;
-  blocks.forEach((block) => {
-    listIndex = processNotionBlock(rawContentArray, block, listIndex, limit);
+  blocks.forEach(async (block) => {
+    listIndex = await processNotionBlock(rawContentArray, block, listIndex, limit);
   });
 
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
@@ -85,8 +84,8 @@ export async function getContentFromNotionBlocksSync(blocks): Promise<Content> {
   return content;
 }
 
-function processNotionBlock(rawContentArray, block, index: number, limit = 63206) {
-  const media = getMediaFromNotionBlock(block);
+async function processNotionBlock(rawContentArray, block, index: number, limit = 63206) {
+  const media = await getMediaFromNotionBlock(block);
   if (media) {
     rawContentArray.push(media);
   }

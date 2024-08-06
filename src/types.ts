@@ -349,6 +349,7 @@ export interface SocialMediaPostData {
   url?: string;
   quotes?: number;
   impressions?: number;
+  profileVisits?: number;
 }
 
 export interface NotionAuthData {

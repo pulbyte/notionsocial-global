@@ -4,7 +4,6 @@ import {notionRichTextParser} from "./text";
 import {
   ArrayElement,
   NotionFiles,
-  NotionMediaFile,
   OptimizedMedia,
   PostRecord,
   PublishMedia,
@@ -12,13 +11,18 @@ import {
   SocialPostOptimizedMedia,
   SocialPostOptimizedMediaSrc,
 } from "./types";
-import {isBase64String, alterGDriveLink, getResourceContentHeaders} from "./url";
+import {
+  isBase64String,
+  alterGDriveLink,
+  getGdriveContentHeaders,
+  getUrlContentHeaders,
+} from "./url";
 
 import {getCloudBucketFile} from "data";
-import https from "https";
 import {formatBytesIntoReadable} from "text";
 import {getMediaType} from "parser";
-import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "env";
+import {docMimeTypes, imageMimeTypes, maxMediaSize, videoMimeTypes} from "env";
+import axios from "axios";
 
 export const binaryUploadSocialPlatforms = ["twitter", "linkedin", "youtube", "tiktok"];
 export const urlUploadSocialPlatforms = ["facebook", "instagram", "pinterest", "threads"];
@@ -32,7 +36,7 @@ export function getMediaMimeType(file) {
   return mimetype;
 }
 
-export function getPublishMediaFromNotionFile(
+export function getMediaFromNotionFile(
   file: ArrayElement<NotionFiles>
 ): Promise<PublishMedia> {
   return new Promise((resolve) => {
@@ -52,13 +56,28 @@ export function getPublishMediaFromNotionFile(
       const split = name.split(".");
       const mimeType = String(split[split.length - 1]).toLowerCase();
       const mediaRef = getNotionMediaRef(notionUrl);
-      const packed = packMedia(notionUrl, name, mimeType, mediaRef);
-      return resolve(packed);
+      const caption = notionRichTextParser(file?.["caption"]);
+      getUrlContentHeaders(notionUrl)
+        .then((headers) => {
+          const packed = packMedia(
+            notionUrl,
+            name,
+            mimeType || headers.mimeType,
+            mediaRef,
+            headers.contentLength,
+            caption
+          );
+          resolve(packed);
+        })
+        .catch((e) => {
+          console.info("Error while fetching headers of a URL", e);
+          resolve(null);
+        });
     }
     // ? Google Drive Files
     else if (gDriveMedia) {
       const mediaRef = gDriveMedia.name;
-      getResourceContentHeaders(gDriveMedia.downloadUrl)
+      getGdriveContentHeaders(gDriveMedia.downloadUrl)
         .then((headers) => {
           const packed = packMedia(
             gDriveMedia.downloadUrl,
@@ -94,11 +113,12 @@ export function packMedia(
   name: string,
   mimeType: string,
   mediaRef: string,
-  size?: number
+  size?: number,
+  caption?: string
 ): PublishMedia {
   if (mimeType == "quicktime") mimeType = "mov";
   const mediaType = getMediaType(mimeType);
-  const obj = {mimeType, url, name: name, mediaRef, size};
+  const obj = {mimeType, url, name: name, mediaRef, size, caption};
   if (mediaType == "image") {
     return {...obj, type: "image"};
   } else if (mediaType == "video") {
@@ -108,27 +128,21 @@ export function packMedia(
   } else return null;
 }
 
-export function updateMediaArrayFromNotionFiles(
-  media: PublishMedia[],
-  file: ArrayElement<NotionFiles>,
-  index
-) {
-  return getPublishMediaFromNotionFile(file).then((__) => {
-    if (__) media.splice(index, 0, __);
-    return __;
-  });
-}
 export const getMediaFromNotionFiles = (files: NotionFiles): Promise<PublishMedia[]> => {
   if (!files || files.length <= 0) {
     return Promise.resolve([]);
   } else {
-    const media: PublishMedia[] = [];
+    const mediaArr: PublishMedia[] = [];
     return callFunctionsSequentially(
-      files.map((file, index) => {
-        return () => updateMediaArrayFromNotionFiles(media, file, index);
-      })
+      files.map(
+        (file, index) => () =>
+          getMediaFromNotionFile(file).then((media) => {
+            mediaArr.splice(index, 0, media);
+            return media;
+          })
+      )
     ).then(() => {
-      return media.filter((media) => media != null);
+      return mediaArr.filter((media) => media != null);
     });
   }
 };
@@ -204,9 +218,7 @@ export function getContentType(mt) {
   }
 }
 
-const maxMediaSizeInMB = Number(process.env.MAX_MEDIA_SIZE_LIMIT_MB) || 200;
-const maxMediaSizeInBytes = maxMediaSizeInMB * 1024 * 1024;
-export function getMediaBuffer(media: PublishMedia): Promise<PublishMediaBuffer> {
+export function getMediaBuffer(media: PublishMedia) {
   if (!media.url) {
     return Promise.reject(new Error("No URL provided to download media file."));
   }
@@ -214,48 +226,45 @@ export function getMediaBuffer(media: PublishMedia): Promise<PublishMediaBuffer>
   const name = media.name || pathname;
   console.info("+ Downloading a media file: ", media);
 
-  return new Promise((resolve: (arg0: any) => void, reject) => {
-    const request = https
-      .get(media.url, {timeout: 5 * 60000}, (res) => {
-        res.setEncoding("binary");
-        let data = Buffer.alloc(0);
-        let progress = 0;
-        res.on("data", (chunk) => {
-          data = Buffer.concat([data, Buffer.from(chunk, "binary")]);
-          const contentLength = Number(res.headers["content-length"]);
-          if (contentLength > maxMediaSizeInBytes) {
-            request.destroy(
-              new Error(
-                `${
-                  media.type || "Media file"
-                } exceeds ${maxMediaSizeInMB} MB size limit. Please reduce the file size by compressing or lowering quality, then upload again.`
-              )
-            );
-            return;
-          }
-          const size = Buffer.byteLength(data);
-          const newProgress = Math.trunc((100 * size) / contentLength);
-          if (contentLength && size && progress < newProgress && newProgress % 20 == 0)
-            console.info(`↓ Progress: ${newProgress}% ~ ↓${formatBytesIntoReadable(size)}`);
-          progress = newProgress;
-        });
-        res.on("end", () => {
-          const size = Buffer.byteLength(data) || res.headers["content-length"];
+  return downloadFile(media.url, name);
+}
+export async function downloadFile(url, name) {
+  if (!url || typeof url !== "string") {
+    throw new Error("Invalid File URL provided");
+  }
 
-          resolve({buffer: data, contentType: res.headers["content-type"], size, name});
-          console.info(
-            `✓ Downloaded the media file, Size: ${formatBytesIntoReadable(size)}`,
-            name
-          );
-        });
-      })
-      .on("timeout", () => {
-        request.destroy(new Error(`✕ Media download timeout - ${name}`));
-      })
-      .on("error", (e) => {
-        reject(e);
-      });
-  });
+  const start = Date.now();
+  try {
+    const response = await axios({
+      method: "get",
+      url: url,
+      responseType: "arraybuffer",
+      timeout: 15 * 60 * 1000, // 15 minutes
+      maxContentLength: maxMediaSize.bytes, // 100 MB max file size
+    });
+
+    const buffer = Buffer.from(response.data);
+    const size = buffer.length;
+
+    const duration = (Date.now() - start) / 1000;
+    const speedMBps = size / duration / (1024 * 1024);
+
+    console.info(
+      `✓ Downloaded ${name}; Size: ${formatBytesIntoReadable(
+        size
+      )}, Speed: ${`${speedMBps.toFixed(2)} Mb/s`}, Time: ${`${duration.toFixed(2)} seconds`}`
+    );
+
+    return {
+      size,
+      buffer,
+      contentType: response.headers["content-type"],
+      name,
+    };
+  } catch (error) {
+    console.log("Error while downloading file", error);
+    throw error;
+  }
 }
 export async function getOptimizedMedia(
   mediaRef,

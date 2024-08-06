@@ -50,7 +50,7 @@ export function extractTweetIdFromUrl(url) {
   }
   return null; // If {post-id} is not found
 }
-export function getResourceContentHeaders(
+export function getGdriveContentHeaders(
   url
 ): Promise<{contentType: string; contentLength: number; name: string; mimeType: string}> {
   let _url: URL;
@@ -98,8 +98,49 @@ export function getResourceContentHeaders(
         resolve({contentType, contentLength, name: id || name, mimeType});
       })
       .catch((error) => {
-        console.error("Error while fetching headers:", error);
-        throw error;
+        console.error(`Error while fetching headers for ${url}:`, error);
+        reject(error);
+      });
+  });
+}
+export function getUrlContentHeaders(
+  url
+): Promise<{contentType: string; contentLength: number; mimeType: string}> {
+  if (!url) {
+    return Promise.reject(new Error("Not a valid url"));
+  }
+  return new Promise((resolve, reject) => {
+    return axios
+      .get(url, {
+        method: "GET",
+        timeout: 10000,
+        responseType: "stream",
+        maxRedirects: 5,
+        validateStatus: function (status) {
+          return status >= 200 && status < 300; // default
+        },
+      })
+      .then((res) => {
+        // Immediately abort the request after receiving headers
+        res.data.destroy();
+
+        const headers = res.headers;
+        const contentType = headers["content-type"];
+        const contentLength = Number(headers["content-length"]);
+
+        const mimeType = contentType?.split("/")?.[1];
+        const mediaType = getMediaType(mimeType);
+
+        const err = !headers || !contentType || !mediaType;
+
+        if (err) {
+          reject(new Error(`Cannot fetch headers for ${url}`));
+        }
+        resolve({contentType, contentLength, mimeType});
+      })
+      .catch((error) => {
+        console.error(`Error while fetching headers for ${url}:`, error);
+        reject(error);
       });
   });
 }

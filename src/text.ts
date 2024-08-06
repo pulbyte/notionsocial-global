@@ -98,13 +98,12 @@ export function tweetifyString(text, maxTweetLength = 280) {
   tweets.push(currentTweet);
   return [tweets, url];
 }
-export function formatBytesIntoReadable(a, b = 2) {
-  if (!+a) return "0 Bytes";
-  const c = 0 > b ? 0 : b;
-  const d = Math.floor(Math.log(a) / Math.log(1024));
-  return `${parseFloat((a / Math.pow(1024, d)).toFixed(c))} ${
-    ["Bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"][d]
-  }`;
+export function formatBytesIntoReadable(bytes) {
+  const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+  let l = 0,
+    n = parseInt(bytes, 10) || 0;
+  while (n >= 1024 && ++l) n = n / 1024;
+  return n.toFixed(n < 10 && l > 0 ? 1 : 0) + " " + units[l];
 }
 export function getNotionDbId(link) {
   const arr = link.split("?")[0].split("/");

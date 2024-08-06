@@ -15,7 +15,6 @@ import {
   PostRecord,
   PublishMedia,
   PublishMediaBuffer,
-  SocialPlatformTypes,
   User,
 } from "types";
 import {
@@ -38,7 +37,7 @@ import {
 import {getUserDoc, getUserPostCount} from "data";
 import {PRICING_PLANS, freeMonthlyPostLimit, isPlanPaid, isSubscriptionActive} from "pricing";
 import {auth} from "firebase-admin";
-import {dev} from "env";
+import {dev, maxMediaSize} from "env";
 
 export const postPublishStages = [
   "get-ndb-data",
@@ -401,6 +400,12 @@ export async function processMedia(
   }
 
   function getMediaFetcher(file: PublishMedia) {
+    const Type = file.type ? String(file.type).toUpperCase() : "Media file";
+    if (file.size > maxMediaSize.bytes) {
+      throw new Error(
+        `${Type} exceeds ${maxMediaSize.MB} MB size limit. Please reduce the file size by compressing or lowering quality, then upload again.`
+      );
+    }
     return toDownload?.includes(file.type)
       ? () => fetchMedia(file)
       : () => getEmptyBufferMedia(file);
