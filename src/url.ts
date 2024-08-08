@@ -1,6 +1,10 @@
 import axios from "axios";
 import {getFileNameFromContentDisposition} from "./file";
-import {getMediaType} from "./parser";
+import {
+  getMediaTypeFromContentType,
+  getMediaTypeFromMimeType,
+  getMimeTypeFromContentType,
+} from "media";
 
 export function isBase64String(str) {
   // Regular expression to match data URI with base64 encoding
@@ -85,8 +89,8 @@ export function getGdriveContentHeaders(
         const contentLength = Number(headers["content-length"]);
         const contentDisposition = headers["content-disposition"];
 
-        const mimeType = contentType?.split("/")?.[1];
-        const mediaType = getMediaType(mimeType);
+        const mimeType = getMediaTypeFromContentType(contentType);
+        const mediaType = getMediaTypeFromMimeType(mimeType);
 
         const err = !headers || !contentType || !mediaType;
 
@@ -105,7 +109,7 @@ export function getGdriveContentHeaders(
 }
 export function getUrlContentHeaders(
   url
-): Promise<{contentType: string; contentLength: number; mimeType: string}> {
+): Promise<{contentType: string; contentLength: number; mimeType?: string}> {
   if (!url) {
     return Promise.reject(new Error("Not a valid url"));
   }
@@ -125,16 +129,16 @@ export function getUrlContentHeaders(
         res.data.destroy();
 
         const headers = res.headers;
-        const contentType = headers["content-type"];
-        const contentLength = Number(headers["content-length"]);
+        const contentType = headers["content-type"] || headers["Content-Type"];
+        const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
 
-        const mimeType = contentType?.split("/")?.[1];
-        const mediaType = getMediaType(mimeType);
+        const mimeType = getMimeTypeFromContentType(contentType);
+        const mediaType = getMediaTypeFromMimeType(mimeType);
 
         const err = !headers || !contentType || !mediaType;
 
         if (err) {
-          reject(new Error(`Cannot fetch headers for ${url}`));
+          reject(new Error(`Cannot get media type for ${url}`));
         }
         resolve({contentType, contentLength, mimeType});
       })

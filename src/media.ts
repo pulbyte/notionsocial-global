@@ -1,6 +1,7 @@
 import _ from "lodash";
 import {callFunctionsSequentially} from "./utils";
 import {notionRichTextParser} from "./text";
+import mime from "mime-types";
 import {
   ArrayElement,
   NotionFiles,
@@ -20,7 +21,6 @@ import {
 
 import {getCloudBucketFile} from "data";
 import {formatBytesIntoReadable} from "text";
-import {getMediaType} from "parser";
 import {docMimeTypes, imageMimeTypes, maxMediaSize, videoMimeTypes} from "env";
 import axios from "axios";
 
@@ -53,8 +53,6 @@ export function getMediaFromNotionFile(
     if (notionUrl) {
       const _pathSplit = urlData.pathname.split("/");
       const name = file?.name || _pathSplit[_pathSplit.length - 1];
-      const split = name.split(".");
-      const mimeType = String(split[split.length - 1]).toLowerCase();
       const mediaRef = getNotionMediaRef(notionUrl);
       const caption = notionRichTextParser(file?.["caption"]);
       getUrlContentHeaders(notionUrl)
@@ -62,7 +60,7 @@ export function getMediaFromNotionFile(
           const packed = packMedia(
             notionUrl,
             name,
-            mimeType || headers.mimeType,
+            headers.mimeType,
             mediaRef,
             headers.contentLength,
             caption
@@ -116,8 +114,7 @@ export function packMedia(
   size?: number,
   caption?: string
 ): PublishMedia {
-  if (mimeType == "quicktime") mimeType = "mov";
-  const mediaType = getMediaType(mimeType);
+  const mediaType = getMediaTypeFromMimeType(mimeType);
   const obj = {mimeType, url, name: name, mediaRef, size, caption};
   if (mediaType == "image") {
     return {...obj, type: "image"};
@@ -186,17 +183,6 @@ export function findOptimizedMedia(
       optimizedSize: optzdSrc.size,
     };
   } else return null;
-}
-export function getMimeTypeExtensionFromContentType(cType) {
-  const _specialTypes = {
-    msword: "doc",
-    "vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-    "vnd.ms-powerpoint": "ppt",
-    "vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
-    quicktime: "mov",
-  };
-  const mimeType = String(cType).split("/")[1];
-  return _specialTypes[mimeType] ? _specialTypes[mimeType] : mimeType;
 }
 
 export function getContentType(mt) {
@@ -279,21 +265,42 @@ export async function getOptimizedMedia(
       `✓ Downloaded optimized media, Size: ${formatBytesIntoReadable(size)}`,
       fileName
     );
-    return {buffer, mimeType, type: getMediaType(mimeType), size, url: file.publicUrl()};
+    return {
+      buffer,
+      mimeType,
+      type: getMediaTypeFromMimeType(mimeType),
+      size,
+      url: file.publicUrl(),
+    };
   });
 }
 
 export async function getMediaFile(media: PublishMedia): Promise<PublishMediaBuffer> {
   return getMediaBuffer(media).then(({buffer, contentType, size, name}) => {
-    const mimeType = getMimeTypeExtensionFromContentType(contentType);
+    const mimeType = getMediaTypeFromContentType(contentType);
     return {
       buffer,
       contentType,
       mimeType,
-      type: getMediaType(mimeType),
+      type: getMediaTypeFromMimeType(mimeType),
       size,
       url: media.url,
       ...(name && {name}),
     };
   });
+}
+export function getMimeTypeFromContentType(mt) {
+  return mime.extension(mt) || null;
+}
+export function getMediaTypeFromMimeType(mt) {
+  if (!mt) return null;
+  console.log("getMediaTypeFromMimeType", mt);
+  if (imageMimeTypes.includes(mt)) return "image";
+  else if (videoMimeTypes.includes(mt)) return "video";
+  else if (docMimeTypes.includes(mt)) return "doc";
+  else return null;
+}
+export function getMediaTypeFromContentType(ct) {
+  const mt = getMimeTypeFromContentType(ct);
+  return getMediaTypeFromMimeType(mt);
 }

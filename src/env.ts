@@ -4,7 +4,6 @@ export const prod = process.env.NODE_ENV == "production";
 export const imageMimeTypes = ["png", "jpg", "jpeg", "webp", "gif"];
 export const videoMimeTypes = [
   "mp4",
-  "mov",
   "avi",
   "m4v",
   "webm",
@@ -13,6 +12,9 @@ export const videoMimeTypes = [
   "ogv",
   "3gp",
   "3g2",
+  "quicktime",
+  "qt",
+  "mov",
 ];
 export const docMimeTypes = ["ppt", "pptx", "doc", "docx", "pdf", "xls", "xlsx", "txt", "csv"];
 

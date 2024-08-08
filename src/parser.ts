@@ -78,8 +78,3 @@ export function getMediaFromNotionBlock(block): Promise<PublishMedia | null> {
     return getMediaFromNotionFile(block[type]);
   } else return Promise.resolve(null);
 }
-export function getMediaType(mt) {
-  if (imageMimeTypes.includes(mt)) return "image";
-  else if (videoMimeTypes.includes(mt)) return "video";
-  else if (docMimeTypes.includes(mt)) return "doc";
-}
