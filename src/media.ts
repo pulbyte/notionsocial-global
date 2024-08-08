@@ -277,12 +277,12 @@ export async function getOptimizedMedia(
 
 export async function getMediaFile(media: PublishMedia): Promise<PublishMediaBuffer> {
   return getMediaBuffer(media).then(({buffer, contentType, size, name}) => {
-    const mimeType = getMediaTypeFromContentType(contentType);
+    const mimeType = media.mimeType || getMimeTypeFromContentType(contentType);
     return {
       buffer,
       contentType,
       mimeType,
-      type: getMediaTypeFromMimeType(mimeType),
+      type: media.type || getMediaTypeFromMimeType(mimeType),
       size,
       url: media.url,
       ...(name && {name}),
