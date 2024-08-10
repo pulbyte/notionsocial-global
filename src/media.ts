@@ -294,7 +294,6 @@ export function getMimeTypeFromContentType(mt) {
 }
 export function getMediaTypeFromMimeType(mt) {
   if (!mt) return null;
-  console.log("getMediaTypeFromMimeType", mt);
   if (imageMimeTypes.includes(mt)) return "image";
   else if (videoMimeTypes.includes(mt)) return "video";
   else if (docMimeTypes.includes(mt)) return "doc";

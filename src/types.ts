@@ -50,7 +50,10 @@ export interface PublishMediaBuffer extends NotionMediaFile {
   contentType?: string;
   size: number;
 }
-
+interface PostMetricMetadata {
+  prop: string;
+  method: "aggregate" | "seperate";
+}
 export interface NotionDatabase {
   uid: string;
   link_id: string;
@@ -66,10 +69,24 @@ export interface NotionDatabase {
     status: string;
     alt_text?: string;
   };
+  post_metric_tracking?: {
+    platforms: SocialPlatformTypes[] | "all";
+    likes?: PostMetricMetadata;
+    comments?: PostMetricMetadata;
+    shares?: PostMetricMetadata;
+    views?: PostMetricMetadata;
+    retweets?: PostMetricMetadata;
+    reposts?: PostMetricMetadata;
+    profile_visits?: PostMetricMetadata;
+  };
   stat_props?: {
     likes?: string;
     comments?: string;
     shares?: string;
+    views?: string;
+    retweets?: string;
+    reposts?: string;
+    profile_visits?: string;
   };
   platforms: any;
   access_token: string;
@@ -345,7 +362,7 @@ export interface SocialMediaPostData {
   shares?: number;
   saves?: number;
   views?: number;
-  retweets?: number;
+  reposts?: number;
   url?: string;
   quotes?: number;
   impressions?: number;
