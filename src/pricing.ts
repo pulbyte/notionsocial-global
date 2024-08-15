@@ -1,4 +1,4 @@
-import {STRIPE_SUB_STATUS} from "types";
+import {STRIPE_SUB_STATUS} from "./types";
 import {dev} from "./env";
 /**
  * Variant for the pricing.

@@ -1,3 +1,4 @@
+import {Readable} from "stream";
 export function getFileNameFromContentDisposition(contentDisposition) {
   if (!contentDisposition) return null;
   const regex = /filename="(.*?)"/;
@@ -8,4 +9,14 @@ export function getFileNameFromContentDisposition(contentDisposition) {
   } else {
     return null; // No filename found
   }
+}
+
+export function bufferToStream(binary) {
+  const readableInstanceStream = new Readable({
+    read() {
+      this.push(binary);
+      this.push(null);
+    },
+  });
+  return readableInstanceStream;
 }

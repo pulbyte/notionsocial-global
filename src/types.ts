@@ -1,4 +1,4 @@
-import {PRICING_PLAN_ID, PricingPlan} from "pricing";
+import {PRICING_PLAN_ID, PricingPlan} from "./pricing";
 import {
   CheckboxPropertyItemObjectResponse,
   DatePropertyItemObjectResponse,
@@ -17,7 +17,7 @@ import {
   UrlPropertyItemObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {firestore} from "firebase-admin";
-import {postPublishStages} from "publish";
+import {postPublishStages} from "./publish";
 
 export type PostPublishStage = (typeof postPublishStages)[number];
 export type FirstoreRef = firestore.DocumentReference<firestore.DocumentData>;
@@ -50,9 +50,15 @@ export interface PublishMediaBuffer extends NotionMediaFile {
   contentType?: string;
   size: number;
 }
-interface PostMetricMetadata {
+export interface MetricPropertyConfig {
   prop: string;
-  method: "aggregate" | "seperate";
+  prop_id?: string;
+  separate_props?: {
+    prop: string;
+    prop_id?: string;
+    platform: SocialPlatformTypes;
+  }[];
+  method: "aggregate" | "separate";
 }
 export interface NotionDatabase {
   uid: string;
@@ -68,16 +74,17 @@ export interface NotionDatabase {
     ns: string;
     status: string;
     alt_text?: string;
+    caption?: string;
   };
   post_metric_tracking?: {
-    platforms: SocialPlatformTypes[] | "all";
-    likes?: PostMetricMetadata;
-    comments?: PostMetricMetadata;
-    shares?: PostMetricMetadata;
-    views?: PostMetricMetadata;
-    retweets?: PostMetricMetadata;
-    reposts?: PostMetricMetadata;
-    profile_visits?: PostMetricMetadata;
+    platforms: SocialPlatformTypes[];
+    likes?: MetricPropertyConfig;
+    comments?: MetricPropertyConfig;
+    shares?: MetricPropertyConfig;
+    views?: MetricPropertyConfig;
+    retweets?: MetricPropertyConfig;
+    reposts?: MetricPropertyConfig;
+    profile_visits?: MetricPropertyConfig;
   };
   stat_props?: {
     likes?: string;
@@ -88,10 +95,15 @@ export interface NotionDatabase {
     reposts?: string;
     profile_visits?: string;
   };
+  rules?: {[name: string]: any};
   platforms: any;
   access_token: string;
-  sm_accs?: {[name: string]: any};
-  sm_accs_arr: string[];
+  sm_accs?: {
+    platform_uid: string;
+    tag: string;
+    username: string;
+    platform: SocialPlatformTypes;
+  }[];
   url: string;
   int_secret: string;
   name: string;
@@ -229,29 +241,20 @@ export type SocialPlatformTypes =
   | "tiktok"
   | "pinterest"
   | "threads";
-export interface NotionDBDataType {
-  uid: string;
-  link_id: string;
-  author_uid: string;
+export interface NotionDatabaseClient {
+  uid: NotionDatabase["uid"];
+  link_id: NotionDatabase["link_id"];
+  author_uid: NotionDatabase["author_uid"];
   locked?: boolean;
-  ns_filter: string;
-  props: {
-    media: string;
-    sch_time: string;
-    sm_accs: string;
-    ns: string;
-    status: string;
-  };
-  stat_props?: {
-    likes?: string;
-    comments?: string;
-    shares?: string;
-  };
-  sm_accs?: {[name: string]: any};
+  ns_filter: NotionDatabase["ns_filter"];
+  props: NotionDatabase["props"];
+  stat_props?: NotionDatabase["stat_props"];
+  post_metric_tracking?: NotionDatabase["post_metric_tracking"];
+  sm_accs?: NotionDatabase["sm_accs"];
   sm_accs_arr: string[];
-  url: string;
-  int_secret: string;
-  name: string;
+  rules?: NotionDatabase["rules"];
+  url: NotionDatabase["url"];
+  name: NotionDatabase["name"];
 }
 export interface PostRecord {
   notion_page_id: string;
@@ -384,30 +387,14 @@ export interface InstagramPostOptions {
   locationTag: string;
 }
 export interface UpdateNdbPayload {
-  props?: {
-    media: string;
-    sch_time: string;
-    sm_accs: string;
-    ns: string;
-    status: string;
-    alt_text?: string;
-    caption?: string;
-  };
+  props?: NotionDatabase["props"];
   ns_filter?: string;
-  sm_accs?: {platform_uid: string; tag: string}[];
-  rules?: {[name: string]: any};
-  stat_props?: {
-    likes?: string;
-    comments?: string;
-    shares?: string;
-  };
-  publish_changes?: {
-    post_url_prop?: string;
-    publish_status?: string;
-    schedule_status?: string;
-    first_comment_prop?: string;
-  };
-  options?: PostOptionsSchema;
+  sm_accs?: NotionDatabase["sm_accs"];
+  rules?: NotionDatabase["rules"];
+  stat_props?: NotionDatabase["stat_props"];
+  publish_changes?: NotionDatabase["publish_changes"];
+  post_metric_tracking?: NotionDatabase["post_metric_tracking"];
+  options?: NotionDatabase["options"];
 }
 export type NotionPage = GetPageResponse;
 export type NotionProperties = Record<string, NotionProperty>;

@@ -1,7 +1,7 @@
 import lodash from "lodash";
 import {GetPageResponse} from "@notionhq/client/build/src/api-endpoints";
-import {getContentFromNotionBlocksAsync, getContentFromTextProperty} from "content";
-import {hasText, notionRichTextParser, processInstagramTags} from "text";
+import {getContentFromNotionBlocksAsync, getContentFromTextProperty} from "./content";
+import {hasText, notionRichTextParser, processInstagramTags} from "./text";
 import {
   AuthorUser,
   Content,
@@ -16,16 +16,16 @@ import {
   PublishMedia,
   PublishMediaBuffer,
   User,
-} from "types";
+} from "./types";
 import {
   callFunctionsSequentiallyBreak,
   callNestedFunctionsSequentially,
   getDate,
   isAnyValueInArray,
-} from "utils";
+} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
-import {parseNotionRule} from "notion";
-import {PublishError} from "error";
+import {parseNotionRule} from "./notion";
+import {PublishError} from "./error";
 import {
   binaryUploadSocialPlatforms,
   filterPublishMedia,
@@ -33,11 +33,11 @@ import {
   getMediaFromNotionFiles,
   getMediaFile,
   getOptimizedMedia,
-} from "media";
-import {getUserDoc, getUserPostCount} from "data";
-import {PRICING_PLANS, freeMonthlyPostLimit, isPlanPaid, isSubscriptionActive} from "pricing";
+} from "./media";
+import {getUserDoc, getUserPostCount} from "./data";
+import {PRICING_PLANS, freeMonthlyPostLimit, isPlanPaid, isSubscriptionActive} from "./pricing";
 import {auth} from "firebase-admin";
-import {dev, maxMediaSize} from "env";
+import {dev, maxMediaSize} from "./env";
 
 export const postPublishStages = [
   "get-ndb-data",

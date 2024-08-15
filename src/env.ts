@@ -1,6 +1,17 @@
+import {SocialPlatformTypes} from "types";
+
 export const dev = process.env.NODE_ENV == "development";
 export const prod = process.env.NODE_ENV == "production";
-
+export const supportedPlatforms: SocialPlatformTypes[] = [
+  "twitter",
+  "instagram",
+  "facebook",
+  "linkedin",
+  "tiktok",
+  "youtube",
+  "pinterest",
+  "threads",
+];
 export const imageMimeTypes = ["png", "jpg", "jpeg", "webp", "gif"];
 export const videoMimeTypes = [
   "mp4",

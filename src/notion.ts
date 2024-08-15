@@ -10,10 +10,10 @@ import {
   ParagraphBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {APIErrorCode, ClientErrorCode, isNotionClientError} from "@notionhq/client";
-import {ignorePromiseError, retryOnCondition} from "utils";
-import {NotionColor, NotionRichTextPayload, NotionRule} from "types";
-import {hasText, notionRichTextParser} from "text";
-import {dev} from "env";
+import {ignorePromiseError, retryOnCondition} from "./utils";
+import {NotionColor, NotionRichTextPayload, NotionRule} from "./types";
+import {hasText, notionRichTextParser} from "./text";
+import {dev} from "./env";
 
 function retry<T>(func) {
   return retryOnCondition<T>(func, isNotionServerError, notionServerErrorMessage);

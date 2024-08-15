@@ -2,17 +2,8 @@ const tt = require("twitter-text");
 const parseTweet = tt.parseTweet;
 import ogs from "open-graph-scraper";
 
-import {Readable} from "stream";
-import {SocialPlatformTypes} from "types";
-export function bufferToStream(binary) {
-  const readableInstanceStream = new Readable({
-    read() {
-      this.push(binary);
-      this.push(null);
-    },
-  });
-  return readableInstanceStream;
-}
+import {SocialPlatformTypes} from "./types";
+
 export function callFunctionsSequentially<T>(
   functions: Array<() => Promise<any>>
 ): Promise<T[] | any[]> {

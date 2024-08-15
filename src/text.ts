@@ -1,7 +1,7 @@
 import twitterText from "twitter-text";
 import {format as formatAxiosError} from "@redtea/format-axios-error";
 import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
-import {NotionTitleProperty, SocialPlatformTypes} from "types";
+import {NotionTitleProperty, SocialPlatformTypes} from "./types";
 const {parseTweet} = twitterText;
 
 export function dashifyNotionId(input) {
@@ -338,4 +338,10 @@ export function sanitizePinterestBoardName(inputString) {
   // Remove the matched prefix from the input string
   const result = inputString.replace(regex, "");
   return result;
+}
+export function snakeCaseToCamelCase(str) {
+  return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+}
+export function camelCaseToSnakeCase(str) {
+  return str.replace(/([A-Z])/g, (g) => `_${g[0].toLowerCase()}`);
 }

@@ -4,7 +4,7 @@ import {
   getMediaTypeFromContentType,
   getMediaTypeFromMimeType,
   getMimeTypeFromContentType,
-} from "media";
+} from "./media";
 
 export function isBase64String(str) {
   // Regular expression to match data URI with base64 encoding

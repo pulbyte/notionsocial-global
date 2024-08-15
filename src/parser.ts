@@ -1,13 +1,12 @@
 import {extractIframeUrl, hasText, matchIframe, notionRichTextParser} from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
-import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "env";
 const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
   emptyParagraphToNonBreakingSpace: false,
 });
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
-import {PublishMedia} from "types";
-import {getMediaFromNotionFile} from "media";
+import {PublishMedia} from "./types";
+import {getMediaFromNotionFile} from "./media";
 
 export function parseNotionBlockToText(block) {
   let parsedMkdwn = NBMPInstance.parse([block]);

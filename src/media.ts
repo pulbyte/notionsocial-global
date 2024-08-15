@@ -19,9 +19,9 @@ import {
   getUrlContentHeaders,
 } from "./url";
 
-import {getCloudBucketFile} from "data";
-import {formatBytesIntoReadable} from "text";
-import {docMimeTypes, imageMimeTypes, maxMediaSize, videoMimeTypes} from "env";
+import {getCloudBucketFile} from "./data";
+import {formatBytesIntoReadable} from "./text";
+import {docMimeTypes, imageMimeTypes, maxMediaSize, videoMimeTypes} from "./env";
 import axios from "axios";
 
 export const binaryUploadSocialPlatforms = ["twitter", "linkedin", "youtube", "tiktok"];
