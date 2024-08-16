@@ -35,7 +35,12 @@ import {
   getOptimizedMedia,
 } from "./media";
 import {getUserDoc, getUserPostCount} from "./data";
-import {PRICING_PLANS, freeMonthlyPostLimit, isPlanPaid, isSubscriptionActive} from "./pricing";
+import {
+  PRICING_PLANS,
+  freeMonthlyPostLimit,
+  isPlanPaid,
+  isSubscriptionActive,
+} from "./pricing";
 import {auth} from "firebase-admin";
 import {dev, maxMediaSize} from "./env";
 
@@ -193,8 +198,16 @@ export function getNotionPageConfig(
   }
   const toDownload = isAnyValueInArray(binaryUploadSocialPlatforms, smAccs.smAccPlatforms);
   const hasPinterest = smAccs.smAccPlatforms?.includes("pinterest");
-
-  __.filesToDownload = toDownload ? ["video", "image", "doc"] : hasPinterest ? ["video"] : [];
+  const hasFacebook = smAccs.smAccPlatforms?.includes("facebook");
+  __.filesToDownload = toDownload
+    ? ["video", "image", "doc"]
+    : hasPinterest
+    ? // ? Cause pinterest needs video in buffer
+      ["video"]
+    : hasFacebook
+    ? // ? Cause Facebook needs buffer image for the video's cover image
+      ["image"]
+    : [];
 
   return __;
 }
