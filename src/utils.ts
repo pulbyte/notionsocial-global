@@ -1,7 +1,6 @@
 const tt = require("twitter-text");
 const parseTweet = tt.parseTweet;
 import ogs from "open-graph-scraper";
-
 import {SocialPlatformTypes} from "./types";
 
 export function callFunctionsSequentially<T>(

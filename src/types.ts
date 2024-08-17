@@ -90,6 +90,7 @@ export interface NotionDatabase {
     retweets?: MetricPropertyConfig;
     reposts?: MetricPropertyConfig;
     profile_visits?: MetricPropertyConfig;
+    new_followers?: MetricPropertyConfig;
   };
   stat_props?: {
     likes?: string;
@@ -98,7 +99,6 @@ export interface NotionDatabase {
     views?: string;
     retweets?: string;
     reposts?: string;
-    profile_visits?: string;
   };
   rules?: {[name: string]: any};
   platforms: any;
@@ -375,6 +375,7 @@ export interface SocialMediaPostData {
   quotes?: number;
   impressions?: number;
   profileVisits?: number;
+  newFollowers?: number;
 }
 
 export interface NotionAuthData {

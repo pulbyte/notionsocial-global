@@ -2,6 +2,7 @@ import {format as formatAxiosError} from "@redtea/format-axios-error";
 import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
 import {NotionTitleProperty, SocialPlatformTypes} from "./types";
 import TwitterText from "twitter-text";
+import {isAxiosError} from "axios";
 const {parseTweet} = TwitterText;
 export function dashifyNotionId(input) {
   if (typeof input !== "string") {
@@ -210,10 +211,15 @@ export function linkedinUrn(pid, accType) {
 }
 
 export function logAxiosError(error, message = "Facebook graph api error") {
-  console.log(
-    `${message ? "🛑 " + message + "\n" : ""}`,
-    JSON.stringify(formatAxiosError(error), null, 2)
-  );
+  if (isAxiosError(error)) {
+    const formattedError = formatAxiosError(error);
+    console.log(
+      `${message ? "🛑 " + message + "\n" : ""}`,
+      JSON.stringify(formattedError, null, 2)
+    );
+  } else if (error) {
+    console.log(`${message ? "🛑 " + message + "\n" : ""}`, JSON.stringify(error, null, 2));
+  }
 }
 export function removeHyphens(inputString: string) {
   if (!inputString) return "";
