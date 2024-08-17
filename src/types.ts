@@ -27,13 +27,18 @@ export interface FirestoreDoc<T = firestore.DocumentData> {
   ref: firestore.DocumentReference<firestore.DocumentData>;
   data: T;
 }
-
-export type TwitterTweet = {
+export type BaseTwitterPost = {
   text: string;
-  media: Array<PublishMedia>;
   url?: string;
-}[];
-
+  replyToTweetId?: string;
+  quoteTweetId?: string;
+  retweetId?: string;
+};
+export type TwitterTweet = Array<
+  BaseTwitterPost & {
+    media: Array<PublishMedia>;
+  }
+>;
 interface MediaFile {
   name?: string;
   mimeType: string;
@@ -448,11 +453,11 @@ export type Thread = {
   media: Array<PublishMedia>;
   text: string;
 };
-export type TwitterContent = {
-  text: string;
-  media: Array<PublishMediaBuffer | PublishMedia>;
-  url?: string;
-}[];
+export type TwitterContent = Array<
+  BaseTwitterPost & {
+    media: Array<PublishMediaBuffer | PublishMedia>;
+  }
+>;
 export interface NotionPagePropertiesForPost {
   nsProp: NotionTextProperty;
   titleProp: NotionTitleProperty;

@@ -1,9 +1,8 @@
-import twitterText from "twitter-text";
 import {format as formatAxiosError} from "@redtea/format-axios-error";
 import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
 import {NotionTitleProperty, SocialPlatformTypes} from "./types";
-const {parseTweet} = twitterText;
-
+import TwitterText from "twitter-text";
+const {parseTweet} = TwitterText;
 export function dashifyNotionId(input) {
   if (typeof input !== "string") {
     return input;
@@ -47,57 +46,6 @@ export function extractIframeUrl(htmlString) {
   return null;
 }
 
-export function extractTweetUrlFromString(text) {
-  let firstUrl = null;
-  if (!text) return [firstUrl, text];
-
-  const urlRegex =
-    /(https:\/\/(www\.)?twitter\.com\/[^/]+\/status\/\d+\S*)|(https:\/\/(www\.)?x\.com\/[^/]+\/status\/\d+\S*)/;
-
-  const urlMatch = text.match(urlRegex);
-  if (urlMatch) {
-    firstUrl = urlMatch[0];
-
-    // Remove everything after the URL in the text
-    text = text.replace(urlRegex, "");
-    text = text.trim();
-  }
-
-  return [firstUrl, text];
-}
-export function threadifyString(text, maxTweetLength = 500) {
-  const words = text.split(" ");
-  const threads: string[] = [];
-  let currentThread = "";
-  for (const word of words) {
-    const newTweet = currentThread + " " + word;
-    if (newTweet.length > maxTweetLength) {
-      threads.push(currentThread.trim());
-      currentThread = word;
-    } else {
-      currentThread = newTweet.trim();
-    }
-  }
-  threads.push(currentThread);
-  return threads;
-}
-export function tweetifyString(text, maxTweetLength = 280) {
-  const [url, satanizedText] = extractTweetUrlFromString(text);
-  const words = satanizedText.split(" ");
-  const tweets = [];
-  let currentTweet = "";
-  for (const word of words) {
-    const newTweet = currentTweet + " " + word;
-    if (parseTweet(newTweet).weightedLength > maxTweetLength) {
-      tweets.push(currentTweet.trim());
-      currentTweet = word;
-    } else {
-      currentTweet = newTweet.trim();
-    }
-  }
-  tweets.push(currentTweet);
-  return [tweets, url];
-}
 export function formatBytesIntoReadable(bytes) {
   const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
   let l = 0,
@@ -159,7 +107,7 @@ export function notionRichTextParser(
     .join(" ");
 }
 
-export function trimAndRemoveWhitespace(inputString) {
+export function trimAndRemoveWhitespace(inputString): string {
   // Use a regular expression to match and remove whitespace characters
   if (!inputString) inputString = "";
   const trimmedString = inputString.replace(/\s/g, "");

@@ -1,17 +1,19 @@
 import {
   checkTextExceedsTweetCharLimit,
   hasText,
-  threadifyString,
+  trimAndRemoveWhitespace,
   trimString,
-  tweetifyString,
 } from "./text";
 import {getMediaFromNotionBlock, parseNotionBlockToText} from "./parser";
-import {Content, PublishMedia, Thread, TwitterContent} from "./types";
-
+import {BaseTwitterPost, Content, PublishMedia, Thread, TwitterContent} from "./types";
+import TwitterText from "twitter-text";
+const {parseTweet} = TwitterText;
 import {
   BlockObjectResponse,
   PartialBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
+import {extractTweetIdFromUrl} from "./url";
+
 type NotionBlocksIter = AsyncIterableIterator<
   PartialBlockObjectResponse | BlockObjectResponse
 >;
@@ -19,9 +21,15 @@ export function getContentFromTextProperty(string, limit = 63206): Content {
   const text = string.substring(0, limit);
 
   const twitter: TwitterContent = [];
-  const [tweets, url] = tweetifyString(text);
+  const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(text);
   tweets.forEach((tweet, index) => {
-    twitter.push({text: tweet, media: [], ...(index == 0 && url && {url})});
+    twitter.push({
+      text: tweet,
+      media: [],
+      ...((index == 0 && retweetId && {retweetId}) ||
+        (quoteTweetId && {quoteTweetId}) ||
+        (replyToTweetId && {replyToTweetId})),
+    });
   });
 
   let texts = threadifyString(text);
@@ -176,16 +184,22 @@ function processRawContentBlocks(rawContentArray): [string, string[], PublishMed
 function convertTextToTwitterThread(textArray, mediaArray): TwitterContent {
   let threads: TwitterContent = [];
   textArray.forEach((str, index) => {
-    const [_limitSplitted, url] = tweetifyString(str);
-    const _firstSplittedText = _limitSplitted.splice(0, 1)[0];
-    threads.push({text: _firstSplittedText, media: mediaArray[index], url: url});
-    _limitSplitted.forEach((t) => {
+    const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(str);
+    const firstTweet = tweets.splice(0, 1)[0];
+    threads.push({
+      text: firstTweet,
+      media: mediaArray[index],
+      quoteTweetId,
+      replyToTweetId,
+      retweetId,
+    });
+    tweets.forEach((t) => {
       const trimmedString = t.trim();
       threads.push({text: trimmedString, media: []});
     });
   });
   threads = threads.filter((obj) => {
-    return hasText(obj.text) || hasText(obj.url);
+    return hasText(obj.text) || hasText(obj.retweetId);
   });
   return threads;
 }
@@ -204,4 +218,78 @@ function convertTextToThreads(textArray, mediaArray): Thread[] {
     return hasText(obj.text) || obj.media?.length > 0;
   });
   return __;
+}
+export function extractTwitterPostFromString(text: string): BaseTwitterPost {
+  if (!text) return {text: "", quoteTweetId: null, replyToTweetId: null};
+
+  const urlRegex =
+    /(https:\/\/(www\.)?twitter\.com\/[^/]+\/status\/\d+\S*)|(https:\/\/(www\.)?x\.com\/[^/]+\/status\/\d+\S*)/;
+
+  function replace(text) {
+    return text.replace(urlRegex, "");
+  }
+
+  const urlMatch = text.match(urlRegex);
+  let quoteTweetId = null;
+  let replyToTweetId = null;
+  let retweetId = null;
+  if (urlMatch) {
+    const url = urlMatch[0];
+    const tweetId = extractTweetIdFromUrl(url);
+    const noText = !hasText(trimAndRemoveWhitespace(replace(text)));
+    // Check if there is only the url, Which mean it is a retweet
+    if (noText) {
+      retweetId = tweetId;
+      text = "";
+    }
+    const trimmedText = text.trim();
+    // Check if the URL is at the beginning of the text
+    if (trimmedText.startsWith(url)) {
+      quoteTweetId = tweetId;
+      text = replace(text);
+    } else if (trimmedText.endsWith(url)) {
+      // URL is at the end or middle, treat it as a reply
+      replyToTweetId = tweetId;
+      text = text.replace(urlRegex, "").trim();
+    }
+  }
+  return {text, quoteTweetId, replyToTweetId, retweetId};
+}
+export function threadifyString(text, maxTweetLength = 500) {
+  const words = text.split(" ");
+  const threads: string[] = [];
+  let currentThread = "";
+  for (const word of words) {
+    const newTweet = currentThread + " " + word;
+    if (newTweet.length > maxTweetLength) {
+      threads.push(currentThread.trim());
+      currentThread = word;
+    } else {
+      currentThread = newTweet.trim();
+    }
+  }
+  threads.push(currentThread);
+  return threads;
+}
+export function tweetifyString(text, maxTweetLength = 280) {
+  const {
+    text: sanitizedText,
+    quoteTweetId,
+    replyToTweetId,
+    retweetId,
+  } = extractTwitterPostFromString(text);
+  const words = sanitizedText.split(" ");
+  const tweets = [];
+  let currentTweet = "";
+  for (const word of words) {
+    const newTweet = currentTweet + " " + word;
+    if (parseTweet(newTweet).weightedLength > maxTweetLength) {
+      tweets.push(currentTweet.trim());
+      currentTweet = word;
+    } else {
+      currentTweet = newTweet.trim();
+    }
+  }
+  tweets.push(currentTweet);
+  return {tweets, quoteTweetId, replyToTweetId, retweetId};
 }
