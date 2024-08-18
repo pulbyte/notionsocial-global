@@ -245,12 +245,12 @@ export function extractTwitterPostFromString(text: string): BaseTwitterPost {
     const trimmedText = text.trim();
     // Check if the URL is at the beginning of the text
     if (trimmedText.startsWith(url)) {
-      quoteTweetId = tweetId;
+      replyToTweetId = tweetId;
       text = replace(text);
     } else if (trimmedText.endsWith(url)) {
       // URL is at the end or middle, treat it as a reply
-      replyToTweetId = tweetId;
-      text = text.replace(urlRegex, "").trim();
+      quoteTweetId = tweetId;
+      text = replace(text).trim();
     }
   }
   return {text, quoteTweetId, replyToTweetId, retweetId};
