@@ -1,6 +1,5 @@
-const tt = require("twitter-text");
-const parseTweet = tt.parseTweet;
-import ogs from "open-graph-scraper";
+import TwitterText from "twitter-text";
+const {parseTweet} = TwitterText;
 import {SocialPlatformTypes} from "./types";
 
 export function callFunctionsSequentially<T>(
@@ -256,24 +255,6 @@ export async function retryOnCondition<Res>(
     }
     console.log(`Max retry attempted reached`);
     rej(_Error);
-  });
-}
-
-export function getOGData(url): Promise<{ogTitle; ogImage; ogSiteName}> {
-  return new Promise((resolve, reject) => {
-    const options = {url, onlyGetOpenGraphInfo: true};
-    ogs(options)
-      .then((data) => {
-        if (data?.error || !data.result) return reject(data?.error);
-        const result = data.result || {};
-        const {ogTitle, ogImage, ogSiteName} = result;
-        const toReturn = {ogTitle, ogImage: ogImage?.[0]?.url, ogSiteName};
-        resolve(toReturn);
-      })
-      .catch((e) => {
-        console.log("Error in gettting URL OG data", e?.result?.errorDetails);
-        reject(e);
-      });
   });
 }
 

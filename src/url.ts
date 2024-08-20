@@ -1,17 +1,46 @@
 import axios from "axios";
-import {getFileNameFromContentDisposition} from "./file";
 import {
   getMediaTypeFromContentType,
   getMediaTypeFromMimeType,
   getMimeTypeFromContentType,
-} from "./media";
+} from "_media";
 
+export function extractTweetIdFromUrl(url) {
+  if (!url) return null;
+  const postIdMatch = url.match(/\/status\/(\d+)/);
+  if (postIdMatch) {
+    return postIdMatch[1]; // Extract {post-id}
+  }
+  return null; // If {post-id} is not found
+}
 export function isBase64String(str) {
   // Regular expression to match data URI with base64 encoding
   const base64Regex = /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-+.]+)?;base64,([a-zA-Z0-9+/]+={0,2})$/;
 
   return base64Regex.test(str);
 }
+export function removeAtSymbolFromLinks(inputParagraph) {
+  // Define a regular expression to match the pattern: @http or @https
+  const regex = /@https?:\/\//g;
+
+  // Use the replace method to remove the "@" symbol from the start of each match
+  const result = inputParagraph.replace(regex, "https://");
+
+  return result;
+}
+
+export function getFileNameFromContentDisposition(contentDisposition) {
+  if (!contentDisposition) return null;
+  const regex = /filename="(.*?)"/;
+  const match = contentDisposition.match(regex);
+
+  if (match && match[1]) {
+    return match[1];
+  } else {
+    return null; // No filename found
+  }
+}
+
 export function alterGDriveLink(inputURL) {
   if (!inputURL) return null;
   // Regular expression to match Google Drive file URL
@@ -37,23 +66,6 @@ export function alterGDriveLink(inputURL) {
   }
 }
 
-export function removeAtSymbolFromLinks(inputParagraph) {
-  // Define a regular expression to match the pattern: @http or @https
-  const regex = /@https?:\/\//g;
-
-  // Use the replace method to remove the "@" symbol from the start of each match
-  const result = inputParagraph.replace(regex, "https://");
-
-  return result;
-}
-export function extractTweetIdFromUrl(url) {
-  if (!url) return null;
-  const postIdMatch = url.match(/\/status\/(\d+)/);
-  if (postIdMatch) {
-    return postIdMatch[1]; // Extract {post-id}
-  }
-  return null; // If {post-id} is not found
-}
 export function getGdriveContentHeaders(
   url
 ): Promise<{contentType: string; contentLength: number; name: string; mimeType: string}> {

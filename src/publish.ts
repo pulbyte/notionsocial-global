@@ -27,8 +27,6 @@ import {Client, iteratePaginatedAPI} from "@notionhq/client";
 import {parseNotionRule} from "./notion";
 import {PublishError} from "./error";
 import {
-  binaryUploadSocialPlatforms,
-  filterPublishMedia,
   findOptimizedMedia,
   getMediaFromNotionFiles,
   getMediaFile,
@@ -43,6 +41,7 @@ import {
 } from "./pricing";
 import {auth} from "firebase-admin";
 import {dev, maxMediaSize} from "./env";
+import {binaryUploadSocialPlatforms, filterPublishMedia} from "_media";
 
 export const postPublishStages = [
   "get-ndb-data",
