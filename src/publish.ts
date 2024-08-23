@@ -219,7 +219,6 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
         paragraphs: [""],
         threads: [],
         altText: config.altText,
-        tweetExceededCharLimit: false,
         twitter: [],
       };
 

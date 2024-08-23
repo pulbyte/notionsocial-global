@@ -1,11 +1,6 @@
 import {getMediaFromNotionBlock, getStaticMediaFromNotionBlock} from "_media";
 import {parseNotionBlockToText} from "parser";
-import {
-  checkTextExceedsTweetCharLimit,
-  hasText,
-  trimAndRemoveWhitespace,
-  trimString,
-} from "text";
+import {hasText, trimAndRemoveWhitespace, trimString} from "text";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
 import {BaseTwitterPost, Content, PublishMedia, TwitterContent} from "types";
@@ -28,7 +23,6 @@ export function getContentFromNotionBlocksSync(blocks): Content {
     text: caption,
     paragraphs: textArray,
     threads: [],
-    tweetExceededCharLimit: checkTextExceedsTweetCharLimit(caption),
     twitter,
   };
 

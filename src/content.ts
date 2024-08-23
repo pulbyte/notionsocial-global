@@ -1,4 +1,4 @@
-import {checkTextExceedsTweetCharLimit, hasText} from "./text";
+import {hasText} from "./text";
 import {Content, Thread, TwitterContent} from "./types";
 import {
   BlockObjectResponse,
@@ -35,7 +35,6 @@ export function getContentFromTextProperty(string, limit = 63206): Content {
   });
   return {
     text,
-    tweetExceededCharLimit: checkTextExceedsTweetCharLimit(string),
     twitter,
     paragraphs: [text],
     threads,
@@ -59,7 +58,6 @@ export async function getContentFromNotionBlocksAsync(
     text: caption,
     paragraphs: textArray,
     threads,
-    tweetExceededCharLimit: textArray.some((text) => checkTextExceedsTweetCharLimit(text)),
     twitter,
   };
 
@@ -84,6 +82,7 @@ function convertTextToThreads(textArray, mediaArray): Thread[] {
 }
 
 export function threadifyString(text, maxTweetLength = 500) {
+  // text = replaceLineBreaksWithEmptySpaces(text);
   const words = text.split(" ");
   const threads: string[] = [];
   let currentThread = "";

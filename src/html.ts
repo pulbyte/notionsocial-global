@@ -108,13 +108,13 @@ function createRichTextItem(
 /* -------------------------------------------------------------------------- */
 function convertHtmlImageToNotionApiBlock(imageElement: HTMLElement): any {
   const imgElement = imageElement.querySelector("img");
+
   const captionElement = imageElement.querySelector('[data-content-editable-leaf="true"]');
 
   if (!imgElement) {
     return null;
   }
-
-  const imageUrl = extractActualImageUrl(imgElement.src);
+  const imageUrl = imgElement.src;
   const caption = captionElement
     ? convertHtmlToNotionApiRichText(captionElement.outerHTML)
     : [];
@@ -122,19 +122,13 @@ function convertHtmlImageToNotionApiBlock(imageElement: HTMLElement): any {
   return {
     type: "image",
     image: {
-      type: "external",
-      external: {
+      type: "file",
+      file: {
         url: imageUrl,
       },
       caption: caption,
     },
   };
-}
-
-function extractActualImageUrl(notionSrc: string): string {
-  const url = new URL(notionSrc, window.location.origin);
-  const actualUrl = url.searchParams.get("url");
-  return actualUrl || notionSrc;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -143,23 +137,16 @@ function extractActualImageUrl(notionSrc: string): string {
 function convertHtmlVideoToNotionApiBlock(videoElement: HTMLElement): any {
   const videoSrc = videoElement.querySelector("video")?.getAttribute("src") || "";
   const captionElement = videoElement.querySelector('[data-content-editable-leaf="true"]');
-
   return {
     type: "video",
     video: {
-      type: "external",
-      external: {
-        url: extractActualVideoUrl(videoSrc),
+      type: "file",
+      file: {
+        url: videoSrc,
       },
       caption: captionElement ? convertHtmlToNotionApiRichText(captionElement.outerHTML) : [],
     },
   };
-}
-
-function extractActualVideoUrl(notionSrc: string): string {
-  const url = new URL(notionSrc, window.location.origin);
-  const actualUrl = url.searchParams.get("url");
-  return actualUrl || notionSrc;
 }
 
 /* -------------------------------------------------------------------------- */

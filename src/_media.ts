@@ -48,24 +48,8 @@ export function filterPublishMedia(media: PublishMedia[]) {
   else arr = arr.slice(0, 20);
   return arr;
 }
-
-export function getContentType(mt) {
-  switch (mt) {
-    case "mp4":
-      return "video/mp4";
-    case "gif":
-      return "image/gif";
-    case "png":
-      return "image/png";
-    case "jpeg":
-      return "image/jpeg";
-    case "webp":
-      return "image/webp";
-    case "jpg":
-      return "image/jpeg";
-    default:
-      return mt;
-  }
+export function getContentTypeFromMimeType(mt) {
+  return mime.lookup(mt)?.[0] || null;
 }
 export function getMimeTypeFromContentType(ct) {
   return mime.extension(ct)?.[0] || null;
@@ -133,7 +117,7 @@ export function getMediaFromNotionFile(
           resolve(packed);
         })
         .catch((e) => {
-          console.info("Error while fetching headers of a URL", e);
+          console.info("Error while fetching headers of a URL", url, e);
           resolve(null);
         });
     }
@@ -152,7 +136,7 @@ export function getMediaFromNotionFile(
           resolve(packed);
         })
         .catch((e) => {
-          console.info("Error while fetching headers of Google Drive file", e);
+          console.info("Error while fetching headers of Google Drive file", url, e);
           resolve(null);
         });
     } else return resolve(null);
@@ -164,9 +148,10 @@ export function getNotionFileInfo(file) {
   const notionUrl = file?.["file"]?.url;
   if (!notionUrl || isBase64String(notionUrl)) return null;
 
-  const urlData = new URL(notionUrl);
-  const _pathSplit = urlData.pathname.split("/");
-  const name = file?.name || _pathSplit[_pathSplit.length - 1];
+  const {pathname} = new URL(notionUrl);
+  const imgName = decodeURIComponent(pathname.slice(7));
+
+  const name = file?.name || imgName.split("/").pop();
   const mediaRef = getNotionMediaRef(notionUrl);
   const caption = notionRichTextParser(file?.["caption"]);
 
@@ -177,14 +162,13 @@ export function getStaticMediaFromNotionFile(
   file: ArrayElement<NotionFiles>
 ): PublishMedia | null {
   const fileInfo = getNotionFileInfo(file);
+
   if (!fileInfo) return null;
 
   const {notionUrl, name, mediaRef, caption} = fileInfo;
 
   // Get mime type from file extension
-  const extension = name.split(".").pop().toLowerCase();
-  const mimeType = getContentType(extension);
-
+  const mimeType = name.split(".").pop().toLowerCase();
   return packMedia(notionUrl, name, mimeType, mediaRef, undefined, caption);
 }
 export function getStaticMediaFromNotionBlock(block): PublishMedia | null {

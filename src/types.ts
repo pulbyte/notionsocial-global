@@ -352,7 +352,6 @@ export interface Content {
   altText?: string;
   threads: Thread[];
   twitter: TwitterContent;
-  tweetExceededCharLimit: boolean;
   media?: PublishMedia[];
   mediaBuffer?: PublishMediaBuffer[];
 }
