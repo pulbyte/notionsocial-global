@@ -70,27 +70,27 @@ export function formatMarkdown(text) {
   });
 
   // Transform italic text enclosed in underscores
-  text = text.replace(/_([^_]+?)_/g, (_, p1, offset, string) => {
+  text = text.replace(/(?<!\S)_([^_]+?)_(?!\S)/g, (match, p1, offset, string) => {
     // Check if the underscore is part of a URL or if the text contains a URL
     const urlRegex = /https?:\/\/[^\s]+/g;
     let isUrlRelated = false;
-    let match;
+    let urlMatch;
 
     // Check if the entire matched text contains a URL
     if (urlRegex.test(p1)) {
       isUrlRelated = true;
     } else {
       // Check if the underscore is part of a URL in the larger context
-      while ((match = urlRegex.exec(string)) !== null) {
-        if (offset >= match.index && offset < match.index + match[0].length) {
+      while ((urlMatch = urlRegex.exec(string)) !== null) {
+        if (offset >= urlMatch.index && offset < urlMatch.index + urlMatch[0].length) {
           isUrlRelated = true;
           break;
         }
       }
     }
 
-    // If not URL-related, apply the italic transformation
-    return isUrlRelated ? `_${p1}_` : toUnicodeVariant(p1, "italic sans");
+    // If not URL-related and properly isolated, apply the italic transformation
+    return isUrlRelated ? match : toUnicodeVariant(p1, "italic sans");
   });
 
   text = text.replace(/- \[x\] (.*?)\n/g, (_, p1) => {

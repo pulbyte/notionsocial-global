@@ -70,6 +70,9 @@ function convertHtmlToNotionApiRichText(html: string) {
         richTextItems.push(
           createRichTextItem(element.textContent || "", isBold, isItalic, href)
         );
+      } else if (element.classList.contains("notion-emoji")) {
+        const emoji = element.getAttribute("alt") || "";
+        richTextItems.push(createRichTextItem(emoji, false, false));
       } else {
         richTextItems.push(createRichTextItem(element.textContent || "", isBold, isItalic));
       }
