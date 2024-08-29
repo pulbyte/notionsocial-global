@@ -130,8 +130,6 @@ export function getNotionPageConfig(
     imageUserTags: [],
     collaboratorTags: [],
     locationTag: null,
-    smAccIds: [],
-    smAccPlatforms: [],
     smAccs: [],
     rules: {},
     filesToDownload: [],
@@ -184,7 +182,7 @@ export function getNotionPageConfig(
   __.locationTag = locationTagsProp?.select?.name;
 
   const smAccs = getSelectedSocialAccounts(smAccsProp, notionDatabaseData, postRecord);
-  Object.assign(__, smAccs);
+  __.smAccs = smAccs;
 
   // ? Post Rules
   const ruleMap = notionDatabaseData?.["rules"];
@@ -195,9 +193,10 @@ export function getNotionPageConfig(
       __.rules[ruleCode] = filterResult;
     });
   }
-  const toDownload = isAnyValueInArray(binaryUploadSocialPlatforms, smAccs.smAccPlatforms);
-  const hasPinterest = smAccs.smAccPlatforms?.includes("pinterest");
-  const hasFacebook = smAccs.smAccPlatforms?.includes("facebook");
+  const smAccPlatforms = smAccs.map((acc) => acc.platform);
+  const toDownload = isAnyValueInArray(binaryUploadSocialPlatforms, smAccPlatforms);
+  const hasPinterest = smAccPlatforms?.includes("pinterest");
+  const hasFacebook = smAccPlatforms?.includes("facebook");
   __.filesToDownload = toDownload
     ? ["video", "image", "doc"]
     : hasPinterest
@@ -254,9 +253,10 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
   });
 }
 
-export function examinePostConfig(queueEta: number, config?: NotionPagePostConfig) {
+export function examinePostConfig(queueEta?: number, config?: NotionPagePostConfig) {
   const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
   if (dev) console.log("allowdStatus", allowdStatus);
+
   if (config?.schTime > queueEta) {
     return PublishError.reject("post-postponed");
   } else if (!allowdStatus.includes(config?.status)) {
@@ -271,18 +271,14 @@ function getSelectedSocialAccounts(
   postRecord?: PostRecord
 ) {
   const smAccTags: Array<string> = smAccsProp?.multi_select?.map((prop) => prop.name);
-  const smAccs = smAccTags
+  const smAccs: NotionDatabase["sm_accs"] = smAccTags
     .map((tag) => {
       return lodash.find(notionDatabaseData["sm_accs"], {tag});
     })
-    .filter((smAcc) => {
-      return smAcc != null;
-    });
-  const smAccIds = smAccs
-    .map((acc) => acc.platform_uid)
-    .filter((pid) => {
+    .filter((acc) => acc != null)
+    .filter((acc) => {
       // ? Filter out the accounts, If post has already been published in previous attempts.
-      const previousPlatformData = postRecord?.platforms?.[pid];
+      const previousPlatformData = postRecord?.platforms?.[acc.platform_uid];
 
       const hadServerError = previousPlatformData?.isServerError == true;
       const alreadyCompleted =
@@ -292,18 +288,17 @@ function getSelectedSocialAccounts(
       const toAttempt = hadServerError || !alreadyCompleted;
 
       if (!toAttempt) {
-        console.log(`Skipping `, pid, ` As it's already completed `, previousPlatformData);
+        console.log(
+          `Skipping `,
+          acc.platform_uid,
+          ` As it's already completed `,
+          previousPlatformData
+        );
       }
 
       return toAttempt;
     });
-  const smAccPlatforms = smAccs.map((acc) => acc.platform);
-
-  return {
-    smAccIds,
-    smAccs,
-    smAccPlatforms,
-  };
+  return smAccs;
 }
 export function examineNdb(data: NotionDatabase): Promise<NotionDatabase> {
   return new Promise((res, rej) => {
@@ -322,7 +317,7 @@ export function getPostConfig(
   ndbPage: NotionPage,
   ndbData: NotionDatabase,
   postRecord: PostRecord,
-  time: number,
+  time?: number,
   noExamine?: boolean
 ): Promise<NotionPagePostConfig> {
   const config = getNotionPageConfig(ndbPage, ndbData, postRecord);

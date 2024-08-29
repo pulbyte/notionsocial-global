@@ -490,9 +490,7 @@ export interface NotionPagePostConfig {
   imageUserTags: string[];
   collaboratorTags: string[];
   locationTag: string;
-  smAccIds: string[];
-  smAccPlatforms: SocialPlatformTypes[];
-  smAccs: SocialAccountData[];
+  smAccs: NotionDatabase["sm_accs"];
   filesToDownload: Array<"image" | "video" | "doc">;
   rules: {};
 }
