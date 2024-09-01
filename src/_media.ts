@@ -24,27 +24,18 @@ export function getNotionMediaRef(url: string) {
 export function packMedia(
   url: string,
   name: string,
+  type: "image" | "video" | "doc",
   mimeType: string,
   mediaRef: string,
   size?: number,
   caption?: string
 ): PublishMedia {
-  const mediaType = getMediaTypeFromMimeType(mimeType);
-  const obj = {mimeType, url, name: name, mediaRef, size, caption};
-  if (mediaType == "image") {
-    return {...obj, type: "image"};
-  } else if (mediaType == "video") {
-    return {...obj, type: "video"};
-  } else if (mediaType == "doc") {
-    return {...obj, type: "doc"};
-  } else return null;
+  return {mimeType, url, name: name, mediaRef, size, caption, type};
 }
 export function filterPublishMedia(media: PublishMedia[]) {
-  let arr = media?.filter((v) => mediaMimeTypes.includes(v.mimeType));
-  // const vidMedias = arr.filter((m) => m.type == 'video')
+  let arr = media?.filter((v) => !!v.type);
   const docMedias = arr.filter((m) => m.type == "doc");
   if (docMedias.length > 0) arr = docMedias.slice(0, 1);
-  // else if (vidMedias.length > 0) arr = vidMedias.slice(0, 1)
   else arr = arr.slice(0, 20);
   return arr;
 }
@@ -61,9 +52,15 @@ export function getMediaTypeFromMimeType(mt) {
   else if (docMimeTypes.includes(mt)) return "doc";
   else return null;
 }
-export function getMediaTypeFromContentType(ct) {
-  const mt = getMimeTypeFromContentType(ct);
-  return getMediaTypeFromMimeType(mt);
+export function getMediaTypeFromContentType(ct: string) {
+  if (!ct) return null;
+  if (ct?.includes("image")) return "image";
+  else if (ct?.includes("video")) return "video";
+  else if (ct?.includes("application")) return "doc";
+  else {
+    const mt = getMimeTypeFromContentType(ct);
+    return getMediaTypeFromMimeType(mt);
+  }
 }
 
 export const binaryUploadSocialPlatforms = ["twitter", "linkedin", "youtube", "tiktok"];
@@ -109,6 +106,7 @@ export function getMediaFromNotionFile(
           const packed = packMedia(
             notionUrl,
             name,
+            headers.mediaType,
             headers.mimeType,
             mediaRef,
             headers.contentLength,
@@ -129,6 +127,7 @@ export function getMediaFromNotionFile(
           const packed = packMedia(
             gDriveMedia.downloadUrl,
             headers.name,
+            headers.mediaType,
             headers.mimeType,
             mediaRef,
             headers.contentLength
@@ -169,7 +168,8 @@ export function getStaticMediaFromNotionFile(
 
   // Get mime type from file extension
   const mimeType = name.split(".").pop().toLowerCase();
-  return packMedia(notionUrl, name, mimeType, mediaRef, undefined, caption);
+  const mediaType = getMediaTypeFromMimeType(mimeType);
+  return packMedia(notionUrl, name, mediaType, mimeType, mediaRef, undefined, caption);
 }
 export function getStaticMediaFromNotionBlock(block): PublishMedia | null {
   const {type} = block;

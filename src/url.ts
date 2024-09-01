@@ -66,9 +66,13 @@ export function alterGDriveLink(inputURL) {
   }
 }
 
-export function getGdriveContentHeaders(
-  url
-): Promise<{contentType: string; contentLength: number; name: string; mimeType: string}> {
+export function getGdriveContentHeaders(url): Promise<{
+  contentType: string;
+  contentLength: number;
+  name: string;
+  mimeType: string;
+  mediaType?: "image" | "video" | "doc";
+}> {
   let _url: URL;
   let id;
   try {
@@ -102,7 +106,7 @@ export function getGdriveContentHeaders(
         const contentDisposition = headers["content-disposition"];
 
         const mimeType = getMediaTypeFromContentType(contentType);
-        const mediaType = getMediaTypeFromMimeType(mimeType);
+        const mediaType = getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
 
         const err = !headers || !contentType || !mediaType;
 
@@ -111,7 +115,8 @@ export function getGdriveContentHeaders(
         }
 
         const name = getFileNameFromContentDisposition(contentDisposition);
-        resolve({contentType, contentLength, name: id || name, mimeType});
+        resolve({contentType, contentLength, name: id || name, mimeType, mediaType});
+
       })
       .catch((error) => {
         console.error(`Error while fetching headers for ${url}:`, error);
@@ -119,9 +124,12 @@ export function getGdriveContentHeaders(
       });
   });
 }
-export function getUrlContentHeaders(
-  url
-): Promise<{contentType: string; contentLength: number; mimeType?: string}> {
+export function getUrlContentHeaders(url): Promise<{
+  contentType: string;
+  contentLength: number;
+  mimeType?: string;
+  mediaType?: "image" | "video" | "doc";
+}> {
   if (!url) {
     return Promise.reject(new Error("Not a valid url"));
   }
@@ -143,16 +151,15 @@ export function getUrlContentHeaders(
         const headers = res.headers;
         const contentType = headers["content-type"] || headers["Content-Type"];
         const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
-
         const mimeType = getMimeTypeFromContentType(contentType);
-        const mediaType = getMediaTypeFromMimeType(mimeType);
-
+        const mediaType =
+          getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
         const err = !headers || !contentType || !mediaType;
 
         if (err) {
-          reject(new Error(`Cannot get media type for ${url}`));
+          reject(new Error(`Cannot get media type for ${contentType}`));
         }
-        resolve({contentType, contentLength, mimeType});
+        resolve({contentType, contentLength, mimeType, mediaType});
       })
       .catch((error) => {
         console.error(`Error while fetching headers for ${url}:`, error);
