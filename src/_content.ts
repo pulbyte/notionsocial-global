@@ -3,8 +3,18 @@ import {parseNotionBlockToText} from "parser";
 import {hasText, trimAndRemoveWhitespace, trimString} from "text";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
-import {BaseTwitterPost, Content, PublishMedia, TwitterContent} from "types";
+import {BaseTwitterPost, Content, PublishMedia, Thread, TwitterContent} from "types";
 import {extractTweetIdFromUrl} from "./url";
+
+export function convertBlocksToParagraphs(
+  textArray: string[],
+  mediaArray: PublishMedia[][]
+): Thread[] {
+  return textArray.map((text, index) => ({
+    text,
+    media: mediaArray[index] || [],
+  }));
+}
 
 export function getContentFromNotionBlocksSync(blocks): Content {
   const limit = 63206;
@@ -16,12 +26,13 @@ export function getContentFromNotionBlocksSync(blocks): Content {
   });
 
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
-  const twitter = convertTextToTwitterThread(textArray, mediaArray);
-  //   const threads = convertTextToThreads(textArray, mediaArray);
+  const twitter = convertBlocksToTwitterThread(textArray, mediaArray);
+  // const threads = convertTextToThreads(textArray, mediaArray);
+  const paragraphs = convertBlocksToParagraphs(textArray, mediaArray);
 
   const content: Content = {
     text: caption,
-    paragraphs: textArray,
+    paragraphs,
     threads: [],
     twitter,
   };
@@ -92,7 +103,7 @@ export function processRawContentBlocks(
   return [caption, textArray, mediaArray];
 }
 
-export function convertTextToTwitterThread(textArray, mediaArray): TwitterContent {
+export function convertBlocksToTwitterThread(textArray, mediaArray): TwitterContent {
   let threads: TwitterContent = [];
   textArray.forEach((str, index) => {
     const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(str);
@@ -138,24 +149,24 @@ export function tweetifyString(text, maxTweetLength = 280) {
   return {tweets, quoteTweetId, replyToTweetId, retweetId};
 }
 
+export const TweetPostExtractRegex =
+  /(https:\/\/(www\.)?(twitter\.com|x\.com)\/(i\/web\/status\/|status\/|\w+\/status\/)\d+\S*)/;
+
+export function removeFirstTweetPostUrlFromText(text: string): string {
+  return text.replace(TweetPostExtractRegex, "");
+}
+
 export function extractTwitterPostFromString(text: string): BaseTwitterPost {
   if (!text) return {text: "", quoteTweetId: null, replyToTweetId: null};
 
-  const urlRegex =
-    /(https:\/\/(www\.)?(twitter\.com|x\.com)\/(i\/web\/status\/|status\/|\w+\/status\/)\d+\S*)/;
-
-  function replace(text) {
-    return text.replace(urlRegex, "");
-  }
-
-  const urlMatch = text.match(urlRegex);
+  const urlMatch = text.match(TweetPostExtractRegex);
   let quoteTweetId = null;
   let replyToTweetId = null;
   let retweetId = null;
   if (urlMatch) {
     const url = urlMatch[0];
     const tweetId = extractTweetIdFromUrl(url);
-    const noText = !hasText(trimAndRemoveWhitespace(replace(text)));
+    const noText = !hasText(trimAndRemoveWhitespace(removeFirstTweetPostUrlFromText(text)));
     // Check if there is only the url, Which mean it is a retweet
     if (noText) {
       retweetId = tweetId;
@@ -165,11 +176,11 @@ export function extractTwitterPostFromString(text: string): BaseTwitterPost {
     // Check if the URL is at the beginning of the text
     if (trimmedText.startsWith(url)) {
       replyToTweetId = tweetId;
-      text = replace(text);
+      text = removeFirstTweetPostUrlFromText(text);
     } else if (trimmedText.endsWith(url)) {
       // URL is at the end or middle, treat it as a reply
       quoteTweetId = tweetId;
-      text = replace(text).trim();
+      text = removeFirstTweetPostUrlFromText(text).trim();
     }
   }
   return {text, quoteTweetId, replyToTweetId, retweetId};
@@ -225,4 +236,65 @@ export function processStaticNotionBlock(
 ) {
   const media = getStaticMediaFromNotionBlock(block);
   return processNotionBlockCommon(rawContentArray, block, index, limit, media);
+}
+
+export function getContentFromTextProperty(string, limit = 63206): Content {
+  const text = string.substring(0, limit);
+
+  const twitter: TwitterContent = [];
+  const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(text);
+  tweets.forEach((tweet, index) => {
+    twitter.push({
+      text: tweet,
+      media: [],
+      ...((index == 0 && retweetId && {retweetId}) ||
+        (quoteTweetId && {quoteTweetId}) ||
+        (replyToTweetId && {replyToTweetId})),
+    });
+  });
+
+  let texts = threadifyString(text);
+  const threads = texts.map((text, index) => {
+    return {text, media: []};
+  });
+  return {
+    text,
+    twitter,
+    paragraphs: [text],
+    threads,
+  };
+}
+export function threadifyString(text, maxTweetLength = 500) {
+  // text = replaceLineBreaksWithEmptySpaces(text);
+  const words = text.split(" ");
+  const threads: string[] = [];
+  let currentThread = "";
+  for (const word of words) {
+    const newTweet = currentThread + " " + word;
+    if (newTweet.length > maxTweetLength) {
+      threads.push(currentThread.trim());
+      currentThread = word;
+    } else {
+      currentThread = newTweet.trim();
+    }
+  }
+  threads.push(currentThread);
+  return threads;
+}
+
+export function convertTextToThreads(textArray, mediaArray): Thread[] {
+  let __: Thread[] = [];
+  textArray.forEach((str, index) => {
+    const threads = threadifyString(str);
+    const firstThread = threads.splice(0, 1)[0];
+    __.push({text: firstThread, media: mediaArray[index]});
+    threads.forEach((t) => {
+      const trimmedString = t.trim();
+      __.push({text: trimmedString, media: []});
+    });
+  });
+  __ = __.filter((obj) => {
+    return hasText(obj.text) || obj.media?.length > 0;
+  });
+  return __;
 }

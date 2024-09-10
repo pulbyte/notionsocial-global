@@ -347,7 +347,7 @@ export interface PlatformPostPublishResult extends Partial<PlatformError> {
 
 export interface Content {
   text: string;
-  paragraphs: string[];
+  paragraphs: Thread[];
   title?: string;
   altText?: string;
   threads: Thread[];
@@ -493,4 +493,11 @@ export interface NotionPagePostConfig {
   smAccs: NotionDatabase["sm_accs"];
   filesToDownload: Array<"image" | "video" | "doc">;
   rules: {};
+}
+export interface NotionCodedTextPayload {
+  text: string;
+  color?: NotionColor;
+  br?: boolean;
+  sp?: boolean;
+  ul?: boolean;
 }

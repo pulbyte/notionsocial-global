@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -49,6 +49,7 @@
     "@notion-stuff/blocks-markdown-parser": "^6.0.0",
     "@notionhq/client": "^2.2.15",
     "@redtea/format-axios-error": "^2.1.1",
+    "@types/lodash": "^4.17.7",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^20.10.4",
     "@types/twitter-text": "^3.1.10",

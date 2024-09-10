@@ -4,7 +4,7 @@ import {NotionTitleProperty, SocialPlatformTypes} from "./types";
 import TwitterText from "twitter-text";
 import {isAxiosError} from "axios";
 const {parseTweet} = TwitterText;
-export function dashifyNotionId(input) {
+export function dashifyNotionId(input: string) {
   if (typeof input !== "string") {
     return input;
   }
@@ -32,7 +32,7 @@ export function dashifyNotionId(input) {
   return result;
 }
 
-export function matchIframe(htmlString) {
+export function matchIframe(htmlString: string) {
   const iframeRegex = /<iframe\s+src=['"](https?:\/\/[^'"]+)['"][^>]*><\/iframe>/i;
   const match = htmlString.match(iframeRegex);
   return match;
@@ -54,14 +54,14 @@ export function formatBytesIntoReadable(bytes) {
   while (n >= 1024 && ++l) n = n / 1024;
   return n.toFixed(n < 10 && l > 0 ? 1 : 0) + " " + units[l];
 }
-export function getNotionDbId(link) {
+export function getNotionDbId(link: string) {
   const arr = link.split("?")[0].split("/");
   return arr[arr.length - 1];
 }
-export function truncate(string = "", limit = 0) {
+export function truncate(string: string = "", limit: number = 0) {
   return string.substring(0, limit);
 }
-export function getNotionBlockId(pagelink) {
+export function getNotionBlockId(pagelink: string) {
   const pathArr = pagelink.split("/")[3].split("-");
   return pathArr[pathArr.length - 1];
 }
@@ -87,7 +87,11 @@ export function getSmShortName(platform: SocialPlatformTypes) {
       return String(platform).toUpperCase();
   }
 }
-export const getSmAccTag = (platform, username, accType?: "page" | "group") => {
+export const getSmAccTag = (
+  platform: SocialPlatformTypes,
+  username: string,
+  accType?: "page" | "group"
+) => {
   const toIncluePage = platform == "linkedin" && accType == "page";
   const includeGroup = platform == "facebook" && accType == "group";
   return `${getSmShortName(platform)}${toIncluePage ? "-PAGE" : ""}${
@@ -108,14 +112,14 @@ export function notionRichTextParser(
     .join(" ");
 }
 
-export function trimAndRemoveWhitespace(inputString): string {
+export function trimAndRemoveWhitespace(inputString: string): string {
   // Use a regular expression to match and remove whitespace characters
   if (!inputString) inputString = "";
   const trimmedString = inputString.replace(/\s/g, "");
 
   return trimmedString;
 }
-export function hasText(inputString) {
+export function hasText(inputString: string) {
   if (!inputString) return false;
   if (typeof inputString !== "string") inputString = String(inputString);
   // Remove leading and trailing whitespace before checking
@@ -125,7 +129,7 @@ export function hasText(inputString) {
   return /\S/.test(inputString);
 }
 
-export function splitStrIntoChunks(str, size = 280) {
+export function splitStrIntoChunks(str: string, size = 280) {
   const chunks = [];
   while (str.length > size) {
     const chunk = str.substring(0, size);
@@ -137,7 +141,7 @@ export function splitStrIntoChunks(str, size = 280) {
   }
   return chunks;
 }
-export function trimString(str): string {
+export function trimString(str: string): string {
   if (!str) return "";
   str = str.replace(/^\n+|\n+$/g, ""); // remove \n from start and end
   str = str.trim(); // trim whitespace
@@ -146,7 +150,7 @@ export function trimString(str): string {
 export const urlRegexp =
   /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?!&//=]*)/gi;
 
-export function removeAtSymbol(text) {
+export function removeAtSymbol(text: string) {
   return String(text)
     .split(" ")
     .map((str) =>
@@ -177,11 +181,11 @@ export function extractLinkedInId(urnString) {
     return null;
   }
 }
-export function hasNonJSCharacters(str) {
+export function hasNonJSCharacters(str: string) {
   const regex = /[^\x20-\x7E]/;
   return regex.test(str);
 }
-export function replaceLineBreaksWithEmptySpaces(inputString) {
+export function replaceLineBreaksWithEmptySpaces(inputString: string) {
   if (!inputString || typeof inputString != "string") return "";
   const lines = inputString.split("\n");
 
@@ -203,10 +207,10 @@ export function replaceLineBreaksWithEmptySpaces(inputString) {
 
   return result;
 }
-export function checkTextExceedsTweetCharLimit(text) {
+export function checkTextExceedsTweetCharLimit(text: string) {
   return parseTweet(text).weightedLength > 280;
 }
-export function linkedinUrn(pid, accType) {
+export function linkedinUrn(pid: string, accType: "page" | "group") {
   return accType == "page" ? `urn:li:organization:${pid}` : `urn:li:person:${pid}`;
 }
 
@@ -225,13 +229,13 @@ export function removeHyphens(inputString: string) {
   if (!inputString) return "";
   return inputString.replace(/-/g, "");
 }
-export function replaceCommasWithSpaces(inputString) {
+export function replaceCommasWithSpaces(inputString: string) {
   if (!inputString) return "";
   // Use the replace method with a regular expression to replace all commas with spaces
   return inputString.replace(/,/g, " ");
 }
 
-export function extractTags(inputString) {
+export function extractTags(inputString: string) {
   if (!inputString || typeof inputString !== "string") return [];
   // Use a regular expression to find all @tags in the input string
   const tagPattern = /@(\w+)/g;
@@ -258,7 +262,7 @@ export function concatenateTextFromArray(array: any[], propertyName: string) {
     return result;
   }, "");
 }
-export function processInstagramTags(inputArray) {
+export function processInstagramTags(inputArray: string[]) {
   if (!inputArray) return [];
   return inputArray
     .map((input) => {
@@ -285,7 +289,7 @@ export function processInstagramTags(inputArray) {
     .filter((username) => username !== null); // Filter out invalid usernames
 }
 
-export function sanitizePinterestBoardName(inputString) {
+export function sanitizePinterestBoardName(inputString: string) {
   if (!inputString || typeof inputString !== "string") return "";
   // Define a regular expression to match any prefix ending with @
   const regex = /^[^@]*@/;
@@ -293,9 +297,9 @@ export function sanitizePinterestBoardName(inputString) {
   const result = inputString.replace(regex, "");
   return result;
 }
-export function snakeCaseToCamelCase(str) {
+export function snakeCaseToCamelCase(str: string) {
   return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
 }
-export function camelCaseToSnakeCase(str) {
+export function camelCaseToSnakeCase(str: string) {
   return str.replace(/([A-Z])/g, (g) => `_${g[0].toLowerCase()}`);
 }
