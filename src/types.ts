@@ -501,3 +501,9 @@ export interface NotionCodedTextPayload {
   sp?: boolean;
   ul?: boolean;
 }
+export interface BaseLinkedInPost {
+  text: string;
+  quotePostId?: string | null;
+  replyToPostId?: string | null;
+  repostId?: string | null;
+}

@@ -3,7 +3,14 @@ import {parseNotionBlockToText} from "parser";
 import {hasText, trimAndRemoveWhitespace, trimString} from "text";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
-import {BaseTwitterPost, Content, PublishMedia, Thread, TwitterContent} from "types";
+import {
+  BaseLinkedInPost,
+  BaseTwitterPost,
+  Content,
+  PublishMedia,
+  Thread,
+  TwitterContent,
+} from "types";
 import {extractTweetIdFromUrl} from "./url";
 
 export function convertBlocksToParagraphs(
@@ -297,4 +304,45 @@ export function convertTextToThreads(textArray, mediaArray): Thread[] {
     return hasText(obj.text) || obj.media?.length > 0;
   });
   return __;
+}
+
+export const LinkedInPostExtractRegex =
+  /(https:\/\/(www\.)?linkedin\.com\/embed\/feed\/update\/(urn:li:(share|ugcPost):\d+))/;
+
+export function removeFirstLinkedInPostUrlFromText(text: string): string {
+  return text.replace(LinkedInPostExtractRegex, "");
+}
+
+export function extractLinkedInPostFromString(text: string): BaseLinkedInPost {
+  if (!text) return {text: "", quotePostId: null, replyToPostId: null, repostId: null};
+
+  const urlMatch = text.match(LinkedInPostExtractRegex);
+  let quotePostId = null;
+  let replyToPostId = null;
+  let repostId = null;
+
+  if (urlMatch) {
+    const url = urlMatch[0];
+    const postId = urlMatch[3]; // This captures the urn:li:share:XXXXXXXXXX or urn:li:ugcPost:XXXXXXXXXX part
+    const noText = !hasText(trimAndRemoveWhitespace(removeFirstLinkedInPostUrlFromText(text)));
+    if (noText) {
+      // If there's no text left, it's a repost
+      repostId = postId;
+      text = "";
+    } else {
+      // Always remove the first URL from the text
+      const trimmedText = trimAndRemoveWhitespace(text);
+      // Check if the URL was at the beginning of the original text
+      if (trimmedText.startsWith(url)) {
+        replyToPostId = postId;
+        text = removeFirstLinkedInPostUrlFromText(text);
+      } else {
+        // URL was at the end or in the middle, treat it as a quote
+        quotePostId = postId;
+        text = removeFirstLinkedInPostUrlFromText(text).trim();
+      }
+    }
+  }
+
+  return {text, quotePostId, replyToPostId, repostId};
 }
