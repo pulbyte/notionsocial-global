@@ -323,21 +323,18 @@ export function extractLinkedInPostFromString(text: string): BaseLinkedInPost {
 
   if (urlMatch) {
     const url = urlMatch[0];
-    const postId = urlMatch[3]; // This captures the urn:li:share:XXXXXXXXXX or urn:li:ugcPost:XXXXXXXXXX part
+    const postId = urlMatch[3];
     const noText = !hasText(trimAndRemoveWhitespace(removeFirstLinkedInPostUrlFromText(text)));
     if (noText) {
-      // If there's no text left, it's a repost
       repostId = postId;
       text = "";
     } else {
-      // Always remove the first URL from the text
       const trimmedText = trimAndRemoveWhitespace(text);
-      // Check if the URL was at the beginning of the original text
       if (trimmedText.startsWith(url)) {
         replyToPostId = postId;
-        text = removeFirstLinkedInPostUrlFromText(text);
+        // Remove the URL and any following newline character
+        text = text.replace(new RegExp(`${url}\\s*\\n?`), "").trim();
       } else {
-        // URL was at the end or in the middle, treat it as a quote
         quotePostId = postId;
         text = removeFirstLinkedInPostUrlFromText(text).trim();
       }
