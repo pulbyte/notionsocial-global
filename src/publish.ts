@@ -12,7 +12,6 @@ import {
 } from "./types";
 import {callFunctionsSequentiallyBreak, callNestedFunctionsSequentially} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
-import {PublishError} from "./error";
 import {
   findOptimizedMedia,
   getMediaFromNotionFiles,
@@ -30,6 +29,7 @@ import {auth} from "firebase-admin";
 import {maxMediaSize} from "./env";
 import {filterPublishMedia} from "_media";
 import {getContentFromTextProperty} from "_content";
+import {PublishError} from "PublishError";
 
 export const postPublishStages = [
   "get-ndb-data",

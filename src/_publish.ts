@@ -18,6 +18,7 @@ import {
   filterPublishMedia,
   getStaticMediaFromNotionFile,
 } from "_media";
+import {PublishError} from "./PublishError";
 
 export function getNotionPageConfig(
   notionPage: NotionPage,
@@ -170,22 +171,22 @@ export function examinePostConfig(queueEta?: number, config?: NotionPagePostConf
   const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
 
   if (config?.schTime > queueEta) {
-    return Promise.reject({error: "post-postponed"});
+    return PublishError.reject("post-postponed");
   } else if (!allowdStatus.includes(config?.status)) {
-    return Promise.reject({error: "post-cancelled"});
+    return PublishError.reject("post-cancelled");
   }
   return Promise.resolve(config);
 }
 
 export function examineNdb(data: NotionDatabase): Promise<NotionDatabase> {
   return new Promise((res, rej) => {
-    if (!data) return rej({error: "notion-database-deleted"});
+    if (!data) return rej(PublishError.create("notion-database-deleted"));
     const {state} = data;
     const disconnected = !state || !["active", "dev-active"].includes(state);
     if (data["locked"]) {
-      return rej({error: "notion-database-locked"});
+      return rej(PublishError.create("notion-database-locked"));
     } else if (disconnected) {
-      return rej({error: "notion-database-disconnected"});
+      return rej(PublishError.create("notion-database-disconnected"));
     } else res(data);
   });
 }

@@ -11,3 +11,4 @@ export * from "./env";
 export * from "./url";
 export * from "./html";
 export * from "./utils";
+export * from "./PublishError";
