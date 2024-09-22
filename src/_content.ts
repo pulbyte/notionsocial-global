@@ -246,7 +246,7 @@ export function processStaticNotionBlock(
 }
 
 export function getContentFromTextProperty(string, limit = 63206): Content {
-  const text = string.substring(0, limit);
+  const text: string = string.substring(0, limit);
 
   const twitter: TwitterContent = [];
   const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(text);
@@ -267,7 +267,7 @@ export function getContentFromTextProperty(string, limit = 63206): Content {
   return {
     text,
     twitter,
-    paragraphs: [text],
+    paragraphs: [{text, media: []}],
     threads,
   };
 }

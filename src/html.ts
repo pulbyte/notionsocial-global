@@ -111,13 +111,26 @@ function createRichTextItem(
 /* -------------------------------------------------------------------------- */
 function convertHtmlImageToNotionApiBlock(imageElement: HTMLElement): any {
   const imgElement = imageElement.querySelector("img");
-
   const captionElement = imageElement.querySelector('[data-content-editable-leaf="true"]');
 
   if (!imgElement) {
     return null;
   }
-  const imageUrl = imgElement.src;
+
+  let imageUrl = imgElement.src;
+
+  // Check if the image is still uploading (blob URL)
+  if (imageUrl.startsWith("blob:")) {
+    // If it's a blob URL, we can't use it directly
+    // Instead, we'll return a placeholder or skip this image
+    return null; // or return a placeholder object
+  }
+
+  // For Notion's internal image URLs, we need to keep the full path
+  if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
+    imageUrl = new URL(imageUrl, window.location.origin).href;
+  }
+
   const caption = captionElement
     ? convertHtmlToNotionApiRichText(captionElement.outerHTML)
     : [];
