@@ -107,10 +107,14 @@ export function processRawContentBlocks(
       return str.length > 0;
     });
   const caption = textArray.join("\n").trim();
+
   return [caption, textArray, mediaArray];
 }
 
-export function convertBlocksToTwitterThread(textArray, mediaArray): TwitterContent {
+export function convertBlocksToTwitterThread(
+  textArray: string[],
+  mediaArray: PublishMedia[][]
+): TwitterContent {
   let threads: TwitterContent = [];
   textArray.forEach((str, index) => {
     const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(str);
@@ -128,7 +132,7 @@ export function convertBlocksToTwitterThread(textArray, mediaArray): TwitterCont
     });
   });
   threads = threads.filter((obj) => {
-    return hasText(obj.text) || hasText(obj.retweetId);
+    return hasText(obj.text) || hasText(obj.retweetId) || !!obj.media?.length;
   });
   return threads;
 }
@@ -289,7 +293,10 @@ export function threadifyString(text, maxTweetLength = 500) {
   return threads;
 }
 
-export function convertTextToThreads(textArray, mediaArray): Thread[] {
+export function convertTextToThreads(
+  textArray: string[],
+  mediaArray: PublishMedia[][]
+): Thread[] {
   let __: Thread[] = [];
   textArray.forEach((str, index) => {
     const threads = threadifyString(str);

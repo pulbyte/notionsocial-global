@@ -82,7 +82,7 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
       Object.assign(__, content);
 
       // ** Caption from page title
-      if (!hasText(content.text)) {
+      if (!hasText(content.text) && !content.hasMedia) {
         const content = getContentFromTextProperty(config.titleText);
         Object.assign(__, content);
       }
