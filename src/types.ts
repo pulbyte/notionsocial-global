@@ -493,6 +493,7 @@ export interface NotionPagePostConfig {
   smAccs: NotionDatabase["sm_accs"];
   filesToDownload: Array<"image" | "video" | "doc">;
   rules: {};
+  isPostReadyToSchedule: boolean;
 }
 export interface NotionCodedTextPayload {
   text: string;

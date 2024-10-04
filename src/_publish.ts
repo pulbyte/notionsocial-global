@@ -10,7 +10,7 @@ import {
   PostRecord,
   PublishMedia,
 } from "./types";
-import {notionRichTextParser, processInstagramTags} from "text";
+import {hasText, notionRichTextParser, processInstagramTags} from "text";
 import {getDate, isAnyValueInArray} from "utils";
 import {parseNotionRule} from "./_notion";
 import {
@@ -26,6 +26,7 @@ export function getNotionPageConfig(
   postRecord?: PostRecord
 ): NotionPagePostConfig {
   const properties = notionPage["properties"];
+  const archived = notionPage["archived"];
 
   let _props: NotionPagePropertiesForPost = {
     titleProp: null,
@@ -90,6 +91,7 @@ export function getNotionPageConfig(
     smAccs: [],
     rules: {},
     filesToDownload: [],
+    isPostReadyToSchedule: false,
   };
   const {
     commentProp,
@@ -104,6 +106,7 @@ export function getNotionPageConfig(
     imageUserTagsProp,
     collaboratorTagsProp,
     titleProp,
+    nsProp,
   } = _props;
   __.nsFilter = notionDatabaseData["ns_filter"];
   if (commentProp?.type == "rich_text") {
@@ -164,6 +167,23 @@ export function getNotionPageConfig(
       ["image"]
     : [];
 
+  const nsText = notionRichTextParser(nsProp?.["rich_text"], true);
+
+  // ** Check if post is ready to be scheduled
+  const isStatusDone = __.nsFilter == __.status;
+  const isNsPropertyEmpty = !hasText(nsText);
+  const hasSelectPlatform = __.smAccs?.length > 0;
+  const isScheduledWithin30Days = __.schTime
+    ? (__.schTime - Date.now()) / (1000 * 60 * 60 * 24) <= 30
+    : true;
+
+  const isPostReadyToSchedule =
+    isStatusDone &&
+    isNsPropertyEmpty &&
+    hasSelectPlatform &&
+    isScheduledWithin30Days &&
+    !archived;
+  __.isPostReadyToSchedule = isPostReadyToSchedule;
   return __;
 }
 
