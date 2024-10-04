@@ -23,7 +23,7 @@ export function convertBlocksToParagraphs(
   }));
 }
 
-export function getContentFromNotionBlocksSync(blocks): Content {
+export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boolean} {
   const limit = 63206;
   let rawContentArray = [];
 
@@ -37,11 +37,20 @@ export function getContentFromNotionBlocksSync(blocks): Content {
   // const threads = convertTextToThreads(textArray, mediaArray);
   const paragraphs = convertBlocksToParagraphs(textArray, mediaArray);
 
-  const content: Content = {
+  mediaArray.forEach((mediaArr, index) => {
+    const ht = hasText(textArray[index]);
+    const hm = mediaArr?.length > 0;
+    if (!ht && hm) {
+      textArray[index] = "";
+    }
+  });
+
+  const content: Content & {hasMedia: boolean} = {
     text: caption,
     paragraphs,
     threads: [],
     twitter,
+    hasMedia: paragraphs.some((p) => p.media?.length > 0),
   };
 
   return content;
