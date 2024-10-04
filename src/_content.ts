@@ -33,9 +33,6 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
   });
 
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
-  const twitter = convertBlocksToTwitterThread(textArray, mediaArray);
-  // const threads = convertTextToThreads(textArray, mediaArray);
-  const paragraphs = convertBlocksToParagraphs(textArray, mediaArray);
 
   mediaArray.forEach((mediaArr, index) => {
     const ht = hasText(textArray[index]);
@@ -44,6 +41,10 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
       textArray[index] = "";
     }
   });
+
+  const paragraphs = convertBlocksToParagraphs(textArray, mediaArray);
+  const twitter = convertBlocksToTwitterThread(textArray, mediaArray);
+  // const threads = convertTextToThreads(textArray, mediaArray);
 
   const content: Content & {hasMedia: boolean} = {
     text: caption,
