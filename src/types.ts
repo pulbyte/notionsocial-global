@@ -15,6 +15,7 @@ import {
   TextRichTextItemResponse,
   TitlePropertyItemObjectResponse,
   UrlPropertyItemObjectResponse,
+  BlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
@@ -403,7 +404,8 @@ export interface UpdateNdbPayload {
 }
 export type NotionPage = GetPageResponse;
 export type NotionProperties = Record<string, NotionProperty>;
-
+export type NotionBlock = BlockObjectResponse;
+export type NotionBlockType = BlockObjectResponse["type"];
 export type NotionSelectProperty = Extract<NotionProperty, {type: "select"}>;
 export type NotionTitleProperty = Extract<NotionProperty, {type: "title"}>;
 export type NotionTextProperty = Extract<NotionProperty, {type: "rich_text"}>;

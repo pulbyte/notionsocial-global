@@ -10,6 +10,7 @@ import {
   processRawContentBlocks,
   convertBlocksToParagraphs,
 } from "_content";
+import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "env";
 import {hasText} from "text";
 
 type NotionBlocksIter = AsyncIterableIterator<
@@ -24,6 +25,7 @@ export async function getContentFromNotionBlocksAsync(
 
   let listIndex = 0;
   for await (const block of blocksIter) {
+    // if (!SUPPORTED_NOTION_CONTENT_BLOCKS?.includes(block["type"])) break;
     listIndex = await processNotionBlock(rawContentArray, block, listIndex, limit);
   }
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);

@@ -1,4 +1,4 @@
-import {extractIframeUrl, hasText, matchIframe, notionRichTextParser} from "./text";
+import {extractIframeUrl, hasText, notionRichTextParser, trimString} from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
 const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
@@ -6,37 +6,42 @@ const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
 });
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
 
-export function parseNotionBlockToText(block) {
+export function parseNotionBlockToText(block, index): [string, number] {
   let markdown = NBMPInstance.parse([block]);
+  const isListItem = block.type == "numbered_list_item";
+  const isBulletItem = block.type == "bulleted_list_item";
+  const isDivider = block.type == "divider";
+  const isEmbed = block.type == "embed";
+  const isMedia = block.type == "video" || block.type == "image";
+  const isParagraph = block.type == "paragraph";
+  const paragraph = getParagraphText(block);
 
-  const isDivider = markdown.includes("---");
-  if (isDivider) return "---";
+  if (isDivider) return ["---", index];
+  const iframeUrl = isEmbed ? extractIframeUrl(markdown) : null;
+  if (iframeUrl) return [iframeUrl, index];
 
-  if (matchIframe(markdown)) {
-    const iframeUrl = extractIframeUrl(markdown);
-    return iframeUrl;
-  }
+  if (!hasText(paragraph) || isMedia) return ["", index];
 
-  const isEmpty = isTextEmpty(block);
-  const isVideo = checkIfVideo(markdown);
-  if (isEmpty || isVideo) return "";
+  if (index && !isListItem) index = 0;
+  if (isListItem) index++;
 
   let formatted = formatMarkdown(markdown);
-  let text = markdownToTxt(formatted, {gfm: false});
 
-  return text.split("\n\n").join("\n");
+  let text = markdownToTxt(formatted, {gfm: false}).split("\n\n").join("\n");
+
+  const trimmedText = trimString(formatted);
+  if (isParagraph) text = trimmedText;
+  if (text && isListItem) text = `${index}. ${text}`;
+  if (text && isBulletItem) text = `• ${text}`;
+  return [text, index];
 }
 
-function checkIfVideo(inputString) {
-  var pattern = /To be supported: https:\/\/[^\s]+/;
-  return pattern.test(inputString);
-}
-function isTextEmpty(block) {
-  if (!block) return true;
+function getParagraphText(block) {
+  if (!block) return "";
   const richTextArray = block[block["type"]]?.["rich_text"];
-  if (!richTextArray) return true;
+  if (!richTextArray) return "";
   const richText = notionRichTextParser(richTextArray);
-  return !hasText(richText);
+  return richText;
 }
 
 export function formatMarkdown(text) {

@@ -12,6 +12,7 @@ import {
   TwitterContent,
 } from "types";
 import {extractTweetIdFromUrl} from "./url";
+import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "env";
 
 export function convertBlocksToParagraphs(
   textArray: string[],
@@ -28,9 +29,11 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
   let rawContentArray = [];
 
   let listIndex = 0;
-  blocks.forEach((block) => {
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    // if (!SUPPORTED_NOTION_CONTENT_BLOCKS?.includes(block["type"])) break;
     listIndex = processStaticNotionBlock(rawContentArray, block, listIndex, limit);
-  });
+  }
 
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
 
@@ -218,21 +221,13 @@ function processNotionBlockCommon(
     rawContentArray.push(media);
   }
 
-  const isListItem = block.type == "numbered_list_item";
-  const isBulletItem = block.type == "bulleted_list_item";
-  if (index && !isListItem) index = 0;
-
-  if (isListItem) index++;
-
-  let finalStr = parseNotionBlockToText(block);
-
-  if (finalStr && isListItem) finalStr = `${index}. ${finalStr}`;
-  if (finalStr && isBulletItem) finalStr = `• ${finalStr}`;
+  let [text, _index] = parseNotionBlockToText(block, index);
+  index = _index;
 
   const leftLimit = limit - rawContentArray.join("").length;
 
-  if (finalStr.length > leftLimit && finalStr.length < 4) return index;
-  const str = finalStr.substring(0, leftLimit);
+  if (text.length > leftLimit && text.length < 4) return index;
+  const str = text.substring(0, leftLimit);
   if (leftLimit > 0) {
     rawContentArray.push(str);
   }

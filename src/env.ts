@@ -1,4 +1,4 @@
-import {SocialPlatformTypes} from "types";
+import {NotionBlockType, SocialPlatformTypes} from "types";
 
 export const dev = getEnv("NODE_ENV", "development") == "development";
 export const prod = getEnv("NODE_ENV", "development") == "production";
@@ -46,3 +46,19 @@ export const maxMediaSize = {
     return this.MB * 1024 * 1024;
   },
 };
+export const SUPPORTED_NOTION_CONTENT_BLOCKS: NotionBlockType[] = [
+  "paragraph",
+  "video",
+  "image",
+  "divider",
+  "embed",
+  "to_do",
+  "numbered_list_item",
+  "bulleted_list_item",
+  "heading_1",
+  "heading_2",
+  "heading_3",
+  "quote",
+  "code",
+  "bookmark",
+];
