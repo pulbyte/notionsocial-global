@@ -18,6 +18,7 @@ export function parseNotionBlockToText(block, index): [string, number] {
 
   if (isDivider) return ["---", index];
   const iframeUrl = isEmbed ? extractIframeUrl(markdown) : null;
+  if (iframeUrl?.includes("widgets.notionsocial.app")) return ["", index];
   if (iframeUrl) return [iframeUrl, index];
 
   if (!hasText(paragraph) || isMedia) return ["", index];

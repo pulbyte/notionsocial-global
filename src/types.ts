@@ -92,6 +92,7 @@ export interface NotionDatabase {
     reposts?: MetricPropertyConfig;
     profile_visits?: MetricPropertyConfig;
     new_followers?: MetricPropertyConfig;
+    saves?: MetricPropertyConfig;
   };
   stat_props?: {
     likes?: string;
