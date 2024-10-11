@@ -143,17 +143,26 @@ export interface OptimizedMedia {
   optimizedLink?: string;
   size?: number;
 }
-
+export type PostType =
+  | "text"
+  | "reel"
+  | "story"
+  | "carousel"
+  | "image"
+  | "video"
+  | "document"
+  | "long-tweet"
+  | "thread"
 export interface PlatformPublishResponse extends Partial<PlatformError> {
-  isTknError?: boolean;
-  error?: any;
   response?: any;
+  postType?: PostType;
 }
 export interface PostOptionsSchema {
   "tweet-cross-limit-action": "split-thread" | "throw-error" | "long-tweet";
   image_user_tags_prop: string;
   collaborator_tags_prop: string;
   location_tag_prop: string;
+  youtube_privacy_status_prop: string;
 }
 export interface UserData {
   uid: string;
@@ -275,6 +284,7 @@ export interface PostRecord {
       response?: any;
       completed?: boolean;
       isServerError?: boolean;
+      postType?: PostType;
       first_comment: {
         error?: string;
         response?: any;
@@ -339,10 +349,9 @@ export interface User {
   plan?: PricingPlan;
 }
 
-export interface PlatformPostPublishResult extends Partial<PlatformError> {
+export interface PlatformPostPublishResult extends Partial<PlatformPublishResponse> {
   pid: string;
   tag: string;
-  response?: any;
   platform: string;
   username: string;
 }
@@ -360,7 +369,7 @@ export interface Content {
 
 export interface PlatformError {
   code: number;
-  error: string;
+  error: string | any;
   isTknError: boolean;
   ignore?: boolean;
   isServerError: boolean;
@@ -475,6 +484,7 @@ export interface NotionPagePropertiesForPost {
   imageUserTagsProp: NotionMultiSelectProperty;
   collaboratorTagsProp: NotionMultiSelectProperty;
   locationTagsProp: NotionSelectProperty;
+  youtubePrivacyStatusProp: NotionSelectProperty;
 }
 export interface NotionPagePostConfig {
   _pageId: string;
@@ -493,6 +503,7 @@ export interface NotionPagePostConfig {
   imageUserTags: string[];
   collaboratorTags: string[];
   locationTag: string;
+  youtubePrivacyStatus: "public" | "unlisted" | "private";
   smAccs: NotionDatabase["sm_accs"];
   filesToDownload: Array<"image" | "video" | "doc">;
   rules: {};

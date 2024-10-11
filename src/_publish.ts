@@ -42,6 +42,7 @@ export function getNotionPageConfig(
     imageUserTagsProp: null,
     collaboratorTagsProp: null,
     locationTagsProp: null,
+    youtubePrivacyStatusProp: null,
   };
 
   const titlePropName = Object.keys(properties).find(
@@ -71,6 +72,9 @@ export function getNotionPageConfig(
 
   _props.locationTagsProp = properties[notionDatabaseData.options?.["location_tag_prop"]];
 
+  _props.youtubePrivacyStatusProp =
+    properties[notionDatabaseData.options?.["youtube_privacy_status_prop"]];
+
   let __: NotionPagePostConfig = {
     _pageId: notionPage.id,
     _props,
@@ -88,6 +92,7 @@ export function getNotionPageConfig(
     imageUserTags: [],
     collaboratorTags: [],
     locationTag: null,
+    youtubePrivacyStatus: null,
     smAccs: [],
     rules: {},
     filesToDownload: [],
@@ -107,6 +112,7 @@ export function getNotionPageConfig(
     collaboratorTagsProp,
     titleProp,
     nsProp,
+    youtubePrivacyStatusProp,
   } = _props;
   __.nsFilter = notionDatabaseData["ns_filter"];
   if (commentProp?.type == "rich_text") {
@@ -140,6 +146,13 @@ export function getNotionPageConfig(
   )?.slice(0, 3);
 
   __.locationTag = locationTagsProp?.select?.name;
+
+  const ytPrivacyStatus = youtubePrivacyStatusProp?.select?.name?.toLowerCase();
+  __.youtubePrivacyStatus = ytPrivacyStatus?.includes("private")
+    ? "private"
+    : ytPrivacyStatus?.includes("unlisted")
+    ? "unlisted"
+    : "public";
 
   const smAccs = getSelectedSocialAccounts(smAccsProp, notionDatabaseData, postRecord);
   __.smAccs = smAccs;
