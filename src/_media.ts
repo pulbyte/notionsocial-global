@@ -90,7 +90,7 @@ export function getMediaFromNotionFile(
     const gDriveMedia = alterGDriveLink(extUrl);
 
     const notionUrl = file?.["file"]?.url;
-    const url = notionUrl || gDriveMedia?.url;
+    const url = notionUrl || gDriveMedia?.url || extUrl;
     const isBase64 = isBase64String(url);
     if (!url || isBase64) return resolve(null);
     const urlData = new URL(url);
@@ -138,10 +138,32 @@ export function getMediaFromNotionFile(
           console.info("Error while fetching headers of Google Drive file", url, e);
           resolve(null);
         });
+    } else if (extUrl) {
+      getUrlContentHeaders(extUrl)
+        .then((headers) => {
+          if (headers.contentType && headers.contentLength) {
+            const packed = packMedia(
+              extUrl,
+              headers.name,
+              headers.mediaType,
+              headers.mimeType,
+              extUrl, // Using extUrl as mediaRef for external URLs
+              headers.contentLength
+            );
+            resolve(packed);
+          } else {
+            resolve(null);
+          }
+        })
+        .catch((e) => {
+          console.info("Error while fetching headers of external URL", extUrl, e);
+          resolve(null);
+        });
     } else return resolve(null);
   });
 }
 
+// ! TODO:- Add extUrl and gdriveUrl support here
 // Common utility function
 export function getNotionFileInfo(file) {
   const notionUrl = file?.["file"]?.url;

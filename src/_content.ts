@@ -12,7 +12,6 @@ import {
   TwitterContent,
 } from "types";
 import {extractTweetIdFromUrl} from "./url";
-import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "env";
 
 export function convertBlocksToParagraphs(
   textArray: string[],
