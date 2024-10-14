@@ -29,7 +29,6 @@ export function parseNotionBlockToText(block, index): [string, number] {
   let formatted = formatMarkdown(markdown);
 
   let text = markdownToTxt(formatted, {gfm: false}).split("\n\n").join("\n");
-
   const trimmedText = trimString(formatted);
   if (isParagraph) text = trimmedText;
   if (text && isListItem) text = `${index}. ${text}`;
@@ -46,33 +45,20 @@ function getParagraphText(block) {
 }
 
 export function formatMarkdown(text) {
-  // Transform bold text
-  // Match both bold and italic
+  // Transform markdown URLs
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+    return linkText;
+  });
+
+  // Transform bold and italic text
   const boldItalicRegex = /(\*\*_|_\*\*)([^*_]+?)(\*\*_|_\*\*)/g;
-  text = text.replace(boldItalicRegex, (_, start, p1, end) => {
-    return toUnicodeVariant(p1, "bold italic sans");
+  text = text.replace(boldItalicRegex, (_, start, p1) => {
+    return applyStyleToText(p1, "bold italic sans");
   });
 
   // Transform bold text
   text = text.replace(/\*\*([^*]+?)\*\*/g, (_, p1) => {
-    // Check if p1 contains a URL
-    const urlRegex = /https?:\/\/[^\s]+/g;
-    let result = "";
-    let lastIndex = 0;
-    let match;
-
-    while ((match = urlRegex.exec(p1)) !== null) {
-      // Convert the text before the URL to bold
-      result += toUnicodeVariant(p1.slice(lastIndex, match.index), "bold sans");
-      // Add the URL as is, without converting to bold
-      result += match[0];
-      lastIndex = match.index + match[0].length;
-    }
-
-    // Convert any remaining text after the last URL to bold
-    result += toUnicodeVariant(p1.slice(lastIndex), "bold sans");
-
-    return result;
+    return applyStyleToText(p1, "bold sans");
   });
 
   // Transform italic text enclosed in underscores
@@ -81,7 +67,7 @@ export function formatMarkdown(text) {
     (match, p1, p2, p3, offset, string) => {
       // Check if it's a markdown-style link
       if (p2 && p3) {
-        return `[${toUnicodeVariant(p2.trim(), "italic sans")}]${p3}`;
+        return `[${applyStyleToText(p2.trim(), "italic sans")}]${p3}`;
       }
 
       // Check if the underscore is part of a URL or if the text contains a URL
@@ -108,7 +94,7 @@ export function formatMarkdown(text) {
       const isPartOfWord = /\w/.test(beforeChar) || /\w/.test(afterChar);
 
       // If not URL-related, not part of a word, and properly isolated, apply the italic transformation
-      return isUrlRelated || isPartOfWord ? match : toUnicodeVariant(p1.trim(), "italic sans");
+      return isUrlRelated || isPartOfWord ? match : applyStyleToText(p1.trim(), "italic sans");
     }
   );
 
@@ -121,4 +107,24 @@ export function formatMarkdown(text) {
   });
 
   return text;
+}
+
+function applyStyleToText(text, style) {
+  const urlRegex = /https?:\/\/[^\s]+/g;
+  let result = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    // Apply style to the text before the URL
+    result += toUnicodeVariant(text.slice(lastIndex, match.index), style);
+    // Add the URL as is, without applying style
+    result += match[0];
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Apply style to any remaining text after the last URL
+  result += toUnicodeVariant(text.slice(lastIndex), style);
+
+  return result;
 }
