@@ -15,7 +15,8 @@ const storage = new Storage();
 export function getPostRecord(
   pageId,
   time?: number,
-  pushId?: string
+  pushId?: string,
+  taskName?: string
 ): Promise<FirestoreDoc<PostRecord> | null> {
   if (!pageId) return;
   const col = db.collection("posts");
@@ -23,7 +24,7 @@ export function getPostRecord(
   let query = col.where("notion_page_id", "==", dashifyNotionId(pageId));
   if (pushId) query = col.where("push_id", "==", pushId);
   else if (time) query = query.where("publish_at", "==", time);
-
+  else if (taskName) query = query.where("cloudtask_name", "==", taskName);
   query = query.orderBy("scheduled_at", "desc").limit(1);
 
   return query.get().then((_) => {

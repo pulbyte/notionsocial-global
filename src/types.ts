@@ -152,7 +152,7 @@ export type PostType =
   | "video"
   | "document"
   | "long-tweet"
-  | "thread"
+  | "thread";
 export interface PlatformPublishResponse extends Partial<PlatformError> {
   response?: any;
   postType?: PostType;
@@ -276,8 +276,8 @@ export interface PostRecord {
   notion_page_id: string;
   notion_db_id: string;
   author_uid: string;
-  cloudtask_name: string;
-  platforms: {
+  cloudtask_name?: string;
+  platforms?: {
     [platform_uid: string]: {
       error?: string;
       isTknError?: boolean;
@@ -295,11 +295,12 @@ export interface PostRecord {
   publish_at?: number;
   scheduled_at: number;
   completed: boolean;
-  last_processed_at: number;
-  push_id: string;
+  last_processed_at?: number;
+  push_id?: string;
+  processing?: boolean;
   success_platforms?: string[];
-  status: "success" | "error" | "partial_error";
-  optimized_media: SocialPostOptimizedMedia[];
+  status?: "success" | "error" | "partial_error";
+  optimized_media?: SocialPostOptimizedMedia[];
 }
 
 export type STRIPE_SUB_STATUS =

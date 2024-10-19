@@ -200,10 +200,10 @@ export function getNotionPageConfig(
   return __;
 }
 
-export function examinePostConfig(queueEta?: number, config?: NotionPagePostConfig) {
+export function examinePostConfig(taskTime?: number, config?: NotionPagePostConfig) {
   const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
 
-  if (config?.schTime > queueEta) {
+  if (config?.schTime > taskTime) {
     return PublishError.reject("post-postponed");
   } else if (!allowdStatus.includes(config?.status)) {
     return PublishError.reject("post-cancelled");
@@ -228,12 +228,12 @@ export function getPostConfig(
   ndbPage: NotionPage,
   ndbData: NotionDatabase,
   postRecord: PostRecord,
-  time?: number,
+  taskTime?: number,
   noExamine?: boolean
 ): Promise<NotionPagePostConfig> {
   const config = getNotionPageConfig(ndbPage, ndbData, postRecord);
   if (noExamine) return Promise.resolve(config);
-  else return examinePostConfig(time, config);
+  else return examinePostConfig(taskTime, config);
 }
 
 function getSelectedSocialAccounts(

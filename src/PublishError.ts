@@ -14,6 +14,7 @@ export const publishErrorCodes = [
   "post-postponed",
   "post-cancelled",
   "server-error",
+  "task-processing",
 ] as const;
 
 export type PublishErrorCode = (typeof publishErrorCodes)[number];

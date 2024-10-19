@@ -26,7 +26,11 @@ type PublishFunctionError = Error | PublishError | AxiosError | NotionClientErro
 export function catchPublishError(
   e: PublishFunctionError,
   stage: PostPublishStage,
-  messageUpdateCallback: (message: string | null, code: PublishErrorCode) => Promise<any>
+  notionMessageUpdateCallback: (
+    message: string | null,
+    code: PublishErrorCode
+  ) => Promise<any>,
+  postRecordUpdateCallback: (updates: object) => Promise<any>
 ) {
   PublishError.log(e);
   const {
@@ -40,17 +44,33 @@ export function catchPublishError(
     code,
   } = decodePublishError(e, stage);
 
-  // If a server error occurs during publishing, return error, so that it can be retried
-  if (isServerError) {
-    console.info("⨂ rejecting as server error disrupted publishing ⨂");
-    return Promise.reject(e);
-  }
+  const isTaskProcessing = code == "task-processing";
 
-  const canUpdateNsProp =
-    !isNotionDatabaseDeleted && !isNotionDatabaseDisconnected && !isNotionPageDeleted;
-  const toClearNsProp = isCancelled || isPostPoned;
-  if (canUpdateNsProp) return messageUpdateCallback(toClearNsProp ? null : message, code);
-  else return Promise.resolve(message);
+  const updateProcessingPromise = isTaskProcessing
+    ? Promise.resolve()
+    : postRecordUpdateCallback({processing: false});
+
+  return updateProcessingPromise.finally(() => {
+    // If a server error occurs during publishing, return error, so that it can be retried
+    if (isServerError) {
+      console.info("⨂ rejecting as server error disrupted publishing ⨂");
+      return Promise.reject(e);
+    } else if (isTaskProcessing) {
+      console.info("⨂ rejecting as the task processing is in progress ⨂");
+      return Promise.reject(e);
+    }
+
+    const canUpdateNsProp =
+    
+      !isNotionDatabaseDeleted && !isNotionDatabaseDisconnected && !isNotionPageDeleted;
+    const toClearNsProp = isCancelled || isPostPoned;
+
+    if (canUpdateNsProp) {
+      return notionMessageUpdateCallback(toClearNsProp ? null : message, code);
+    } else {
+      return Promise.resolve(message);
+    }
+  });
 }
 
 export function decodePublishError(e: PublishFunctionError, stage: PostPublishStage) {
