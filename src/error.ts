@@ -50,7 +50,7 @@ export function catchPublishError(
     ? Promise.resolve()
     : postRecordUpdateCallback({processing: false});
 
-  return updateProcessingPromise.finally(() => {
+  return updateProcessingPromise?.finally(() => {
     // If a server error occurs during publishing, return error, so that it can be retried
     if (isServerError) {
       console.info("⨂ rejecting as server error disrupted publishing ⨂");
@@ -61,7 +61,6 @@ export function catchPublishError(
     }
 
     const canUpdateNsProp =
-    
       !isNotionDatabaseDeleted && !isNotionDatabaseDisconnected && !isNotionPageDeleted;
     const toClearNsProp = isCancelled || isPostPoned;
 

@@ -1,36 +1,39 @@
-import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "env";
-import {ArrayElement, NotionFiles, PublishMedia} from "types";
+import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "./env";
+import {ArrayElement, NotionFiles, PublishMedia} from "./types";
 import * as mime from "@alshdavid/mime-types";
-import {notionRichTextParser} from "text";
+import {notionRichTextParser} from "./text";
 import {
   getUrlContentHeaders,
   getGdriveContentHeaders,
   isBase64String,
   alterGDriveLink,
 } from "./url";
-const NotionMediaRefSpliiter = "%$";
 
-export function getNotionMediaRef(url: string) {
-  if (!url || typeof url != "string") return url;
+export function getMediaRef(url: string) {
+  if (!url || typeof url != "string") return null;
   try {
-    const parsedUrl = new URL(url);
+    const parsedUrl = new URL(decodeURIComponent(url));
+
     const path = parsedUrl.pathname;
-    return path.split("/").slice(1, 4).join(NotionMediaRefSpliiter);
+    console.log(parsedUrl, path);
+
+    const pathParts = path.split("/");
+    return pathParts.slice(-3).filter(Boolean).join("_");
   } catch (error) {
-    console.log("getNotionMediaRef error:", error);
     return null;
   }
 }
+
 export function packMedia(
   url: string,
   name: string,
   type: "image" | "video" | "doc",
   mimeType: string,
-  mediaRef: string,
+  refId: string,
   size?: number,
   caption?: string
 ): PublishMedia {
-  return {mimeType, url, name: name, mediaRef, size, caption, type};
+  return {mimeType, url, name: name, refId, size, caption, type};
 }
 export function filterPublishMedia(media: PublishMedia[]) {
   let arr = media?.filter((v) => !!v.type);
@@ -99,7 +102,7 @@ export function getMediaFromNotionFile(
     if (notionUrl) {
       const _pathSplit = urlData.pathname.split("/");
       const name = file?.name || _pathSplit[_pathSplit.length - 1];
-      const mediaRef = getNotionMediaRef(notionUrl);
+      const mediaRef = getMediaRef(notionUrl);
       const caption = notionRichTextParser(file?.["caption"]);
       getUrlContentHeaders(notionUrl)
         .then((headers) => {
@@ -173,7 +176,7 @@ export function getNotionFileInfo(file) {
   const imgName = decodeURIComponent(pathname.slice(7));
 
   const name = file?.name || imgName.split("/").pop();
-  const mediaRef = getNotionMediaRef(notionUrl);
+  const mediaRef = getMediaRef(notionUrl);
   const caption = notionRichTextParser(file?.["caption"]);
 
   return {notionUrl, name, mediaRef, caption};

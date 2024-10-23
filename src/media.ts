@@ -2,23 +2,21 @@ import _ from "lodash";
 import {callFunctionsSequentially} from "./utils";
 import {
   NotionFiles,
-  OptimizedMedia,
-  PostRecord,
+  TransformedMedia,
+  ProcessedPostRecord,
   PublishMedia,
   PublishMediaBuffer,
-  SocialPostOptimizedMedia,
-  SocialPostOptimizedMediaSrc,
+  OptimizedPublishMedia,
 } from "./types";
 
 import {getCloudBucketFile} from "./data";
 import {formatBytesIntoReadable} from "./text";
-import {maxMediaSize} from "./env";
-import axios from "axios";
 import {
   getMediaFromNotionFile,
   getMediaTypeFromMimeType,
   getMimeTypeFromContentType,
 } from "_media";
+import {downloadFromUrl} from "file";
 
 export const getMediaFromNotionFiles = (files: NotionFiles): Promise<PublishMedia[]> => {
   if (!files || files.length <= 0) {
@@ -39,36 +37,15 @@ export const getMediaFromNotionFiles = (files: NotionFiles): Promise<PublishMedi
   }
 };
 
-export function findOptimizedMedia(
+export function getMediaTransformations(
   file: PublishMedia,
-  postRecord?: PostRecord
-): OptimizedMedia & {mimeType: string; size: number} {
-  if (!postRecord) return null;
-  const optzed: SocialPostOptimizedMedia = _.find(postRecord?.optimized_media, {
-    mediaRef: file.mediaRef,
+  postProcessedRecord?: ProcessedPostRecord
+): TransformedMedia[] {
+  if (!postProcessedRecord) return null;
+  const optzed = _.find(postProcessedRecord?.media, {
+    ref_id: file.refId,
   });
-  if (!optzed) return null;
-  const lossySrc: SocialPostOptimizedMediaSrc = _.find(optzed?.src, {
-    optimization: "lossy-compression",
-  });
-  const losslessSrc: SocialPostOptimizedMediaSrc = _.find(optzed?.src, {
-    optimization: "lossless-compression",
-  });
-  const optzdSrc = lossySrc || losslessSrc;
-  if (!optzdSrc) return null;
-  const mediaRef = optzed.mediaRef || optzdSrc.bucketFile;
-  if (optzed && optzdSrc) {
-    return {
-      mediaRef,
-      size: optzdSrc.size,
-      mimeType: optzed.mimeType,
-      optimizedLink: `https://storage.googleapis.com/optimized-post-media/${mediaRef}/${
-        lossySrc ? "lossy" : "lossless"
-      }-compression`,
-      optimization: optzdSrc.optimization,
-      optimizedSize: optzdSrc.size,
-    };
-  } else return null;
+  return optzed?.transformations;
 }
 
 export function getMediaBuffer(media: PublishMedia) {
@@ -79,67 +56,43 @@ export function getMediaBuffer(media: PublishMedia) {
   const name = media.name || pathname;
   console.info("+ Downloading a media file: ", media);
 
-  return downloadFile(media.url, name);
+  return downloadFromUrl(media.url, name);
 }
-export async function downloadFile(url, name) {
-  if (!url || typeof url !== "string") {
-    throw new Error("Invalid File URL provided");
-  }
 
-  const start = Date.now();
-  try {
-    const response = await axios({
-      method: "get",
-      url: url,
-      responseType: "arraybuffer",
-      timeout: 15 * 60 * 1000, // 15 minutes
-      maxContentLength: maxMediaSize.bytes, // 100 MB max file size
-    });
+export async function getOptimizedMedia(media: PublishMedia): Promise<OptimizedPublishMedia> {
+  const transformations = await Promise.all(
+    media.transformations.map(async (asset) => {
+      let buffer: Buffer;
+      let url: string;
+      const {src, metadata} = asset;
 
-    const buffer = Buffer.from(response.data);
-    const size = buffer.length;
-
-    const duration = (Date.now() - start) / 1000;
-    const speedMBps = size / duration / (1024 * 1024);
-
-    console.info(
-      `✓ Downloaded ${name}; Size: ${formatBytesIntoReadable(
-        size
-      )}, Speed: ${`${speedMBps.toFixed(2)} Mb/s`}, Time: ${`${duration.toFixed(2)} seconds`}`
-    );
-
-    return {
-      size,
-      buffer,
-      contentType: response.headers["content-type"],
-      name,
-    };
-  } catch (error) {
-    console.log("Error while downloading file", error);
-    throw error;
-  }
-}
-export async function getOptimizedMedia(
-  mediaRef,
-  size,
-  mimeType
-): Promise<PublishMediaBuffer> {
-  const fileName = `${mediaRef}/lossy-compression`;
-  const file = getCloudBucketFile("optimized-post-media", fileName);
-
-  return file.download().then(([buffer]) => {
-    console.log(
-      `✓ Downloaded optimized media, Size: ${formatBytesIntoReadable(size)}`,
-      fileName
-    );
-    return {
-      buffer,
-      mimeType,
-      type: getMediaTypeFromMimeType(mimeType),
-      size,
-      url: file.publicUrl(),
-    };
-  });
+      switch (src.type) {
+        case "bucket": {
+          const file = getCloudBucketFile("optimized-post-media", src.path);
+          buffer = await file.download()[0];
+          url = file.publicUrl();
+          console.log(
+            `✓ Downloaded optimized media, Size: ${formatBytesIntoReadable(metadata.size)}`,
+            src.path
+          );
+          break;
+        }
+        case "url": {
+          ({buffer} = await downloadFromUrl(src.url));
+          url = src.url;
+          break;
+        }
+      }
+      return {
+        ...asset,
+        src: {buffer, url},
+      };
+    })
+  );
+  return {
+    ...media,
+    transformations,
+  };
 }
 
 export async function getMediaFile(media: PublishMedia): Promise<PublishMediaBuffer> {

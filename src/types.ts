@@ -48,14 +48,22 @@ interface MediaFile {
   name?: string;
   mimeType: string;
   type: "video" | "image" | "doc";
-}
-export interface NotionMediaFile extends MediaFile {
+  size?: number;
   url: string;
   caption?: string;
+  refId: string;
+  transformations?: MediaTransformation[];
 }
-export interface PublishMedia extends NotionMediaFile, OptimizedMedia {}
+export interface OptimizedPublishMedia extends Omit<PublishMedia, "transformations"> {
+  transformations: (Omit<TransformedMedia, "src"> & {
+    src: {
+      buffer: Buffer;
+      url: string;
+    };
+  })[];
+}
 
-export interface PublishMediaBuffer extends NotionMediaFile {
+export interface PublishMediaBuffer extends Partial<OptimizedPublishMedia> {
   buffer: Buffer;
   contentType?: string;
   size: number;
@@ -69,6 +77,21 @@ export interface MetricPropertyConfig {
     platform: SocialPlatformTypes;
   }[];
   method: "aggregate" | "separate";
+}
+export interface ProcessedPostMediaRecord {
+  ref_id: string;
+  transformations: Array<{
+    compression: MediaCompression;
+    orientation: MediaOrientation;
+    metadata: MediaMetadata;
+    src: TransformedMediaSrc;
+  }>;
+}
+export interface ProcessedPostRecord {
+  notion_page_id: string;
+  post_id: string;
+  last_processed_at: number;
+  media: ProcessedPostMediaRecord[];
 }
 export interface NotionDatabase {
   uid: string;
@@ -150,7 +173,28 @@ export interface OptimizedMedia {
   optimizedSize?: number;
   optimizedLink?: string;
   size?: number;
+  height: number;
+  width: number;
 }
+export interface TransformedMedia {
+  compression: MediaCompression;
+  orientation: MediaOrientation;
+}
+export interface MediaTransformation extends TransformedMedia {
+  metadata: MediaMetadata;
+  src: TransformedMediaSrc;
+}
+
+export type TransformedMediaSrc =
+  | {
+      type: "bucket";
+      path: string;
+    }
+  | {
+      type: "url";
+      url: string;
+    };
+
 export type PostType =
   | "text"
   | "reel"
@@ -329,7 +373,6 @@ export interface PostRecord {
   processing?: boolean;
   success_platforms?: string[];
   status?: "success" | "error" | "partial_error";
-  optimized_media?: SocialPostOptimizedMedia[];
 }
 
 export type STRIPE_SUB_STATUS =

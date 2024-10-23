@@ -10,8 +10,8 @@ import {
 import {APIErrorCode, ClientErrorCode, isNotionClientError} from "@notionhq/client";
 import {ignorePromiseError, retryOnCondition} from "./utils";
 import {dev} from "./env";
-import {createCodedRichText} from "_notion";
-import {NotionCodedTextPayload} from "types";
+import {createCodedRichText} from "./_notion";
+import {NotionCodedTextPayload} from "./types";
 
 function retry<T>(func) {
   return retryOnCondition<T>(func, isNotionServerError, notionServerErrorMessage);

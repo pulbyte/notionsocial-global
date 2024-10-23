@@ -303,3 +303,8 @@ export function safeStringify(obj, maxLength = 50) {
     2
   );
 }
+export function mapFulfilled<T>(results: PromiseSettledResult<T>[]) {
+  return results
+    .filter((result) => result.status == "fulfilled")
+    .map((result) => result.value);
+}

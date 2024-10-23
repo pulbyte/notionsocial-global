@@ -3,7 +3,7 @@ import {
   getMediaTypeFromContentType,
   getMediaTypeFromMimeType,
   getMimeTypeFromContentType,
-} from "_media";
+} from "./_media";
 
 export function extractTweetIdFromUrl(url) {
   if (!url) return null;

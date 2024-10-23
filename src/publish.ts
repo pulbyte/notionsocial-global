@@ -6,7 +6,7 @@ import {
   FormattingOptions,
   NotionFiles,
   NotionPagePostConfig,
-  PostRecord,
+  ProcessedPostRecord,
   PublishMedia,
   PublishMediaBuffer,
   User,
@@ -15,7 +15,7 @@ import {
 import {callFunctionsSequentiallyBreak, callNestedFunctionsSequentially} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
 import {
-  findOptimizedMedia,
+  getMediaTransformations,
   getMediaFromNotionFiles,
   getMediaFile,
   getOptimizedMedia,
@@ -29,9 +29,9 @@ import {
 } from "./pricing";
 import {auth} from "firebase-admin";
 import {maxMediaSize} from "./env";
-import {filterPublishMedia} from "_media";
-import {getContentFromTextProperty} from "_content";
-import {PublishError} from "PublishError";
+import {filterPublishMedia} from "./_media";
+import {getContentFromTextProperty} from "./_content";
+import {PublishError} from "./PublishError";
 
 export const postPublishStages = [
   "get-ndb-data",
@@ -102,7 +102,7 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
 
 export function getPropertyMedia(
   files: NotionFiles,
-  postRecord: PostRecord
+  processedPostRecord?: ProcessedPostRecord
 ): Promise<PublishMedia[]> {
   let __ = [];
 
@@ -112,13 +112,9 @@ export function getPropertyMedia(
         if (media) {
           __ = filterPublishMedia(media);
           __.forEach((file, index) => {
-            const optzedMedia = findOptimizedMedia(file, postRecord);
-            if (optzedMedia) {
-              __[index].originalLink = __[index].url;
-              __[index].url = optzedMedia.optimizedLink;
-              __[index].optimization = optzedMedia.optimization;
-              __[index].optimizedSize = optzedMedia.optimizedSize;
-              console.log("Overwriten media url to optimized one: ", __[index]);
+            const transformations = getMediaTransformations(file, processedPostRecord);
+            if (transformations) {
+              Object.assign(__[index], {transformations});
             }
           });
         }
@@ -151,22 +147,17 @@ export async function processMedia(
     file: PublishMedia,
     fallback: boolean = false
   ): Promise<PublishMediaBuffer> {
-    if (file.optimization && !fallback) {
+    if (file.transformations && !fallback) {
       try {
-        const result = await getOptimizedMedia(
-          file.mediaRef,
-          file.optimizedSize,
-          file.mimeType
-        );
+        const result = await getOptimizedMedia(file);
         console.log("Optimized media -->", result);
-        return createMediaObject(file, {...result, url: file.url});
+        return createMediaObject(file, result);
       } catch (error) {
-        console.log("Error in getting optimized media", error);
+        console.log("Error in getting Optimized media", error);
         return await fetchMedia(file, true);
       }
     }
 
-    file.url = file.originalLink || file.url;
     return getMediaFile(file).then((result) => createMediaObject(file, result));
   }
 

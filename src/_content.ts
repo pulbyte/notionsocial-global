@@ -1,6 +1,6 @@
-import {getMediaFromNotionBlock, getStaticMediaFromNotionBlock} from "_media";
-import {parseNotionBlockToText} from "parser";
-import {hasText, trimAndRemoveWhitespace, trimString} from "text";
+import {getMediaFromNotionBlock, getStaticMediaFromNotionBlock} from "./_media";
+import {parseNotionBlockToText} from "./parser";
+import {hasText, trimAndRemoveWhitespace, trimString} from "./text";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
 import {

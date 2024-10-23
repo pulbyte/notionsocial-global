@@ -1,4 +1,4 @@
-import {NotionBlockType, SocialPlatformTypes} from "types";
+import {NotionBlockType, SocialPlatformTypes} from "./types";
 
 export const dev = getEnv("NODE_ENV", "development") == "development";
 export const prod = getEnv("NODE_ENV", "development") == "production";

@@ -12,14 +12,14 @@ import {
   User,
   UserData,
 } from "./types";
-import {hasText, notionRichTextParser, processInstagramTags} from "text";
-import {getDate, isAnyValueInArray} from "utils";
+import {hasText, notionRichTextParser, processInstagramTags} from "./text";
+import {getDate, isAnyValueInArray} from "./utils";
 import {parseNotionRule} from "./_notion";
 import {
   binaryUploadSocialPlatforms,
   filterPublishMedia,
   getStaticMediaFromNotionFile,
-} from "_media";
+} from "./_media";
 import {PublishError} from "./PublishError";
 
 export function getNotionPageConfig(
