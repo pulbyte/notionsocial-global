@@ -7,6 +7,7 @@ import {
   BaseLinkedInPost,
   BaseTwitterPost,
   Content,
+  FormattingOptions,
   PublishMedia,
   Thread,
   TwitterContent,
@@ -30,8 +31,17 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
   let listIndex = 0;
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i];
+    const nextBlock = blocks[i + 1];
     // if (!SUPPORTED_NOTION_CONTENT_BLOCKS?.includes(block["type"])) break;
-    listIndex = processStaticNotionBlock(rawContentArray, block, listIndex, limit);
+    const [_listIndex, _limitLeft] = processStaticNotionBlock(
+      rawContentArray,
+      block,
+      nextBlock,
+      listIndex,
+      limit
+    );
+    listIndex = _listIndex;
+    if (!_limitLeft) break;
   }
 
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
@@ -210,47 +220,69 @@ export function extractTwitterPostFromString(text: string): BaseTwitterPost {
 }
 
 function processNotionBlockCommon(
-  rawContentArray,
+  rawContentArray: any[],
   block,
+  nextBlock,
   index: number,
   limit = 63206,
-  media: PublishMedia | null
-) {
+  media: PublishMedia | null,
+  options?: FormattingOptions
+): [number, number] {
   if (media) {
     rawContentArray.push(media);
   }
 
-  let [text, _index] = parseNotionBlockToText(block, index);
+  let [text, _index] = parseNotionBlockToText(block, nextBlock, index, options);
   index = _index;
 
   const leftLimit = limit - rawContentArray.join("").length;
 
-  if (text.length > leftLimit && text.length < 4) return index;
+  if (text.length > leftLimit && text.length < 4) return [index, leftLimit];
   const str = text.substring(0, leftLimit);
   if (leftLimit > 0) {
     rawContentArray.push(str);
   }
-  return index;
+  return [index, leftLimit];
 }
 
 export async function processNotionBlock(
-  rawContentArray,
+  rawContentArray: any[],
   block,
-  index: number,
-  limit = 63206
+  nextBlock,
+  listIndex: number,
+  limit = 63206,
+  options?: FormattingOptions
 ) {
   const media = await getMediaFromNotionBlock(block);
-  return processNotionBlockCommon(rawContentArray, block, index, limit, media);
+  return processNotionBlockCommon(
+    rawContentArray,
+    block,
+    nextBlock,
+    listIndex,
+    limit,
+    media,
+    options
+  );
 }
 
 export function processStaticNotionBlock(
-  rawContentArray,
+  rawContentArray: any[],
   block,
-  index: number,
-  limit = 63206
+  nextBlock,
+  listIndex: number,
+  limit = 63206,
+  options?: FormattingOptions
 ) {
   const media = getStaticMediaFromNotionBlock(block);
-  return processNotionBlockCommon(rawContentArray, block, index, limit, media);
+  return processNotionBlockCommon(
+    rawContentArray,
+    block,
+    nextBlock,
+    listIndex,
+    limit,
+    media,
+    options
+  );
 }
 
 export function getContentFromTextProperty(string, limit = 63206): Content {

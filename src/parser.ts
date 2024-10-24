@@ -5,8 +5,14 @@ const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
   emptyParagraphToNonBreakingSpace: false,
 });
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
+import {FormattingOptions} from "types";
 
-export function parseNotionBlockToText(block, index): [string, number] {
+export function parseNotionBlockToText(
+  block,
+  nextBlock,
+  index,
+  options?: FormattingOptions
+): [string, number] {
   let markdown = NBMPInstance.parse([block]);
   const isListItem = block.type == "numbered_list_item";
   const isBulletItem = block.type == "bulleted_list_item";
@@ -15,6 +21,10 @@ export function parseNotionBlockToText(block, index): [string, number] {
   const isMedia = block.type == "video" || block.type == "image";
   const isParagraph = block.type == "paragraph";
   const paragraph = getParagraphText(block);
+
+  const isNextBlockParagraph = nextBlock?.type == "paragraph";
+  const nextParagraph = getParagraphText(nextBlock);
+  const isNextParagraphEmpty = isNextBlockParagraph && !hasText(trimString(nextParagraph));
 
   if (isDivider) return ["---", index];
   const iframeUrl = isEmbed ? extractIframeUrl(markdown) : null;
@@ -30,7 +40,10 @@ export function parseNotionBlockToText(block, index): [string, number] {
 
   let text = markdownToTxt(formatted, {gfm: false}).split("\n\n").join("\n");
   const trimmedText = trimString(formatted);
-  if (isParagraph) text = trimmedText;
+  if (isParagraph) {
+    text = trimmedText;
+    if (options?.addLineBreakOnParagraphBlock && !isNextParagraphEmpty) text = text + "\n";
+  }
   if (text && isListItem) text = `${index}. ${text}`;
   if (text && isBulletItem) text = `• ${text}`;
   return [text, index];

@@ -8,7 +8,14 @@ export let db: Firestore = getFirestore(app);
 db.settings({ignoreUndefinedProperties: true});
 
 import {dashifyNotionId, removeHyphens} from "./text";
-import {FirestoreDoc, NotionDatabase, PostRecord, SocialAccountData, User} from "./types";
+import {
+  FirestoreDoc,
+  NotionDatabase,
+  PostRecord,
+  SocialAccountData,
+  User,
+  UserData,
+} from "./types";
 import {Storage} from "@google-cloud/storage";
 const storage = new Storage();
 
@@ -58,13 +65,13 @@ export function getUserPostCount(authorUid) {
     .get()
     .then((doc) => doc?.data()?.count);
 }
-export function getUserDoc(id): Promise<FirestoreDoc<User>> {
+export function getUserDoc(id): Promise<FirestoreDoc<UserData>> {
   return new Promise((resolve, reject) => {
     if (!id) reject("No user id provided");
     const ref = db.doc(`/users/${id}`);
 
     ref.get().then((doc) => {
-      if (doc?.exists) resolve({data: doc.data() as User, ref: doc.ref});
+      if (doc?.exists) resolve({data: doc.data() as UserData, ref: doc.ref});
       else reject("User does not exist");
     });
   });

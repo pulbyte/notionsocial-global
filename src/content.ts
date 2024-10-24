@@ -1,4 +1,4 @@
-import {Content} from "./types";
+import {Content, FormattingOptions} from "./types";
 import {
   BlockObjectResponse,
   PartialBlockObjectResponse,
@@ -12,22 +12,67 @@ import {
 } from "_content";
 import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "env";
 import {hasText} from "text";
+import {callFunctionsSequentially} from "utils";
 
-type NotionBlocksIter = AsyncIterableIterator<
-  PartialBlockObjectResponse | BlockObjectResponse
->;
+type Block = PartialBlockObjectResponse | BlockObjectResponse;
+type NotionBlocksIter = AsyncIterableIterator<Block>;
 
 export async function getContentFromNotionBlocksAsync(
-  blocksIter: NotionBlocksIter
+  blocksIter: NotionBlocksIter,
+  options?: FormattingOptions
 ): Promise<Content & {hasMedia: boolean}> {
-  const limit = 63206;
+  const limit = 10000;
   let rawContentArray = [];
 
+  // Needed for list-item blocks
   let listIndex = 0;
-  for await (const block of blocksIter) {
-    // if (!SUPPORTED_NOTION_CONTENT_BLOCKS?.includes(block["type"])) break;
-    listIndex = await processNotionBlock(rawContentArray, block, listIndex, limit);
+  // hard copy the limit
+
+  let limitLeft = limit;
+
+  // We will first push the blocks to a batch of 3 and then process them
+  let batch: Block[] = [];
+
+  async function blockProcess(_batch: Block[], currentBlock: Block, index: number) {
+    const nextBlock = index < _batch.length - 1 ? _batch[index + 1] : null;
+    return processNotionBlock(
+      rawContentArray,
+      currentBlock,
+      nextBlock,
+      listIndex,
+      limit,
+      options
+    );
   }
+
+  async function batchProcess(_: Block[]) {
+    // process the batch
+    return callFunctionsSequentially(
+      _.map(
+        (block, index) => () =>
+          blockProcess(_, block, index).then(([_listIndex, _limitLeft]) => {
+            listIndex = _listIndex;
+            limitLeft = _limitLeft;
+            return _listIndex;
+          })
+      )
+    ).finally(() => {
+      // reset the batcher-batch
+      batch = [];
+    });
+  }
+
+  for await (const block of blocksIter) {
+    // cancel if limitLeft is 0
+    if (!limitLeft) break;
+    // batch-batching
+    batch.push(block);
+    // processing the batch
+    if (batch.length === 25) await batchProcess(batch);
+  }
+  // After the async loop batch-batcher is done, process any remaining blocks in the batch
+  if (batch.length > 0) await batchProcess(batch);
+
   const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
 
   mediaArray.forEach((mediaArr, index) => {

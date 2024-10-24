@@ -40,6 +40,10 @@ export type TwitterTweet = Array<
     media: Array<PublishMedia>;
   }
 >;
+export interface FormattingOptions {
+  addLineBreakOnParagraphBlock?: boolean;
+  disableTextFormatting?: boolean;
+}
 interface MediaFile {
   name?: string;
   mimeType: string;
@@ -121,6 +125,10 @@ export interface NotionDatabase {
     first_comment_prop?: string;
   };
   options?: PostOptionsSchema;
+  formatting_options?: {
+    add_line_break_on_paragraph_block?: boolean;
+    disable_text_formatting?: boolean;
+  };
 }
 export type MediaOptimization = "lossy-compression" | "lossless-compression";
 export interface SocialPostOptimizedMediaSrc {
@@ -180,7 +188,28 @@ export interface UserData {
 
   affiliate_partner?: string;
   customLimits?: boolean;
-  billing: {cust_id: string; trial_used: boolean; sub_id: string; plan_id: string};
+  billing: {
+    plan_id: PRICING_PLAN_ID;
+    trial_end: number;
+    trial_start: number;
+    trial_used: boolean;
+    status: STRIPE_SUB_STATUS;
+    sub_id: string;
+    cust_id: string;
+    invoice_url?: string;
+    end_at: number;
+    start_at: number;
+  };
+  // This is the common settings for all the databases
+  ndb_settings?: {
+    props: NotionDatabase["props"];
+    post_metric_tracking: NotionDatabase["post_metric_tracking"];
+    rules: NotionDatabase["rules"];
+    ns_filter: NotionDatabase["ns_filter"];
+    publish_changes: NotionDatabase["publish_changes"];
+    formatting_options: NotionDatabase["formatting_options"];
+    options: NotionDatabase["options"];
+  };
 }
 export type AuthorUser = Partial<{
   uuid: string;
@@ -313,18 +342,7 @@ export type STRIPE_SUB_STATUS =
   | "trialing";
 
 export interface User {
-  billing: {
-    plan_id: PRICING_PLAN_ID;
-    trial_end: number;
-    trial_start: number;
-    trial_used: boolean;
-    status: STRIPE_SUB_STATUS;
-    sub_id: string;
-    cust_id: string;
-    invoice_url?: string;
-    end_at: number;
-    start_at: number;
-  };
+  billing: UserData["billing"];
   avatar: string;
   sm_acc_count: number;
   sm_acc_limit_incr?: number;
@@ -509,6 +527,7 @@ export interface NotionPagePostConfig {
   filesToDownload: Array<"image" | "video" | "doc">;
   rules: {};
   isPostReadyToSchedule: boolean;
+  formattingOptions: FormattingOptions;
 }
 export interface NotionCodedTextPayload {
   text: string;

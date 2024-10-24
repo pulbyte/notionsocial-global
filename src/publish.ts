@@ -3,12 +3,14 @@ import {hasText} from "./text";
 import {
   AuthorUser,
   Content,
+  FormattingOptions,
   NotionFiles,
   NotionPagePostConfig,
   PostRecord,
   PublishMedia,
   PublishMediaBuffer,
   User,
+  UserData,
 } from "./types";
 import {callFunctionsSequentiallyBreak, callNestedFunctionsSequentially} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
@@ -78,7 +80,11 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
       const iterateArr = iteratePaginatedAPI(notion.blocks.children.list, {
         block_id: config._pageId,
       });
-      const content = await getContentFromNotionBlocksAsync(iterateArr);
+
+      const content = await getContentFromNotionBlocksAsync(
+        iterateArr,
+        config.formattingOptions
+      );
       Object.assign(__, content);
 
       // ** Caption from page title
@@ -208,12 +214,12 @@ export async function processMedia(
       return [filteredPropertyMediaResults, filteredPageMediaResults];
     });
 }
-export function getAuthor(uuid): Promise<AuthorUser> {
+export function getAuthor(uuid): Promise<{author: AuthorUser; user: UserData}> {
   let __: AuthorUser = {uuid};
 
   if (!uuid) return PublishError.reject("error-getting-author");
   return getUserDoc(uuid).then((doc) => {
-    const user = doc.data as User;
+    const user = doc.data as UserData;
     __.hasActiveSubscription = isSubscriptionActive(user.billing?.status);
     __.hasPaidSubscription = isPlanPaid(user.billing?.plan_id);
 
@@ -241,7 +247,7 @@ export function getAuthor(uuid): Promise<AuthorUser> {
           }`;
           return PublishError.reject("inactive-subscription", {message: msg});
         }
-        return __;
+        return {author: __, user};
       });
   });
 }

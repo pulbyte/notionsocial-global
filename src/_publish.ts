@@ -9,6 +9,8 @@ import {
   NotionRuleCode,
   PostRecord,
   PublishMedia,
+  User,
+  UserData,
 } from "./types";
 import {hasText, notionRichTextParser, processInstagramTags} from "text";
 import {getDate, isAnyValueInArray} from "utils";
@@ -23,7 +25,8 @@ import {PublishError} from "./PublishError";
 export function getNotionPageConfig(
   notionPage: NotionPage,
   notionDatabaseData: NotionDatabase,
-  postRecord?: PostRecord
+  postRecord?: PostRecord,
+  authorRecord?: UserData
 ): NotionPagePostConfig {
   const properties = notionPage["properties"];
   const archived = notionPage["archived"];
@@ -96,6 +99,7 @@ export function getNotionPageConfig(
     smAccs: [],
     rules: {},
     filesToDownload: [],
+    formattingOptions: {},
     isPostReadyToSchedule: false,
   };
   const {
@@ -197,6 +201,15 @@ export function getNotionPageConfig(
     isScheduledWithin30Days &&
     !archived;
   __.isPostReadyToSchedule = isPostReadyToSchedule;
+
+  __.formattingOptions = {
+    addLineBreakOnParagraphBlock:
+      notionDatabaseData.formatting_options?.add_line_break_on_paragraph_block ||
+      authorRecord?.ndb_settings?.formatting_options?.add_line_break_on_paragraph_block,
+    disableTextFormatting:
+      notionDatabaseData.formatting_options?.disable_text_formatting ||
+      authorRecord?.ndb_settings?.formatting_options?.disable_text_formatting,
+  };
   return __;
 }
 
@@ -228,10 +241,11 @@ export function getPostConfig(
   ndbPage: NotionPage,
   ndbData: NotionDatabase,
   postRecord: PostRecord,
+  userRecord?: UserData,
   taskTime?: number,
   noExamine?: boolean
 ): Promise<NotionPagePostConfig> {
-  const config = getNotionPageConfig(ndbPage, ndbData, postRecord);
+  const config = getNotionPageConfig(ndbPage, ndbData, postRecord, userRecord);
   if (noExamine) return Promise.resolve(config);
   else return examinePostConfig(taskTime, config);
 }
