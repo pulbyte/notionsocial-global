@@ -1,5 +1,5 @@
 import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "./env";
-import {ArrayElement, NotionFiles, PublishMedia} from "./types";
+import {ArrayElement, NotionFiles, Media} from "./types";
 import * as mime from "@alshdavid/mime-types";
 import {notionRichTextParser} from "./text";
 import {
@@ -32,10 +32,10 @@ export function packMedia(
   refId: string,
   size?: number,
   caption?: string
-): PublishMedia {
+): Media {
   return {mimeType, url, name: name, refId, size, caption, type};
 }
-export function filterPublishMedia(media: PublishMedia[]) {
+export function filterPublishMedia(media: Media[]) {
   let arr = media?.filter((v) => !!v.type);
   const docMedias = arr.filter((m) => m.type == "doc");
   if (docMedias.length > 0) arr = docMedias.slice(0, 1);
@@ -78,16 +78,14 @@ export function getMediaMimeType(file) {
   return mimetype;
 }
 
-export function getMediaFromNotionBlock(block): Promise<PublishMedia | null> {
+export function getMediaFromNotionBlock(block): Promise<Media | null> {
   const {type} = block;
   if (type == "image" || type == "video") {
     return getMediaFromNotionFile(block[type]);
   } else return Promise.resolve(null);
 }
 
-export function getMediaFromNotionFile(
-  file: ArrayElement<NotionFiles>
-): Promise<PublishMedia> {
+export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise<Media> {
   return new Promise((resolve) => {
     const extUrl = file?.["external"]?.["url"];
     const gDriveMedia = alterGDriveLink(extUrl);
@@ -182,9 +180,7 @@ export function getNotionFileInfo(file) {
   return {notionUrl, name, mediaRef, caption};
 }
 
-export function getStaticMediaFromNotionFile(
-  file: ArrayElement<NotionFiles>
-): PublishMedia | null {
+export function getStaticMediaFromNotionFile(file: ArrayElement<NotionFiles>): Media | null {
   const fileInfo = getNotionFileInfo(file);
 
   if (!fileInfo) return null;
@@ -196,7 +192,7 @@ export function getStaticMediaFromNotionFile(
   const mediaType = getMediaTypeFromMimeType(mimeType);
   return packMedia(notionUrl, name, mediaType, mimeType, mediaRef, undefined, caption);
 }
-export function getStaticMediaFromNotionBlock(block): PublishMedia | null {
+export function getStaticMediaFromNotionBlock(block): Media | null {
   const {type} = block;
   if (type == "image" || type == "video") {
     return getStaticMediaFromNotionFile(block[type]);

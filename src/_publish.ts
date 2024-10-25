@@ -8,8 +8,7 @@ import {
   NotionPagePropertiesForPost,
   NotionRuleCode,
   PostRecord,
-  PublishMedia,
-  User,
+  Media,
   UserData,
 } from "./types";
 import {hasText, notionRichTextParser, processInstagramTags} from "./text";
@@ -286,6 +285,6 @@ function getSelectedSocialAccounts(
   return smAccs;
 }
 
-export function getPropertyMediaStatic(files: NotionFiles): PublishMedia[] {
+export function getPropertyMediaStatic(files: NotionFiles): Media[] {
   return filterPublishMedia(files.map(getStaticMediaFromNotionFile));
 }

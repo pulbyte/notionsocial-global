@@ -1,16 +1,16 @@
 import {getContentFromNotionBlocksAsync} from "./content";
-import {hasText} from "./text";
+import {formatBytesIntoReadable, hasText} from "./text";
 import {
   AuthorUser,
   Content,
-  FormattingOptions,
   NotionFiles,
   NotionPagePostConfig,
-  ProcessedPostRecord,
-  PublishMedia,
-  PublishMediaBuffer,
-  User,
+  MediaFile,
   UserData,
+  Media,
+  PostRecord,
+  TMediaFile,
+  MediaTransformation,
 } from "./types";
 import {callFunctionsSequentiallyBreak, callNestedFunctionsSequentially} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
@@ -18,7 +18,7 @@ import {
   getMediaTransformations,
   getMediaFromNotionFiles,
   getMediaFile,
-  getOptimizedMedia,
+  getTransformedMediaFile,
 } from "./media";
 import {getUserDoc, getUserPostCount} from "./data";
 import {
@@ -29,7 +29,7 @@ import {
 } from "./pricing";
 import {auth} from "firebase-admin";
 import {maxMediaSize} from "./env";
-import {filterPublishMedia} from "./_media";
+import {filterPublishMedia, getContentTypeFromMimeType} from "./_media";
 import {getContentFromTextProperty} from "./_content";
 import {PublishError} from "./PublishError";
 
@@ -100,10 +100,7 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
   });
 }
 
-export function getPropertyMedia(
-  files: NotionFiles,
-  processedPostRecord?: ProcessedPostRecord
-): Promise<PublishMedia[]> {
+export function getPropertyMedia(files: NotionFiles): Promise<Media[]> {
   let __ = [];
 
   return new Promise((res) => {
@@ -111,12 +108,12 @@ export function getPropertyMedia(
       .then((media) => {
         if (media) {
           __ = filterPublishMedia(media);
-          __.forEach((file, index) => {
-            const transformations = getMediaTransformations(file, processedPostRecord);
-            if (transformations) {
-              Object.assign(__[index], {transformations});
-            }
-          });
+          // __.forEach((file, index) => {
+          //   const transformations = getMediaTransformations(file, postRecord);
+          //   if (transformations) {
+          //     Object.assign(__[index], {transformations});
+          //   }
+          // });
         }
         res(__);
       })
@@ -127,60 +124,74 @@ export function getPropertyMedia(
 }
 
 export async function processMedia(
-  propertyMediaArray: PublishMedia[],
-  pageMediaListArray: PublishMedia[][],
-  toDownload: Array<"video" | "image" | "doc">
-): Promise<[PublishMediaBuffer[], PublishMediaBuffer[][]]> {
+  propertyMediaArray: Media[],
+  pageMediaListArray: Media[][],
+  toDownload: Array<"video" | "image" | "doc">,
+  processedMedia: PostRecord["processed_media"]
+): Promise<[MediaFile[], MediaFile[][]]> {
   if (!propertyMediaArray && !pageMediaListArray) {
     return [[], []];
   }
 
-  function createMediaObject(
-    original: PublishMedia | any,
-    updates: Partial<PublishMediaBuffer>
-  ): PublishMediaBuffer {
-    return {...original, ...updates};
-  }
-
   // Media processing functions
   async function fetchMedia(
-    file: PublishMedia,
+    media: Media,
+    transformations?: MediaTransformation[],
     fallback: boolean = false
-  ): Promise<PublishMediaBuffer> {
-    if (file.transformations && !fallback) {
+  ): Promise<MediaFile | TMediaFile> {
+    if (transformations && !fallback) {
       try {
-        const result = await getOptimizedMedia(file);
-        console.log("Optimized media -->", result);
-        return createMediaObject(file, result);
+        const tMediaFile = await getTransformedMediaFile(media, transformations);
+        console.log("Transformed media -->", tMediaFile);
+        return tMediaFile;
       } catch (error) {
-        console.log("Error in getting Optimized media", error);
-        return await fetchMedia(file, true);
+        console.log("Error in getting transformed media", error);
+        return await fetchMedia(media, [], true);
       }
     }
 
-    return getMediaFile(file).then((result) => createMediaObject(file, result));
+    return getMediaFile(media);
   }
 
-  async function getEmptyBufferMedia(file: PublishMedia): Promise<PublishMediaBuffer> {
+  async function createEmptyBufferMedia(media: Media): Promise<MediaFile> {
     const bufferSize = 10;
     const emptyBuffer = Buffer.alloc(bufferSize);
-    return createMediaObject(file, {
-      url: file.url,
+    return Object.assign(media, {
+      url: media.url,
       size: bufferSize,
       buffer: emptyBuffer,
+      contentType: getContentTypeFromMimeType(media.mimeType),
     });
   }
 
-  function getMediaFetcher(file: PublishMedia) {
-    const Type = file.type ? String(file.type).toUpperCase() : "Media file";
-    if (file.size > maxMediaSize.bytes) {
+  function getMediaFetcher(media: Media) {
+    const transformations = getMediaTransformations(media, processedMedia);
+    const isTransformed = transformations && transformations.length > 0;
+    const Type = media.type ? String(media.type).toUpperCase() : "Media file";
+
+    if (isTransformed) {
+      for (const transformation of transformations) {
+        if (transformation.metadata.size > maxMediaSize.bytes) {
+          throw new Error(
+            `${Type} still exceeds ${
+              maxMediaSize.MB
+            } MB size limit. We tried to compress it from ${formatBytesIntoReadable(
+              media.size
+            )} to ${formatBytesIntoReadable(
+              transformation.metadata.size
+            )}, but it's still too large. Please reduce the file size further and try again.`
+          );
+        }
+      }
+    } else if (media.size > maxMediaSize.bytes) {
       throw new Error(
         `${Type} exceeds ${maxMediaSize.MB} MB size limit. Please reduce the file size by compressing or lowering quality, then upload again.`
       );
     }
-    return toDownload?.includes(file.type)
-      ? () => fetchMedia(file)
-      : () => getEmptyBufferMedia(file);
+
+    return toDownload?.includes(media.type)
+      ? () => fetchMedia(media, transformations)
+      : () => createEmptyBufferMedia(media);
   }
 
   const propertyMediaPromises = propertyMediaArray.map(getMediaFetcher);
@@ -191,7 +202,7 @@ export async function processMedia(
   return callFunctionsSequentiallyBreak(propertyMediaPromises)
     .then((propertyMediaResults) => {
       filteredPropertyMediaResults = propertyMediaResults.filter(
-        (media): media is PublishMediaBuffer => media != null
+        (media): media is MediaFile => media != null
       );
       return callNestedFunctionsSequentially(
         pageMediaListArray.map((list) => list.map(getMediaFetcher))
@@ -199,7 +210,7 @@ export async function processMedia(
     })
     .then((pageMediaResults) => {
       filteredPageMediaResults = pageMediaResults.map((tweetMedia) =>
-        tweetMedia.filter((media): media is PublishMediaBuffer => media != null)
+        tweetMedia.filter((media): media is MediaFile => media != null)
       );
 
       return [filteredPropertyMediaResults, filteredPageMediaResults];

@@ -2,11 +2,12 @@ import _ from "lodash";
 import {callFunctionsSequentially} from "./utils";
 import {
   NotionFiles,
-  TransformedMedia,
-  ProcessedPostRecord,
-  PublishMedia,
-  PublishMediaBuffer,
-  OptimizedPublishMedia,
+  MediaFile,
+  Media,
+  PostRecord,
+  TMedia,
+  MediaTransformation,
+  TMediaFile,
 } from "./types";
 
 import {getCloudBucketFile} from "./data";
@@ -18,11 +19,11 @@ import {
 } from "_media";
 import {downloadFromUrl} from "file";
 
-export const getMediaFromNotionFiles = (files: NotionFiles): Promise<PublishMedia[]> => {
+export const getMediaFromNotionFiles = (files: NotionFiles): Promise<Media[]> => {
   if (!files || files.length <= 0) {
     return Promise.resolve([]);
   } else {
-    const mediaArr: PublishMedia[] = [];
+    const mediaArr: Media[] = [];
     return callFunctionsSequentially(
       files.map(
         (file, index) => () =>
@@ -38,17 +39,17 @@ export const getMediaFromNotionFiles = (files: NotionFiles): Promise<PublishMedi
 };
 
 export function getMediaTransformations(
-  file: PublishMedia,
-  postProcessedRecord?: ProcessedPostRecord
-): TransformedMedia[] {
-  if (!postProcessedRecord) return null;
-  const optzed = _.find(postProcessedRecord?.media, {
+  file: Media,
+  processedMedia?: PostRecord["processed_media"]
+): MediaTransformation[] {
+  if (!processedMedia) return null;
+  const optzed = _.find(processedMedia, {
     ref_id: file.refId,
   });
   return optzed?.transformations;
 }
 
-export function getMediaBuffer(media: PublishMedia) {
+export function getMediaBuffer(media: Media) {
   if (!media.url) {
     return Promise.reject(new Error("No URL provided to download media file."));
   }
@@ -56,15 +57,20 @@ export function getMediaBuffer(media: PublishMedia) {
   const name = media.name || pathname;
   console.info("+ Downloading a media file: ", media);
 
-  return downloadFromUrl(media.url, name);
+  return downloadFromUrl(media.url, name).then(({buffer, contentType, size}) =>
+    Object.assign(media, {buffer, contentType, size})
+  );
 }
 
-export async function getOptimizedMedia(media: PublishMedia): Promise<OptimizedPublishMedia> {
-  const transformations = await Promise.all(
-    media.transformations.map(async (asset) => {
+export async function getTransformedMediaFile(
+  media: Media,
+  transformations: MediaTransformation[]
+): Promise<TMediaFile> {
+  const _: TMediaFile["transformations"] = await Promise.all(
+    transformations.map(async (transformation: MediaTransformation) => {
       let buffer: Buffer;
       let url: string;
-      const {src, metadata} = asset;
+      const {src, metadata} = transformation;
 
       switch (src.type) {
         case "bucket": {
@@ -84,28 +90,25 @@ export async function getOptimizedMedia(media: PublishMedia): Promise<OptimizedP
         }
       }
       return {
-        ...asset,
-        src: {buffer, url},
+        ...transformation,
+        buffer,
+        url,
       };
     })
   );
   return {
     ...media,
-    transformations,
+    transformations: _,
   };
 }
 
-export async function getMediaFile(media: PublishMedia): Promise<PublishMediaBuffer> {
-  return getMediaBuffer(media).then(({buffer, contentType, size, name}) => {
-    const mimeType = media.mimeType || getMimeTypeFromContentType(contentType);
+export async function getMediaFile(media: Media): Promise<MediaFile> {
+  return getMediaBuffer(media).then((_) => {
+    const mimeType = media.mimeType || getMimeTypeFromContentType(_.contentType);
     return {
-      buffer,
-      contentType,
-      mimeType,
+      ..._,
       type: media.type || getMediaTypeFromMimeType(mimeType),
-      size,
-      url: media.url,
-      ...(name && {name}),
+      ...(media.name && {name: media.name}),
     };
   });
 }

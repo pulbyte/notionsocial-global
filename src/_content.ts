@@ -8,7 +8,7 @@ import {
   BaseTwitterPost,
   Content,
   FormattingOptions,
-  PublishMedia,
+  Media,
   Thread,
   TwitterContent,
 } from "types";
@@ -16,7 +16,7 @@ import {extractTweetIdFromUrl} from "./url";
 
 export function convertBlocksToParagraphs(
   textArray: string[],
-  mediaArray: PublishMedia[][]
+  mediaArray: Media[][]
 ): Thread[] {
   return textArray.map((text, index) => ({
     text,
@@ -71,12 +71,12 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
 export function processRawContentBlock(
   block,
   i,
-  textArray,
-  textArrayLast,
-  mediaArray,
-  mediaBuffer,
-  rawContentArray
-) {
+  textArray: string[],
+  textArrayLast: string,
+  mediaArray: Media[][],
+  mediaArrayBuffer: Media[],
+  rawContentArray: any[]
+): [string, Media[]] {
   const isDivider = block == "---";
   const previewsOneWasDivider = rawContentArray[i - 1] == "---";
   if (isDivider) {
@@ -84,44 +84,42 @@ export function processRawContentBlock(
       block = "\n";
     } else if (textArrayLast.length > 0) {
       textArray.push(textArrayLast);
-      mediaArray.push([...mediaBuffer]);
-      mediaBuffer = [];
+      mediaArray.push([...mediaArrayBuffer]);
+      mediaArrayBuffer = [];
     }
     textArrayLast = "\n";
   } else if (typeof block == "object") {
-    mediaBuffer.push(block);
+    mediaArrayBuffer.push(block);
   } else {
     textArrayLast = textArrayLast.concat(block);
     if (i < rawContentArray.length - 1 && rawContentArray[i + 1] != "---")
       textArrayLast = textArrayLast.concat(`\n`);
     if (i == rawContentArray.length - 1) {
       textArray.push(textArrayLast);
-      mediaArray.push([...mediaBuffer]);
-      mediaBuffer = [];
+      mediaArray.push([...mediaArrayBuffer]);
+      mediaArrayBuffer = [];
     }
   }
-  return [textArrayLast, mediaBuffer];
+  return [textArrayLast, mediaArrayBuffer];
 }
-export function processRawContentBlocks(
-  rawContentArray
-): [string, string[], PublishMedia[][]] {
-  let mediaArray: PublishMedia[][] = [];
-  let mediaBuffer: PublishMedia[] = [];
+export function processRawContentBlocks(rawContentArray): [string, string[], Media[][]] {
+  let mediaArray: Media[][] = [];
+  let mediaArrayBuffer: Media[] = [];
   let textArray: string[] = [];
   let textArrayLast = "";
 
   rawContentArray.forEach((rawBlock, i) => {
-    const [_textArrayLast, _mediaBuffer] = processRawContentBlock(
+    const [_textArrayLast, _mediaArrayBuffer] = processRawContentBlock(
       rawBlock,
       i,
       textArray,
       textArrayLast,
       mediaArray,
-      mediaBuffer,
+      mediaArrayBuffer,
       rawContentArray
     );
     textArrayLast = _textArrayLast;
-    mediaBuffer = _mediaBuffer;
+    mediaArrayBuffer = _mediaArrayBuffer;
   });
   textArray = textArray
     .map((s) => trimString(s))
@@ -135,7 +133,7 @@ export function processRawContentBlocks(
 
 export function convertBlocksToTwitterThread(
   textArray: string[],
-  mediaArray: PublishMedia[][]
+  mediaArray: Media[][]
 ): TwitterContent {
   let threads: TwitterContent = [];
   textArray.forEach((str, index) => {
@@ -225,7 +223,7 @@ function processNotionBlockCommon(
   nextBlock,
   index: number,
   limit = 63206,
-  media: PublishMedia | null,
+  media: Media | null,
   options?: FormattingOptions
 ): [number, number] {
   if (media) {
@@ -285,7 +283,7 @@ export function processStaticNotionBlock(
   );
 }
 
-export function getContentFromTextProperty(string, limit = 63206): Content {
+export function getContentFromTextProperty(string: string, limit = 63206): Content {
   const text: string = string.substring(0, limit);
 
   const twitter: TwitterContent = [];
@@ -311,7 +309,7 @@ export function getContentFromTextProperty(string, limit = 63206): Content {
     threads,
   };
 }
-export function threadifyString(text, maxTweetLength = 500) {
+export function threadifyString(text: string, maxTweetLength = 500) {
   // text = replaceLineBreaksWithEmptySpaces(text);
   const words = text.split(" ");
   const threads: string[] = [];
@@ -329,10 +327,7 @@ export function threadifyString(text, maxTweetLength = 500) {
   return threads;
 }
 
-export function convertTextToThreads(
-  textArray: string[],
-  mediaArray: PublishMedia[][]
-): Thread[] {
+export function convertTextToThreads(textArray: string[], mediaArray: Media[][]): Thread[] {
   let __: Thread[] = [];
   textArray.forEach((str, index) => {
     const threads = threadifyString(str);

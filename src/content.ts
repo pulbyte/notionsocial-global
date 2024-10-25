@@ -10,7 +10,6 @@ import {
   processRawContentBlocks,
   convertBlocksToParagraphs,
 } from "_content";
-import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "env";
 import {hasText} from "text";
 import {callFunctionsSequentially} from "utils";
 

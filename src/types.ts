@@ -20,54 +20,56 @@ import {
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
 
-export type PostPublishStage = (typeof postPublishStages)[number];
-export type FirstoreRef = firestore.DocumentReference<firestore.DocumentData>;
-
-export interface FirestoreDoc<T = firestore.DocumentData> {
-  id?: string;
-  ref: firestore.DocumentReference<firestore.DocumentData>;
-  data: T;
-}
-export type BaseTwitterPost = {
-  text: string;
-  url?: string;
-  replyToTweetId?: string;
-  quoteTweetId?: string;
-  retweetId?: string;
-};
-export type TwitterTweet = Array<
-  BaseTwitterPost & {
-    media: Array<PublishMedia>;
-  }
->;
-export interface FormattingOptions {
-  addLineBreakOnParagraphBlock?: boolean;
-  disableTextFormatting?: boolean;
-}
-interface MediaFile {
+// Notion File, Which is extracted from Notion
+export interface Media {
   name?: string;
-  mimeType: string;
-  type: "video" | "image" | "doc";
-  size?: number;
   url: string;
   caption?: string;
+  mimeType: string;
+  size?: number;
+  type: "video" | "image" | "doc";
   refId: string;
-  transformations?: MediaTransformation[];
 }
-export interface OptimizedPublishMedia extends Omit<PublishMedia, "transformations"> {
-  transformations: (Omit<TransformedMedia, "src"> & {
-    src: {
-      buffer: Buffer;
-      url: string;
-    };
-  })[];
-}
-
-export interface PublishMediaBuffer extends Partial<OptimizedPublishMedia> {
+// Media, Which is downloaded.
+export interface MediaFile extends Media {
   buffer: Buffer;
-  contentType?: string;
+  contentType: string;
   size: number;
 }
+// Transformed Media
+export interface TMedia extends Media {
+  transformations: MediaTransformation[];
+}
+// Transformed Media
+export interface TMediaFile extends Media {
+  transformations: Array<MediaTransformation & {buffer: Buffer; url: string}>;
+}
+
+export type MediaMetadata = {
+  size: number;
+  height: number;
+  width: number;
+};
+export type MediaCompression = "lossy" | "lossless";
+export type MediaOrientation = "vertical" | "original";
+
+export interface MediaTransformation {
+  metadata: MediaMetadata;
+  compression: MediaCompression;
+  orientation: MediaOrientation;
+  src: TransformedMediaSrc;
+}
+
+export type TransformedMediaSrc =
+  | {
+      type: "bucket";
+      path: string;
+    }
+  | {
+      type: "url";
+      url: string;
+    };
+
 export interface MetricPropertyConfig {
   prop: string;
   prop_id?: string;
@@ -77,21 +79,6 @@ export interface MetricPropertyConfig {
     platform: SocialPlatformTypes;
   }[];
   method: "aggregate" | "separate";
-}
-export interface ProcessedPostMediaRecord {
-  ref_id: string;
-  transformations: Array<{
-    compression: MediaCompression;
-    orientation: MediaOrientation;
-    metadata: MediaMetadata;
-    src: TransformedMediaSrc;
-  }>;
-}
-export interface ProcessedPostRecord {
-  notion_page_id: string;
-  post_id: string;
-  last_processed_at: number;
-  media: ProcessedPostMediaRecord[];
 }
 export interface NotionDatabase {
   uid: string;
@@ -153,47 +140,6 @@ export interface NotionDatabase {
     disable_text_formatting?: boolean;
   };
 }
-export type MediaOptimization = "lossy-compression" | "lossless-compression";
-export interface SocialPostOptimizedMediaSrc {
-  optimization: MediaOptimization;
-  optimizedUrl: string;
-  bucketFile: string;
-  size: number;
-}
-export interface SocialPostOptimizedMedia {
-  mediaRef: string;
-  mimeType: string;
-  originalSize: number;
-  src: SocialPostOptimizedMediaSrc[];
-}
-export interface OptimizedMedia {
-  mediaRef?: string;
-  optimization?: MediaOptimization;
-  originalLink?: string;
-  optimizedSize?: number;
-  optimizedLink?: string;
-  size?: number;
-  height: number;
-  width: number;
-}
-export interface TransformedMedia {
-  compression: MediaCompression;
-  orientation: MediaOrientation;
-}
-export interface MediaTransformation extends TransformedMedia {
-  metadata: MediaMetadata;
-  src: TransformedMediaSrc;
-}
-
-export type TransformedMediaSrc =
-  | {
-      type: "bucket";
-      path: string;
-    }
-  | {
-      type: "url";
-      url: string;
-    };
 
 export type PostType =
   | "text"
@@ -345,6 +291,11 @@ export interface NotionDatabaseClient {
   url: NotionDatabase["url"];
   name: NotionDatabase["name"];
 }
+
+export interface ProcessedMediaRecord {
+  ref_id: string;
+  transformations: Array<MediaTransformation>;
+}
 export interface PostRecord {
   notion_page_id: string;
   notion_db_id: string;
@@ -373,6 +324,7 @@ export interface PostRecord {
   processing?: boolean;
   success_platforms?: string[];
   status?: "success" | "error" | "partial_error";
+  processed_media?: ProcessedMediaRecord[];
 }
 
 export type STRIPE_SUB_STATUS =
@@ -425,8 +377,8 @@ export interface Content {
   altText?: string;
   threads: Thread[];
   twitter: TwitterContent;
-  media?: PublishMedia[];
-  mediaBuffer?: PublishMediaBuffer[];
+  media?: Media[];
+  mediaBuffer?: MediaFile[];
 }
 
 export interface PlatformError {
@@ -524,14 +476,30 @@ export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 export type Thread = {
-  media: Array<PublishMedia>;
+  media: Array<Media>;
   text: string;
 };
-export type TwitterContent = Array<
+export type BaseTwitterPost = {
+  text: string;
+  url?: string;
+  replyToTweetId?: string;
+  quoteTweetId?: string;
+  retweetId?: string;
+};
+export type TwitterTweet = Array<
   BaseTwitterPost & {
-    media: Array<PublishMediaBuffer | PublishMedia>;
+    media: Array<Media>;
   }
 >;
+export type TwitterContent = Array<
+  BaseTwitterPost & {
+    media: Array<MediaFile | Media>;
+  }
+>;
+export interface FormattingOptions {
+  addLineBreakOnParagraphBlock?: boolean;
+  disableTextFormatting?: boolean;
+}
 export interface NotionPagePropertiesForPost {
   nsProp: NotionTextProperty;
   titleProp: NotionTitleProperty;
@@ -584,4 +552,11 @@ export interface BaseLinkedInPost {
   quotePostId?: string | null;
   replyToPostId?: string | null;
   repostId?: string | null;
+}
+export type PostPublishStage = (typeof postPublishStages)[number];
+export type FirstoreRef = firestore.DocumentReference<firestore.DocumentData>;
+export interface FirestoreDoc<T = firestore.DocumentData> {
+  id?: string;
+  ref: firestore.DocumentReference<firestore.DocumentData>;
+  data: T;
 }

@@ -60,7 +60,6 @@ export async function downloadFromUrl(url, name?: string) {
       size,
       buffer,
       contentType: response.headers["content-type"],
-      name,
     };
   } catch (error) {
     console.log("Error while downloading file", error);
