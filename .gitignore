@@ -8,3 +8,5 @@
 /dist
 
 .npmignore
+
+package-lock.json
