@@ -17,14 +17,14 @@ describe("getMediaRef", () => {
     expect(getMediaRef(notionUrl)).toBe(expected);
   });
 
-  it("should correctly parse Google Drive URLs", () => {
+  it("should correctly parse public Google Drive URLs", () => {
     const driveUrl =
       "https://drive.google.com/file/d/1ABCdefGHIjklMNOpqrsTUVwxYZ/view?usp=sharing";
     const expected = "d_1ABCdefGHIjklMNOpqrsTUVwxYZ_view";
     expect(getMediaRef(driveUrl)).toBe(expected);
   });
 
-  it("should return null for other external URLs", () => {
+  it("should work for other external URLs", () => {
     const externalUrl = "https://example.com/image.jpg";
     expect(getMediaRef(externalUrl)).toBe("image.jpg");
   });

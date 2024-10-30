@@ -1,5 +1,5 @@
 import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "./env";
-import {ArrayElement, NotionFiles, Media} from "./types";
+import {ArrayElement, NotionFiles, Media, SocialPlatformTypes} from "./types";
 import * as mime from "@alshdavid/mime-types";
 import {notionRichTextParser} from "./text";
 import {
@@ -12,13 +12,8 @@ import {
 export function getMediaRef(url: string) {
   if (!url || typeof url != "string") return null;
   try {
-    const parsedUrl = new URL(decodeURIComponent(url));
-
-    const path = parsedUrl.pathname;
-    console.log(parsedUrl, path);
-
-    const pathParts = path.split("/");
-    return pathParts.slice(-3).filter(Boolean).join("_");
+    const {pathname} = new URL(decodeURIComponent(url));
+    return pathname.split("/").slice(-3).filter(Boolean).join("_");
   } catch (error) {
     return null;
   }
@@ -29,18 +24,30 @@ export function packMedia(
   name: string,
   type: "image" | "video" | "doc",
   mimeType: string,
+  contentType: string,
   refId: string,
   size?: number,
   caption?: string
 ): Media {
-  return {mimeType, url, name: name, refId, size, caption, type};
+  return {mimeType, url, name, refId, size, type, contentType, ...(caption ? {caption} : {})};
 }
-export function filterPublishMedia(media: Media[]) {
-  let arr = media?.filter((v) => !!v.type);
-  const docMedias = arr.filter((m) => m.type == "doc");
-  if (docMedias.length > 0) arr = docMedias.slice(0, 1);
-  else arr = arr.slice(0, 20);
-  return arr;
+export function filterPublishMedia(media: Media[], smAccPlatforms: SocialPlatformTypes[]) {
+  if (!media || !Array.isArray(media)) return [];
+
+  let _ = media.filter((v) => !!v.type);
+  const docs = _.filter((m) => m.type == "doc");
+
+  const singleSmAcc = smAccPlatforms.length == 1;
+  const hasLinkedin = smAccPlatforms.includes("linkedin");
+  const onlyLinkedIn = singleSmAcc && hasLinkedin;
+
+  if (docs.length > 0) {
+    if (onlyLinkedIn) _ = docs.slice(0, 1);
+    else if (!hasLinkedin) {
+      _ = _.filter((m) => m.type != "doc");
+    }
+  } else _ = _.slice(0, 20);
+  return _;
 }
 export function getContentTypeFromMimeType(mt) {
   return mime.lookup(mt)?.[0] || null;
@@ -95,12 +102,11 @@ export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise
     const isBase64 = isBase64String(url);
     if (!url || isBase64) return resolve(null);
     const urlData = new URL(url);
-
+    const mediaRef = getMediaRef(url);
     // ? Notion files
     if (notionUrl) {
       const _pathSplit = urlData.pathname.split("/");
       const name = file?.name || _pathSplit[_pathSplit.length - 1];
-      const mediaRef = getMediaRef(notionUrl);
       const caption = notionRichTextParser(file?.["caption"]);
       getUrlContentHeaders(notionUrl)
         .then((headers) => {
@@ -109,6 +115,7 @@ export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise
             name,
             headers.mediaType,
             headers.mimeType,
+            headers.contentType,
             mediaRef,
             headers.contentLength,
             caption
@@ -122,7 +129,6 @@ export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise
     }
     // ? Google Drive Files
     else if (gDriveMedia) {
-      const mediaRef = gDriveMedia.name;
       getGdriveContentHeaders(gDriveMedia.downloadUrl)
         .then((headers) => {
           const packed = packMedia(
@@ -130,7 +136,8 @@ export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise
             headers.name,
             headers.mediaType,
             headers.mimeType,
-            mediaRef,
+            headers.contentType,
+            gDriveMedia.name,
             headers.contentLength
           );
           resolve(packed);
@@ -148,7 +155,8 @@ export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise
               headers.name,
               headers.mediaType,
               headers.mimeType,
-              extUrl, // Using extUrl as mediaRef for external URLs
+              headers.contentType,
+              mediaRef, // Using extUrl as mediaRef for external URLs
               headers.contentLength
             );
             resolve(packed);
@@ -189,8 +197,18 @@ export function getStaticMediaFromNotionFile(file: ArrayElement<NotionFiles>): M
 
   // Get mime type from file extension
   const mimeType = name.split(".").pop().toLowerCase();
+  const contentType = getContentTypeFromMimeType(mimeType);
   const mediaType = getMediaTypeFromMimeType(mimeType);
-  return packMedia(notionUrl, name, mediaType, mimeType, mediaRef, undefined, caption);
+  return packMedia(
+    notionUrl,
+    name,
+    mediaType,
+    mimeType,
+    contentType,
+    mediaRef,
+    undefined,
+    caption
+  );
 }
 export function getStaticMediaFromNotionBlock(block): Media | null {
   const {type} = block;

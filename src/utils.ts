@@ -1,6 +1,7 @@
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
 import {SocialPlatformTypes} from "./types";
+import {dev} from "./env";
 
 export function callFunctionsSequentially<T>(
   functions: Array<() => Promise<any>>
@@ -307,4 +308,7 @@ export function mapFulfilled<T>(results: PromiseSettledResult<T>[]) {
   return results
     .filter((result) => result.status == "fulfilled")
     .map((result) => result.value);
+}
+export function dog(...args) {
+  if (dev) console.log(...args);
 }

@@ -62,3 +62,4 @@ export const SUPPORTED_NOTION_CONTENT_BLOCKS: NotionBlockType[] = [
   "code",
   "bookmark",
 ];
+export const ProcessedMediaBucket = getEnv("PROCESSED_MEDIA_BUCKET", "optimized-post-media");

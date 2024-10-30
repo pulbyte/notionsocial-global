@@ -22,28 +22,31 @@ import {postPublishStages} from "./publish";
 
 // Notion File, Which is extracted from Notion
 export interface Media {
-  name?: string;
+  name: string;
   url: string;
   caption?: string;
   mimeType: string;
-  size?: number;
+  contentType: string;
+  size: number;
   type: "video" | "image" | "doc";
   refId: string;
 }
 // Media, Which is downloaded.
 export interface MediaFile extends Media {
   buffer: Buffer;
-  contentType: string;
   size: number;
 }
-// Transformed Media
-export interface TMedia extends Media {
-  transformations: MediaTransformation[];
-}
-// Transformed Media
-export interface TMediaFile extends Media {
-  transformations: Array<MediaTransformation & {buffer: Buffer; url: string}>;
-}
+
+export type TMediaTransformation = Omit<MediaTransformation, "src"> & {
+  buffer?: Buffer;
+  url: string;
+};
+
+export type TMedia = Media & {
+  transformations: Array<TMediaTransformation>;
+};
+
+export type MediaType = Media | MediaFile | TMedia;
 
 export type MediaMetadata = {
   size: number;
@@ -57,18 +60,22 @@ export interface MediaTransformation {
   metadata: MediaMetadata;
   compression: MediaCompression;
   orientation: MediaOrientation;
-  src: TransformedMediaSrc;
+  src: MediaSrc;
 }
 
-export type TransformedMediaSrc =
-  | {
-      type: "bucket";
-      path: string;
-    }
-  | {
-      type: "url";
-      url: string;
-    };
+export interface BufferSrc {
+  type: "buffer";
+  buffer: Buffer;
+}
+export interface UrlSrc {
+  type: "url";
+  url: string;
+}
+export interface BucketSrc {
+  type: "bucket";
+  path: string;
+}
+export type MediaSrc = BufferSrc | UrlSrc | BucketSrc;
 
 export interface MetricPropertyConfig {
   prop: string;
@@ -265,6 +272,7 @@ export interface SocialAccountData {
   role_state?: string;
   li_user_id?: string;
   fb_user_id?: string;
+  boards?: PinterestBoard[];
 }
 
 export type SocialPlatformTypes =
@@ -377,8 +385,7 @@ export interface Content {
   altText?: string;
   threads: Thread[];
   twitter: TwitterContent;
-  media?: Media[];
-  mediaBuffer?: MediaFile[];
+  media?: Array<MediaType>;
 }
 
 export interface PlatformError {
@@ -476,7 +483,7 @@ export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 export type Thread = {
-  media: Array<Media>;
+  media: Array<ArrayElement<Content["media"]> & {id?: string}>;
   text: string;
 };
 export type BaseTwitterPost = {
@@ -488,12 +495,12 @@ export type BaseTwitterPost = {
 };
 export type TwitterTweet = Array<
   BaseTwitterPost & {
-    media: Array<Media>;
+    media: Content["media"];
   }
 >;
 export type TwitterContent = Array<
   BaseTwitterPost & {
-    media: Array<MediaFile | Media>;
+    media: Array<ArrayElement<Content["media"]> & {id?: string}>;
   }
 >;
 export interface FormattingOptions {

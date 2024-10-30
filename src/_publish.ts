@@ -10,6 +10,7 @@ import {
   PostRecord,
   Media,
   UserData,
+  SocialPlatformTypes,
 } from "./types";
 import {hasText, notionRichTextParser, processInstagramTags} from "./text";
 import {getDate, isAnyValueInArray} from "./utils";
@@ -20,6 +21,7 @@ import {
   getStaticMediaFromNotionFile,
 } from "./_media";
 import {PublishError} from "./PublishError";
+import _ from "lodash";
 
 export function getNotionPageConfig(
   notionPage: NotionPage,
@@ -173,15 +175,16 @@ export function getNotionPageConfig(
   const toDownload = isAnyValueInArray(binaryUploadSocialPlatforms, smAccPlatforms);
   const hasPinterest = smAccPlatforms?.includes("pinterest");
   const hasFacebook = smAccPlatforms?.includes("facebook");
-  __.filesToDownload = toDownload
-    ? ["video", "image", "doc"]
-    : hasPinterest
-    ? // ? Cause pinterest needs video in buffer
-      ["video"]
-    : hasFacebook
-    ? // ? Cause Facebook needs buffer image for the video's cover image
-      ["image"]
-    : [];
+
+  __.filesToDownload = [];
+
+  if (toDownload) __.filesToDownload = ["video", "image", "doc"];
+  // ? Pinterest needs video in buffer
+  if (hasPinterest) __.filesToDownload.push("video");
+  // ? Facebook needs image in buffer for the video's cover image
+  if (hasFacebook) __.filesToDownload.push("image");
+
+  __.filesToDownload = _.uniq(__.filesToDownload);
 
   const nsText = notionRichTextParser(nsProp?.["rich_text"], true);
 
@@ -285,6 +288,9 @@ function getSelectedSocialAccounts(
   return smAccs;
 }
 
-export function getPropertyMediaStatic(files: NotionFiles): Media[] {
-  return filterPublishMedia(files.map(getStaticMediaFromNotionFile));
+export function getPropertyMediaStatic(
+  files: NotionFiles,
+  smAccPlatforms: SocialPlatformTypes[]
+): Media[] {
+  return filterPublishMedia(files.map(getStaticMediaFromNotionFile), smAccPlatforms);
 }

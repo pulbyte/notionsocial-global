@@ -12,7 +12,9 @@ export function bufferToStream(binary) {
   });
   return readableInstanceStream;
 }
-export function getOGData(url): Promise<{ogTitle; ogImage; ogSiteName}> {
+export function getOGData(
+  url: string
+): Promise<{ogTitle: string; ogImage: string; ogSiteName: string}> {
   return new Promise((resolve, reject) => {
     const options = {url, onlyGetOpenGraphInfo: true};
     ogs(options)

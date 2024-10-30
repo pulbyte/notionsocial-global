@@ -5,19 +5,16 @@ import {
   MediaFile,
   Media,
   PostRecord,
-  TMedia,
   MediaTransformation,
-  TMediaFile,
+  MediaType,
+  TMedia,
 } from "./types";
 
 import {getCloudBucketFile} from "./data";
 import {formatBytesIntoReadable} from "./text";
-import {
-  getMediaFromNotionFile,
-  getMediaTypeFromMimeType,
-  getMimeTypeFromContentType,
-} from "_media";
-import {downloadFromUrl} from "file";
+import {getMediaFromNotionFile} from "./_media";
+import {downloadFromUrl} from "./file";
+import {ProcessedMediaBucket} from "./env";
 
 export const getMediaFromNotionFiles = (files: NotionFiles): Promise<Media[]> => {
   if (!files || files.length <= 0) {
@@ -48,50 +45,62 @@ export function getMediaTransformations(
   });
   return optzed?.transformations;
 }
-
-export function getMediaBuffer(media: Media) {
-  if (!media.url) {
+type DownloadedFile = Partial<MediaFile> & {buffer: Buffer; contentType: string};
+export function getMediaFile<T extends Media | string>(
+  media: T
+): Promise<T extends Media ? MediaFile : DownloadedFile> {
+  const url = typeof media === "string" ? media : media.url;
+  if (!url) {
     return Promise.reject(new Error("No URL provided to download media file."));
   }
-  const {pathname} = new URL(media.url);
-  const name = media.name || pathname;
+  const {pathname} = new URL(url);
+  const name = typeof media === "string" ? pathname : media.name;
   console.info("+ Downloading a media file: ", media);
 
-  return downloadFromUrl(media.url, name).then(({buffer, contentType, size}) =>
-    Object.assign(media, {buffer, contentType, size})
+  return downloadFromUrl(url, name).then(
+    ({buffer, size, contentType}) =>
+      ({
+        ...(typeof media === "object" ? media : {contentType}),
+        buffer,
+        size,
+      } as T extends Media ? MediaFile : DownloadedFile)
   );
 }
-
-export async function getTransformedMediaFile(
+export async function getTransformedMedia(
   media: Media,
-  transformations: MediaTransformation[]
-): Promise<TMediaFile> {
-  const _: TMediaFile["transformations"] = await Promise.all(
+  transformations: MediaTransformation[],
+  toDownload: boolean = true
+): Promise<TMedia> {
+  const _ = await Promise.all(
     transformations.map(async (transformation: MediaTransformation) => {
       let buffer: Buffer;
       let url: string;
-      const {src, metadata} = transformation;
+      const {src, metadata, orientation, compression} = transformation;
 
       switch (src.type) {
         case "bucket": {
-          const file = getCloudBucketFile("optimized-post-media", src.path);
-          buffer = await file.download()[0];
+          const file = getCloudBucketFile(ProcessedMediaBucket, src.path);
+          if (toDownload) [buffer] = await file.download();
           url = file.publicUrl();
-          console.log(
-            `✓ Downloaded optimized media, Size: ${formatBytesIntoReadable(metadata.size)}`,
-            src.path
-          );
           break;
         }
         case "url": {
-          ({buffer} = await downloadFromUrl(src.url));
+          if (toDownload) ({buffer} = await downloadFromUrl(src.url));
           url = src.url;
           break;
         }
       }
+      if (toDownload) {
+        console.log(
+          `✓ Downloaded transformed media, Size: ${formatBytesIntoReadable(metadata.size)}`,
+          src["path"] || src["url"]
+        );
+      }
       return {
-        ...transformation,
-        buffer,
+        orientation,
+        compression,
+        metadata,
+        ...(toDownload && {buffer}),
         url,
       };
     })
@@ -102,13 +111,42 @@ export async function getTransformedMediaFile(
   };
 }
 
-export async function getMediaFile(media: Media): Promise<MediaFile> {
-  return getMediaBuffer(media).then((_) => {
-    const mimeType = media.mimeType || getMimeTypeFromContentType(_.contentType);
-    return {
-      ..._,
-      type: media.type || getMediaTypeFromMimeType(mimeType),
-      ...(media.name && {name: media.name}),
-    };
-  });
+export function makeMediaPostReady<T extends "file" | "media">(
+  media: MediaType | TMedia
+): T extends "file" ? MediaFile : Media {
+  // Helper function to extract the first transformation
+  const getTransformation = (transformations: TMedia["transformations"]) => {
+    // In the future, implement platform-specific logic here
+    return transformations[0];
+  };
+
+  // Base media object
+  const m: MediaFile = {
+    name: media.name,
+    url: media.url,
+    mimeType: media.mimeType,
+    contentType: media.contentType,
+    type: media.type,
+    refId: media.refId,
+    size: media.size,
+    buffer: (media as MediaFile).buffer,
+  };
+
+  // Handle TMedia and TMediaFile
+  if ("transformations" in media && Array.isArray(media.transformations)) {
+    const transformation = getTransformation(media.transformations);
+    if (transformation) {
+      const transformedMedia = {
+        ...m,
+
+        url: transformation.url || m.url,
+        size: transformation.metadata.size || m.size,
+        buffer: transformation.buffer || (m as MediaFile).buffer,
+      };
+      return transformedMedia;
+    }
+  }
+  // We don't want to return the buffer for Media
+  if (!m.buffer) delete m.buffer;
+  return m;
 }

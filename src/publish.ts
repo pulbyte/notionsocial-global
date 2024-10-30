@@ -9,16 +9,17 @@ import {
   UserData,
   Media,
   PostRecord,
-  TMediaFile,
   MediaTransformation,
+  MediaType,
+  SocialPlatformTypes,
 } from "./types";
-import {callFunctionsSequentiallyBreak, callNestedFunctionsSequentially} from "./utils";
+import {callFunctionsSequentiallyBreak, callNestedFunctionsSequentially, dog} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
 import {
   getMediaTransformations,
   getMediaFromNotionFiles,
   getMediaFile,
-  getTransformedMediaFile,
+  getTransformedMedia,
 } from "./media";
 import {getUserDoc, getUserPostCount} from "./data";
 import {
@@ -29,7 +30,7 @@ import {
 } from "./pricing";
 import {auth} from "firebase-admin";
 import {maxMediaSize} from "./env";
-import {filterPublishMedia, getContentTypeFromMimeType} from "./_media";
+import {filterPublishMedia} from "./_media";
 import {getContentFromTextProperty} from "./_content";
 import {PublishError} from "./PublishError";
 
@@ -100,35 +101,23 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
   });
 }
 
-export function getPropertyMedia(files: NotionFiles): Promise<Media[]> {
-  let __ = [];
-
-  return new Promise((res) => {
-    getMediaFromNotionFiles(files)
-      .then((media) => {
-        if (media) {
-          __ = filterPublishMedia(media);
-          // __.forEach((file, index) => {
-          //   const transformations = getMediaTransformations(file, postRecord);
-          //   if (transformations) {
-          //     Object.assign(__[index], {transformations});
-          //   }
-          // });
-        }
-        res(__);
-      })
-      .catch((e) => {
-        return PublishError.create("error-getting-property-media", {cause: e});
-      });
-  });
+export function getPropertyMedia(
+  files: NotionFiles,
+  smAccPlatforms: SocialPlatformTypes[]
+): Promise<Media[]> {
+  return getMediaFromNotionFiles(files)
+    .then((media) => filterPublishMedia(media, smAccPlatforms))
+    .catch((e) => {
+      throw PublishError.create("error-getting-property-media", {cause: e});
+    });
 }
 
 export async function processMedia(
   propertyMediaArray: Media[],
   pageMediaListArray: Media[][],
-  toDownload: Array<"video" | "image" | "doc">,
+  typesToDownload: Array<"video" | "image" | "doc">,
   processedMedia: PostRecord["processed_media"]
-): Promise<[MediaFile[], MediaFile[][]]> {
+): Promise<[MediaType[], MediaType[][]]> {
   if (!propertyMediaArray && !pageMediaListArray) {
     return [[], []];
   }
@@ -138,30 +127,23 @@ export async function processMedia(
     media: Media,
     transformations?: MediaTransformation[],
     fallback: boolean = false
-  ): Promise<MediaFile | TMediaFile> {
-    if (transformations && !fallback) {
+  ): Promise<MediaType> {
+    const toDownload = typesToDownload?.includes(media.type);
+    if (transformations && transformations.length > 0 && !fallback) {
       try {
-        const tMediaFile = await getTransformedMediaFile(media, transformations);
+        const tMediaFile = await getTransformedMedia(media, transformations, toDownload);
         console.log("Transformed media -->", tMediaFile);
         return tMediaFile;
       } catch (error) {
-        console.log("Error in getting transformed media", error);
+        console.log(
+          "Getting the original media, Due to error in downloading transformed media:",
+          error
+        );
         return await fetchMedia(media, [], true);
       }
     }
-
+    if (!toDownload) return media;
     return getMediaFile(media);
-  }
-
-  async function createEmptyBufferMedia(media: Media): Promise<MediaFile> {
-    const bufferSize = 10;
-    const emptyBuffer = Buffer.alloc(bufferSize);
-    return Object.assign(media, {
-      url: media.url,
-      size: bufferSize,
-      buffer: emptyBuffer,
-      contentType: getContentTypeFromMimeType(media.mimeType),
-    });
   }
 
   function getMediaFetcher(media: Media) {
@@ -188,31 +170,25 @@ export async function processMedia(
         `${Type} exceeds ${maxMediaSize.MB} MB size limit. Please reduce the file size by compressing or lowering quality, then upload again.`
       );
     }
-
-    return toDownload?.includes(media.type)
-      ? () => fetchMedia(media, transformations)
-      : () => createEmptyBufferMedia(media);
+    return () => fetchMedia(media, transformations);
   }
 
   const propertyMediaPromises = propertyMediaArray.map(getMediaFetcher);
 
-  let filteredPropertyMediaResults = [];
-  let filteredPageMediaResults = [];
+  let filteredPropertyMediaResults: MediaType[] = [];
+  let filteredPageMediaResults: MediaType[][] = [];
 
-  return callFunctionsSequentiallyBreak(propertyMediaPromises)
-    .then((propertyMediaResults) => {
-      filteredPropertyMediaResults = propertyMediaResults.filter(
-        (media): media is MediaFile => media != null
-      );
-      return callNestedFunctionsSequentially(
+  return callFunctionsSequentiallyBreak<MediaType>(propertyMediaPromises)
+    .then((propertyMediaResults: MediaType[]) => {
+      filteredPropertyMediaResults = propertyMediaResults.filter(Boolean);
+      return callNestedFunctionsSequentially<MediaType>(
         pageMediaListArray.map((list) => list.map(getMediaFetcher))
       );
     })
-    .then((pageMediaResults) => {
+    .then((pageMediaResults: MediaType[][]) => {
       filteredPageMediaResults = pageMediaResults.map((tweetMedia) =>
-        tweetMedia.filter((media): media is MediaFile => media != null)
+        tweetMedia.filter(Boolean)
       );
-
       return [filteredPropertyMediaResults, filteredPageMediaResults];
     });
 }
