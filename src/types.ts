@@ -357,6 +357,7 @@ export interface User {
   affiliate_partner?: string;
   customLimits?: boolean;
   affiliate?: any;
+  jwt: string;
   profile?: {
     url?: string;
     username: string;
@@ -369,6 +370,12 @@ export interface User {
   trialDaysLeft: number;
   trialPeriodDays: number;
   plan?: PricingPlan;
+  uid: String;
+  uuid: String;
+  email: String;
+  emailVerified: boolean;
+  isNewUser?: boolean;
+  created_at?: number;
 }
 
 export interface PlatformPostPublishResult extends Partial<PlatformPublishResponse> {
