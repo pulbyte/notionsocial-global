@@ -65,7 +65,7 @@ export function getNotionPageConfig(
   _props.commentProp = properties[notionDatabaseData.publish_changes?.["first_comment_prop"]];
 
   _props.pinterestBoardProp =
-    properties[notionDatabaseData.platforms?.pinterest?.board_prop || "Pinterest - Board"];
+    properties[notionDatabaseData.options?.pinterest_board_prop || "Pinterest - Board"];
 
   _props.altTextProp = properties[notionDatabaseData.props?.alt_text || "Alt Text"];
 

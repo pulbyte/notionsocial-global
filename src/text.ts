@@ -1,5 +1,9 @@
 import {format as formatAxiosError} from "@redtea/format-axios-error";
-import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
+import {
+  DatabaseObjectResponse,
+  RichTextItemResponse,
+  TextRichTextItemResponse,
+} from "@notionhq/client/build/src/api-endpoints";
 import {NotionTitleProperty, SocialPlatformTypes} from "./types";
 import TwitterText from "twitter-text";
 import {isAxiosError} from "axios";
@@ -98,14 +102,11 @@ export const getSmAccTag = (
     includeGroup ? "-GROUP" : ""
   }@${username}`;
 };
-export function notionRichTextParser(
-  text: RichTextItemResponse | NotionTitleProperty,
-  trim?: boolean
-) {
-  if (!text || typeof text != "object" || !Array.isArray(text)) return "";
-  return text
-    .map((obj) => {
-      const str = String(obj.plain_text);
+export function notionRichTextParser(richTextArray: RichTextItemResponse[], trim?: boolean) {
+  if (!richTextArray || !Array.isArray(richTextArray)) return "";
+  return richTextArray
+    .map((item) => {
+      const str: string = item.plain_text || "";
       if (trim) return str.trim();
       return str;
     })

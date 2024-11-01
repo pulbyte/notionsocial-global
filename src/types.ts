@@ -16,6 +16,7 @@ import {
   TitlePropertyItemObjectResponse,
   UrlPropertyItemObjectResponse,
   BlockObjectResponse,
+  PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
@@ -88,11 +89,14 @@ export interface MetricPropertyConfig {
   method: "aggregate" | "separate";
 }
 export interface NotionDatabase {
-  uid: string;
   link_id: string;
+  workspace_id: string;
+  bot_id: string;
   author_uid: string;
   locked?: boolean;
   ns_filter: string;
+  created_at: number;
+  image: string;
   state: "expired" | "unsynced" | "deleted" | "active";
   props: {
     media: string;
@@ -124,7 +128,6 @@ export interface NotionDatabase {
     reposts?: string;
   };
   rules?: {[name: string]: any};
-  platforms: any;
   access_token: string;
   sm_accs?: {
     platform_uid: string;
@@ -133,7 +136,6 @@ export interface NotionDatabase {
     platform: SocialPlatformTypes;
   }[];
   url: string;
-  int_secret: string;
   name: string;
   publish_changes?: {
     post_url_prop?: string;
@@ -168,6 +170,7 @@ export interface PostOptionsSchema {
   collaborator_tags_prop: string;
   location_tag_prop: string;
   youtube_privacy_status_prop: string;
+  pinterest_board_prop: string;
 }
 export interface UserData {
   uid: string;
@@ -285,7 +288,7 @@ export type SocialPlatformTypes =
   | "pinterest"
   | "threads";
 export interface NotionDatabaseClient {
-  uid: NotionDatabase["uid"];
+  uid: NotionDatabase["link_id"];
   link_id: NotionDatabase["link_id"];
   author_uid: NotionDatabase["author_uid"];
   locked?: boolean;
@@ -445,9 +448,18 @@ export type NotionProperties = Record<string, NotionProperty>;
 export type NotionBlock = BlockObjectResponse;
 export type NotionBlockType = BlockObjectResponse["type"];
 export type NotionSelectProperty = Extract<NotionProperty, {type: "select"}>;
-export type NotionTitleProperty = Extract<NotionProperty, {type: "title"}>;
-export type NotionTextProperty = Extract<NotionProperty, {type: "rich_text"}>;
-export type NotionFormulaProperty = Extract<NotionProperty, {type: "formula"}>;
+export type NotionTitleProperty = Extract<
+  PageObjectResponse["properties"][keyof PageObjectResponse["properties"]],
+  {type: "title"}
+>;
+export type NotionTextProperty = Extract<
+  PageObjectResponse["properties"][keyof PageObjectResponse["properties"]],
+  {type: "rich_text"}
+>;
+export type NotionFormulaProperty = Extract<
+  PageObjectResponse["properties"][keyof PageObjectResponse["properties"]],
+  {type: "formula"}
+>;
 export type NotionMultiSelectProperty = Extract<NotionProperty, {type: "multi_select"}>;
 export type NotionDateProperty = Extract<NotionProperty, {type: "date"}>;
 export type NotionFilesProperty = Extract<NotionProperty, {type: "files"}>;
@@ -568,7 +580,7 @@ export interface BaseLinkedInPost {
   repostId?: string | null;
 }
 export type PostPublishStage = (typeof postPublishStages)[number];
-export type FirstoreRef = firestore.DocumentReference<firestore.DocumentData>;
+export type FirestoreRef<T = firestore.DocumentData> = firestore.DocumentReference<T>;
 export interface FirestoreDoc<T = firestore.DocumentData> {
   id?: string;
   ref: firestore.DocumentReference<firestore.DocumentData>;

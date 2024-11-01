@@ -6,6 +6,8 @@ import {
   UpdatePageResponse,
   GetPageResponse,
   SearchResponse,
+  DatabaseObjectResponse,
+  UpdateDatabaseParameters,
 } from "@notionhq/client/build/src/api-endpoints";
 import {APIErrorCode, ClientErrorCode, isNotionClientError} from "@notionhq/client";
 import {ignorePromiseError, retryOnCondition} from "./utils";
@@ -23,8 +25,8 @@ export function NotionAPI(accessToken) {
   });
   return {
     getDatabase: (id: string) =>
-      retry<GetDatabaseResponse>(() => notion.databases.retrieve({database_id: id})),
-    updateDatabase: (id: string, properties) =>
+      retry<DatabaseObjectResponse>(() => notion.databases.retrieve({database_id: id})),
+    updateDatabase: (id: string, properties: UpdateDatabaseParameters["properties"]) =>
       retry<UpdateDatabaseResponse>(() =>
         notion.databases.update({database_id: id, properties})
       ),
