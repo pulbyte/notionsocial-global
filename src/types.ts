@@ -48,11 +48,14 @@ export type TMedia = Media & {
 };
 
 export type MediaType = Media | MediaFile | TMedia;
-
 export type MediaMetadata = {
   size: number;
   height: number;
   width: number;
+  videoBitrate?: number;
+  audioBitrate?: number;
+  duration?: number;
+  contentType?: string;
 };
 export type MediaCompression = "lossy" | "lossless";
 export type MediaOrientation = "vertical" | "original";
@@ -127,7 +130,7 @@ export interface NotionDatabase {
     retweets?: string;
     reposts?: string;
   };
-  rules?: {[name: string]: any};
+  rules?: NotionRules<string>;
   access_token: string;
   sm_accs?: {
     platform_uid: string;
@@ -170,7 +173,7 @@ export interface PostOptionsSchema {
   collaborator_tags_prop: string;
   location_tag_prop: string;
   youtube_privacy_status_prop: string;
-  pinterest_board_prop: string;
+  pinterest_board_prop?: string;
 }
 export interface UserData {
   uid: string;
@@ -221,11 +224,17 @@ export type AuthorUser = Partial<{
   reachedFreePostsQuota: boolean;
 }>;
 
-export type NotionRuleCode = "in-reel>video" | "publish" | "link>text" | "video>images";
-export type NotionRuleFilter = {
-  [key in NotionRuleCode]: string;
-};
-export type ParsedNotionRules = Record<NotionRuleCode, boolean> | {[name: string]: boolean};
+export type NotionRuleCode =
+  | "in-reel>video"
+  | "in-story>feed"
+  | "fb-reel>video"
+  | "fb-story>feed"
+  | "reel>video"
+  | "story>feed"
+  | "short>video";
+
+export type NotionRules<T = boolean> = Partial<Record<NotionRuleCode, T>>;
+
 export const SupportedNotionRulePropTypes = [
   "select",
   "rich_text",
@@ -561,8 +570,9 @@ export interface NotionPagePostConfig {
   locationTag: string;
   youtubePrivacyStatus: "public" | "unlisted" | "private";
   smAccs: NotionDatabase["sm_accs"];
+  smAccsPlatforms: SocialPlatformTypes[];
   filesToDownload: Array<"image" | "video" | "doc">;
-  rules: {};
+  rules: NotionRules;
   isPostReadyToSchedule: boolean;
   formattingOptions: FormattingOptions;
 }

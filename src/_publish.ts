@@ -98,6 +98,7 @@ export function getNotionPageConfig(
     locationTag: null,
     youtubePrivacyStatus: null,
     smAccs: [],
+    smAccsPlatforms: [],
     rules: {},
     filesToDownload: [],
     formattingOptions: {},
@@ -162,11 +163,12 @@ export function getNotionPageConfig(
   const smAccs = getSelectedSocialAccounts(smAccsProp, notionDatabaseData, postRecord);
   __.smAccs = smAccs;
 
+  __.smAccsPlatforms = _.uniq(smAccs.map((acc) => acc.platform));
+
   // ? Post Rules
   const ruleMap = notionDatabaseData?.["rules"];
   if (ruleMap && typeof ruleMap == "object") {
-    Object.keys(ruleMap).forEach((ruleCode: NotionRuleCode) => {
-      const filter = ruleMap[ruleCode];
+    Object.entries(ruleMap).forEach(([ruleCode, filter]) => {
       const filterResult = parseNotionRule(filter, properties);
       __.rules[ruleCode] = filterResult;
     });
