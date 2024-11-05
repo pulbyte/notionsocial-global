@@ -12,7 +12,11 @@ import {
 
 import {getCloudBucketFile} from "./data";
 import {formatBytesIntoReadable} from "./text";
-import {getMediaFromNotionFile} from "./_media";
+import {
+  getMediaFromNotionFile,
+  getMediaTypeFromContentType,
+  getMimeTypeFromContentType,
+} from "./_media";
 import {downloadFromUrl} from "./file";
 import {ProcessedMediaBucket} from "./env";
 
@@ -122,13 +126,18 @@ export function makeMediaPostReady<T extends "file" | "media">(
 
   // Base media object
   const m: MediaFile = {
+    // ? CONSTANT
     name: media.name,
-    url: media.url,
+    refId: media.refId,
+
+    // ? CAN BE CHANGED DURING PROCESSING
     mimeType: media.mimeType,
     contentType: media.contentType,
     type: media.type,
-    refId: media.refId,
+
+    // ? DEFAULT UN-PROCESSED SRC
     size: media.size,
+    url: media.url,
     buffer: (media as MediaFile).buffer,
   };
 
@@ -136,12 +145,20 @@ export function makeMediaPostReady<T extends "file" | "media">(
   if ("transformations" in media && Array.isArray(media.transformations)) {
     const transformation = getTransformation(media.transformations);
     if (transformation) {
+      const ct = transformation.metadata?.contentType || m.contentType;
+      const mt = getMimeTypeFromContentType(ct) || m.mimeType;
+
       const transformedMedia = {
         ...m,
-
         url: transformation.url || m.url,
-        size: transformation.metadata.size || m.size,
+        size: transformation.metadata?.size || m.size,
         buffer: transformation.buffer || (m as MediaFile).buffer,
+        // In some transformations, the content type is changed
+        // when we convert to a supprted mime type
+        // Even the type can be changed, For example, pdf to jpg images
+        contentType: ct,
+        mimeType: mt,
+        type: getMediaTypeFromContentType(ct) || m.type,
       };
       return transformedMedia;
     }
