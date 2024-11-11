@@ -88,6 +88,8 @@ export const getSocialPlatformImage = (platform: SocialPlatformTypes, imageUrl?:
       return "https://res.cloudinary.com/pul/image/upload/v1675157338/icons/facebook.svg";
     case "twitter":
       return "https://res.cloudinary.com/pul/image/upload/v1675157336/icons/twitter.svg";
+    case "x":
+      return "https://res.cloudinary.com/pul/image/upload/v1721560448/icons/x-124.png";
     case "linkedin":
       return "https://res.cloudinary.com/pul/image/upload/v1675157341/icons/linkedin.svg";
     case "instagram":

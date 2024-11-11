@@ -1,4 +1,4 @@
-import {NotionBlockType, SocialPlatformTypes} from "./types";
+import {NotionBlockType, SocialPlatformTypes, StorageBucketName} from "./types";
 
 export const dev = getEnv("NODE_ENV", "development") == "development";
 export const prod = getEnv("NODE_ENV", "development") == "production";
@@ -62,4 +62,7 @@ export const SUPPORTED_NOTION_CONTENT_BLOCKS: NotionBlockType[] = [
   "code",
   "bookmark",
 ];
-export const ProcessedMediaBucket = getEnv("PROCESSED_MEDIA_BUCKET", "optimized-post-media");
+export const ProcessedMediaBucket: StorageBucketName = getEnv(
+  "PROCESSED_MEDIA_BUCKET",
+  "optimized-post-media"
+);

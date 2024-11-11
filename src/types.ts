@@ -132,7 +132,7 @@ export interface NotionDatabase {
   };
   rules?: NotionRules<string>;
   access_token: string;
-  sm_accs?: {
+  sm_accs: {
     platform_uid: string;
     tag: string;
     username: string;
@@ -295,7 +295,8 @@ export type SocialPlatformTypes =
   | "youtube"
   | "tiktok"
   | "pinterest"
-  | "threads";
+  | "threads"
+  | "x";
 export interface NotionDatabaseClient {
   uid: NotionDatabase["link_id"];
   link_id: NotionDatabase["link_id"];
@@ -596,3 +597,4 @@ export interface FirestoreDoc<T = firestore.DocumentData> {
   ref: firestore.DocumentReference<firestore.DocumentData>;
   data: T;
 }
+export type StorageBucketName = "raw-post-media" | "optimized-post-media";
