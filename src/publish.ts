@@ -192,12 +192,17 @@ export async function processMedia(
       return [filteredPropertyMediaResults, filteredPageMediaResults];
     });
 }
-export function getAuthor(uuid): Promise<{author: AuthorUser; user: UserData}> {
+export function getAuthor(
+  uuid,
+  noReject?: boolean
+): Promise<{author: AuthorUser; user: UserData; canPost: boolean}> {
   let __: AuthorUser = {uuid};
 
   if (!uuid) return PublishError.reject("error-getting-author");
   return getUserDoc(uuid).then((doc) => {
     const user = doc.data as UserData;
+
+    let canPost = true;
     __.hasActiveSubscription = isSubscriptionActive(user.billing?.status);
     __.hasPaidSubscription = isPlanPaid(user.billing?.plan_id);
 
@@ -218,14 +223,20 @@ export function getAuthor(uuid): Promise<{author: AuthorUser; user: UserData}> {
 
         if (__.reachedFreePostsQuota) {
           const msg = `You've reached your monthly limit of ${freeMonthlyPostLimit} posts for free accounts. Upgrade to a paid plan to post unlimited times.`;
-          return PublishError.reject("post-monthy-limit-reached", {message: msg});
+          canPost = false;
+          if (!noReject) {
+            return PublishError.reject("post-monthy-limit-reached", {message: msg});
+          }
         } else if (!__.hasActiveSubscription) {
           const msg = `Inactive subscription, Please upgrade or pay existing bill due ${
             user.billing?.invoice_url ? " -> " + user.billing?.invoice_url : ""
           }`;
-          return PublishError.reject("inactive-subscription", {message: msg});
+          canPost = false;
+          if (!noReject) {
+            return PublishError.reject("inactive-subscription", {message: msg});
+          }
         }
-        return {author: __, user};
+        return {author: __, user, canPost};
       });
   });
 }
