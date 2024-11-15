@@ -1,10 +1,6 @@
 import {format as formatAxiosError} from "@redtea/format-axios-error";
-import {
-  DatabaseObjectResponse,
-  RichTextItemResponse,
-  TextRichTextItemResponse,
-} from "@notionhq/client/build/src/api-endpoints";
-import {NotionTitleProperty, SocialPlatformTypes} from "./types";
+import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
+import {SocialPlatformTypes} from "./types";
 import TwitterText from "twitter-text";
 import {isAxiosError} from "axios";
 const {parseTweet} = TwitterText;

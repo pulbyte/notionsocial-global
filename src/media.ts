@@ -79,7 +79,7 @@ export async function getTransformedMedia(
     transformations.map(async (transformation: MediaTransformation) => {
       let buffer: Buffer;
       let url: string;
-      const {src, metadata, orientation, compression} = transformation;
+      const {src, metadata, orientation, compression, method} = transformation;
 
       switch (src.type) {
         case "bucket": {
@@ -103,6 +103,7 @@ export async function getTransformedMedia(
       return {
         orientation,
         compression,
+        method,
         metadata,
         ...(toDownload && {buffer}),
         url,

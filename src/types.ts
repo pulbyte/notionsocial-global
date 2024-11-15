@@ -59,9 +59,15 @@ export type MediaMetadata = {
 };
 export type MediaCompression = "lossy" | "lossless";
 export type MediaOrientation = "vertical" | "original";
+export type MediaTransformationMethod =
+  | "gcp-transcoder"
+  | "ffmpeg"
+  | "shortpixel.com"
+  | "media.io";
 
 export interface MediaTransformation {
   metadata: MediaMetadata;
+  method: MediaTransformationMethod;
   compression: MediaCompression;
   orientation: MediaOrientation;
   src: MediaSrc;
@@ -78,6 +84,7 @@ export interface UrlSrc {
 export interface BucketSrc {
   type: "bucket";
   path: string;
+  uri?: string;
 }
 export type MediaSrc = BufferSrc | UrlSrc | BucketSrc;
 
@@ -598,3 +605,5 @@ export interface FirestoreDoc<T = firestore.DocumentData> {
   data: T;
 }
 export type StorageBucketName = "raw-post-media" | "optimized-post-media";
+export type RequiredPick<T> = {[K in keyof T]-?: {} extends Pick<T, K> ? never : K}[keyof T];
+export type OptionalPick<T> = {[K in keyof T]-?: {} extends Pick<T, K> ? K : never}[keyof T];

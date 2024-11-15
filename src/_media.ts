@@ -1,7 +1,7 @@
 import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "./env";
 import {ArrayElement, NotionFiles, Media, SocialPlatformTypes} from "./types";
 import * as mime from "@alshdavid/mime-types";
-import {notionRichTextParser} from "./text";
+import {notionRichTextParser, trimAndRemoveWhitespace} from "./text";
 import {
   getUrlContentHeaders,
   getGdriveContentHeaders,
@@ -12,8 +12,10 @@ import {
 export function getMediaRef(url: string) {
   if (!url || typeof url != "string") return null;
   try {
-    const {pathname} = new URL(decodeURIComponent(url));
-    return pathname.split("/").slice(-3).filter(Boolean).join("_");
+    const {pathname} = new URL(url);
+    return trimAndRemoveWhitespace(
+      decodeURIComponent(pathname).split("/").slice(-3).filter(Boolean).join("_")
+    );
   } catch (error) {
     return null;
   }
