@@ -1,4 +1,6 @@
+import {MediaFile, TMedia} from "types";
 import {getMediaRef} from "../src/_media";
+import {makeMediaPostReady} from "../src/media";
 
 describe("getMediaRef", () => {
   it("should correctly parse Notion HTML media URLs", () => {
@@ -46,5 +48,85 @@ describe("getMediaRef", () => {
 
   it("should return the input if it's not a string", () => {
     expect(getMediaRef("")).toBe(null);
+  });
+});
+
+describe("makeMediaPostReady", () => {
+  it("should handle basic MediaFile input", () => {
+    const input: MediaFile = {
+      name: "test.jpg",
+      refId: "test-ref",
+      mimeType: "image/jpeg",
+      contentType: "image/jpeg",
+      type: "image",
+      size: 1000,
+      url: "https://example.com/test.jpg",
+      buffer: Buffer.from("test"),
+    };
+
+    const result = makeMediaPostReady<"file">(input);
+    expect(result).toEqual(input);
+  });
+
+  it("should handle TMedia with transformations", () => {
+    const input: TMedia = {
+      name: "test.pdf",
+      refId: "test-ref",
+      mimeType: "application/pdf",
+      contentType: "application/pdf",
+      type: "doc",
+      size: 1000,
+      url: "https://example.com/test.pdf",
+      transformations: [
+        {
+          url: "https://example.com/test-optimized.jpg",
+          metadata: {
+            contentType: "image/png",
+            size: 500,
+            height: 100,
+            width: 100,
+            //@ts-ignore
+            method: "ffmpeg",
+            orientation: "original",
+            compression: "lossy",
+          },
+        },
+      ],
+    };
+
+    const result = makeMediaPostReady<"media">(input);
+    expect(result).toEqual({
+      name: "test.pdf",
+      refId: "test-ref",
+      mimeType: "png",
+      contentType: "image/png",
+      type: "image",
+      size: 500,
+      url: "https://example.com/test-optimized.jpg",
+    });
+  });
+
+  it("should handle TMedia without transformations", () => {
+    const input: TMedia = {
+      name: "test.jpg",
+      refId: "test-ref",
+      mimeType: "image/jpeg",
+      contentType: "image/jpeg",
+      type: "image",
+      size: 1000,
+      url: "https://example.com/test.jpg",
+      transformations: [],
+    };
+
+    const result = makeMediaPostReady<"media">(input);
+    expect(result).toEqual({
+      name: "test.jpg",
+      refId: "test-ref",
+      mimeType: "image/jpeg",
+      contentType: "image/jpeg",
+      type: "image",
+      size: 1000,
+      url: "https://example.com/test.jpg",
+    });
   });
 });

@@ -84,12 +84,31 @@ export async function getTransformedMedia(
       switch (src.type) {
         case "bucket": {
           const file = getCloudBucketFile(ProcessedMediaBucket, src.path);
-          if (toDownload) [buffer] = await file.download();
+          if (toDownload) {
+            [buffer] = await file.download();
+            const [fileMetadata] = await file.getMetadata();
+            const newContentType =
+              fileMetadata?.contentType ||
+              fileMetadata?.metadata?.contentType ||
+              metadata.contentType;
+            const newSize =
+              fileMetadata?.size ||
+              fileMetadata?.contentLength ||
+              fileMetadata?.metadata?.size ||
+              metadata.size;
+            metadata.contentType = newContentType as string;
+            metadata.size = parseInt(newSize as string);
+          }
           url = file.publicUrl();
           break;
         }
         case "url": {
-          if (toDownload) ({buffer} = await downloadFromUrl(src.url));
+          if (toDownload) {
+            const dwnFile = await downloadFromUrl(src.url);
+            buffer = dwnFile.buffer;
+            metadata.contentType = dwnFile.contentType;
+            metadata.size = dwnFile.size;
+          }
           url = src.url;
           break;
         }
@@ -139,7 +158,7 @@ export function makeMediaPostReady<T extends "file" | "media">(
     // ? DEFAULT UN-PROCESSED SRC
     size: media.size,
     url: media.url,
-    buffer: (media as MediaFile).buffer,
+    ...((media as MediaFile).buffer && {buffer: (media as MediaFile).buffer}),
   };
 
   // Handle TMedia and TMediaFile
@@ -164,7 +183,5 @@ export function makeMediaPostReady<T extends "file" | "media">(
       return transformedMedia;
     }
   }
-  // We don't want to return the buffer for Media
-  if (!m.buffer) delete m.buffer;
   return m;
 }
