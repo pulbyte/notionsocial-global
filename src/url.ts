@@ -191,14 +191,14 @@ export function extractUrlFromString(text: string, removeUrl?: boolean): [string
   let _text = (" " + text).slice(1);
 
   const urlRegex =
-    /(?<=\s|^)(https?:\/\/)?((www\.)?[a-zA-Z0-9-]+\.)+([a-zA-Z]{2,})([^\s]*)?/gm;
+    /(?<=\s|^)(https?:\/\/)?((www\.)?[a-zA-Z0-9-]+\.)+([a-zA-Z]{2,})(\/?[^\s]*[^\s.])?/gm;
   let firstUrl = "";
 
   const urlMatch = _text.match(urlRegex);
   if (urlMatch && urlMatch.length > 0) {
     firstUrl = urlMatch[0]?.trim();
 
-    // Remove everything after the URL in the text
+    // Remove the URL in the text
     if (removeUrl) {
       _text = _text.replace(urlRegex, "");
     }
