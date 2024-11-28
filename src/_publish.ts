@@ -225,6 +225,11 @@ export function examinePostConfig(taskTime?: number, config?: NotionPagePostConf
   } else if (!allowdStatus.includes(config?.status)) {
     return PublishError.reject("post-cancelled");
   }
+
+  if (config?.smAccs?.length == 0) {
+    return PublishError.reject("no-social-account-selected");
+  }
+
   return Promise.resolve(config);
 }
 

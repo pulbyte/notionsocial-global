@@ -26,11 +26,13 @@ type PublishFunctionError = Error | PublishError | AxiosError | NotionClientErro
 export function catchPublishError(
   e: PublishFunctionError,
   stage: PostPublishStage,
-  notionMessageUpdateCallback: (
-    message: string | null,
-    code: PublishErrorCode
-  ) => Promise<any>,
-  postRecordUpdateCallback: (updates: object) => Promise<any>
+  notionMessageUpdateCallback: (options: {
+    message: string | null;
+    code: PublishErrorCode;
+    toClearNsProp: boolean;
+    toResetStatus: boolean;
+  }) => Promise<any>,
+  postRecordUpdateCallback: (updates: object, completed?: boolean) => Promise<any>
 ) {
   PublishError.log(e);
   const {
@@ -48,7 +50,9 @@ export function catchPublishError(
 
   const updateProcessingPromise = isTaskProcessing
     ? Promise.resolve()
-    : postRecordUpdateCallback({processing: false});
+    : isPostPoned
+    ? postRecordUpdateCallback({processing: false})
+    : postRecordUpdateCallback({processing: false, status: "error"}, true);
 
   return updateProcessingPromise?.finally(() => {
     // If a server error occurs during publishing, return error, so that it can be retried
@@ -62,10 +66,16 @@ export function catchPublishError(
 
     const canUpdateNsProp =
       !isNotionDatabaseDeleted && !isNotionDatabaseDisconnected && !isNotionPageDeleted;
-    const toClearNsProp = isCancelled || isPostPoned;
+    const toClearNsProp = isPostPoned || code == "no-social-account-selected" || isCancelled;
+    const toResetStatus = isPostPoned || code == "no-social-account-selected";
 
     if (canUpdateNsProp) {
-      return notionMessageUpdateCallback(toClearNsProp ? null : message, code);
+      return notionMessageUpdateCallback({
+        message,
+        code,
+        toClearNsProp,
+        toResetStatus,
+      });
     } else {
       return Promise.resolve(message);
     }

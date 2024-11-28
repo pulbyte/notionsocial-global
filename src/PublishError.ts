@@ -15,6 +15,7 @@ export const publishErrorCodes = [
   "post-cancelled",
   "server-error",
   "task-processing",
+  "no-social-account-selected",
 ] as const;
 
 export type PublishErrorCode = (typeof publishErrorCodes)[number];
