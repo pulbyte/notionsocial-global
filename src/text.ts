@@ -227,7 +227,10 @@ export function removeHyphens(inputString: string) {
   return inputString.replace(/-/g, "");
 }
 export function replaceCommasWithSpaces(inputString: string) {
-  if (!inputString) return "";
+  if (!inputString || typeof inputString !== "string") {
+    console.log("inputString is invalid", inputString);
+    return "";
+  }
   // Use the replace method with a regular expression to replace all commas with spaces
   return inputString.replace(/,/g, " ");
 }
