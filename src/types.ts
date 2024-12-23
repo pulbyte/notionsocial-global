@@ -195,7 +195,7 @@ export interface UserData {
   notion_db_count: number;
   notion_db_limit_incr?: number;
 
-  affiliate_partner?: string;
+  affiliate_partner?: boolean;
   customLimits?: boolean;
   billing: {
     plan_id: PRICING_PLAN_ID;
@@ -365,6 +365,30 @@ export type STRIPE_SUB_STATUS =
   | "trialing"
   | "paused";
 
+export interface AffiliatePayment {
+  amount: number;
+  date: number;
+  note: string;
+}
+
+export interface AffiliateReferral {
+  free_count: number;
+  paid_count: number;
+  total_count: number;
+  total_value: number;
+}
+
+export interface Affiliate {
+  author_uid: string;
+  commission_rate: number;
+  id: string;
+  link: string;
+  payments?: AffiliatePayment[];
+  referral: AffiliateReferral;
+  total_payout: number;
+  paypal?: string;
+}
+
 export interface User {
   billing: UserData["billing"];
   avatar: string;
@@ -375,9 +399,9 @@ export interface User {
   notion_db_limit: number;
   notion_db_count: number;
   notion_db_limit_incr?: number;
-  affiliate_partner?: string;
+  affiliate_partner?: boolean;
   customLimits?: boolean;
-  affiliate?: any;
+  affiliate?: Affiliate;
   jwt: string;
   profile?: {
     url?: string;
