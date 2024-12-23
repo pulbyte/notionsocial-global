@@ -12,6 +12,7 @@ export function bufferToStream(binary) {
   });
   return readableInstanceStream;
 }
+// Inside files, Cause it's a server function, And can't run in browser
 export function getOGData(
   url: string
 ): Promise<{ogTitle: string; ogImage: string; ogSiteName: string}> {
@@ -26,7 +27,7 @@ export function getOGData(
         resolve(toReturn);
       })
       .catch((e) => {
-        console.log("Error in gettting URL OG data", e?.result?.errorDetails);
+        console.log(`Error in gettting URL ${url} OG data`, e?.result?.errorDetails);
         reject(e);
       });
   });

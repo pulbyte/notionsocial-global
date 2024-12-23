@@ -184,10 +184,9 @@ export interface PostOptionsSchema {
 }
 export interface UserData {
   uid: string;
-  int_secret: string;
-  email: string;
+  uuid: string;
   referred_by?: string;
-
+  created_at: number;
   sm_acc_count: number;
   sm_acc_limit_incr?: number;
   sm_acc_limit: number;
@@ -209,6 +208,7 @@ export interface UserData {
     invoice_url?: string;
     end_at: number;
     start_at: number;
+    cancel_at_period_end?: boolean;
   };
   // This is the common settings for all the databases
   ndb_settings?: {
@@ -362,7 +362,8 @@ export type STRIPE_SUB_STATUS =
   | "canceled"
   | "incomplete"
   | "incomplete_expired"
-  | "trialing";
+  | "trialing"
+  | "paused";
 
 export interface User {
   billing: UserData["billing"];

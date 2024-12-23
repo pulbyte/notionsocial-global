@@ -263,21 +263,29 @@ export async function retryOnCondition<Res>(
 
 // A function which takes a promise function and ignores any error occured in the promise and return a resolved response with error:true
 export function ignorePromiseFuncError<T>(
-  promiseFn
+  promiseFn,
+  logError?: boolean
 ): Promise<{error: boolean; message: string} | T> {
   return new Promise((resolve) => {
     promiseFn()
       .then((response) => resolve(response))
-      .catch((e) => resolve({error: true, message: e?.message}));
+      .catch((e) => {
+        if (logError) console.error(e);
+        resolve({error: true, message: e?.message});
+      });
   });
 }
 export function ignorePromiseError<T>(
-  promise: Promise<T>
+  promise: Promise<T>,
+  logError?: boolean
 ): Promise<{error: boolean; message: string} | T> {
   return new Promise((resolve) => {
     promise
       .then((response) => resolve(response))
-      .catch((e) => resolve({error: true, message: e?.message}));
+      .catch((e) => {
+        if (logError) console.error(e);
+        resolve({error: true, message: e?.message});
+      });
   });
 }
 
