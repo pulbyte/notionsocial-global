@@ -219,7 +219,7 @@ export function logAxiosError(error, message = "Facebook graph api error") {
       JSON.stringify(formattedError, null, 2)
     );
   } else if (error) {
-    console.log(`${message ? "🛑 " + message + "\n" : ""}`, JSON.stringify(error, null, 2));
+    console.log(`${message ? "🛑 " + message + "\n" : ""}`, error);
   }
 }
 export function removeHyphens(inputString: string) {

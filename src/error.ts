@@ -36,9 +36,9 @@ export function catchPublishError(
 ) {
   PublishError.log(e);
   const {
-    isServerError,
     message,
     isNotionDatabaseDeleted,
+    isServerError,
     isNotionDatabaseDisconnected,
     isCancelled,
     isPostPoned,

@@ -1,16 +1,15 @@
 import lodash from "lodash";
 import {
-  NotionDatabase,
   NotionFiles,
   NotionMultiSelectProperty,
   NotionPage,
   NotionPagePostConfig,
   NotionPagePropertiesForPost,
-  NotionRuleCode,
   PostRecord,
   Media,
   UserData,
   SocialPlatformTypes,
+  NotionDatabase,
 } from "./types";
 import {hasText, notionRichTextParser, processInstagramTags} from "./text";
 import {getDate, isAnyValueInArray} from "./utils";

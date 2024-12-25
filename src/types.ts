@@ -284,6 +284,7 @@ export interface SocialAccountData {
     expires?: number;
   };
   uid: string;
+  urn?: string;
   active?: boolean;
   acc_type?: "page" | "group";
   org_type?: string;
@@ -303,7 +304,8 @@ export type SocialPlatformTypes =
   | "tiktok"
   | "pinterest"
   | "threads"
-  | "x";
+  | "x"
+  | "bluesky";
 export interface NotionDatabaseClient {
   uid: NotionDatabase["link_id"];
   link_id: NotionDatabase["link_id"];
