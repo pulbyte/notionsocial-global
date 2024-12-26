@@ -83,6 +83,8 @@ export function getSmShortName(platform: SocialPlatformTypes) {
       return "PIN";
     case "threads":
       return "THREADS";
+    case "bluesky":
+      return "BSKY";
     default:
       return String(platform).toUpperCase();
   }

@@ -278,12 +278,15 @@ export interface SocialAccountData {
     access_secret?: string;
     oauth_token?: string;
     oauth_token_secret?: string;
+    enc_password?: string;
+    last_updated_at?: number;
   };
   fb_auth?: {
     access_token: string;
     expires?: number;
   };
   uid: string;
+  handle?: string;
   urn?: string;
   active?: boolean;
   acc_type?: "page" | "group";
@@ -305,7 +308,8 @@ export type SocialPlatformTypes =
   | "pinterest"
   | "threads"
   | "x"
-  | "bluesky";
+  | "bluesky"
+  | "gmb";
 export interface NotionDatabaseClient {
   uid: NotionDatabase["link_id"];
   link_id: NotionDatabase["link_id"];
