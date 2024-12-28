@@ -185,26 +185,44 @@ export function hasNonJSCharacters(str: string) {
   return regex.test(str);
 }
 export function replaceLineBreaksWithEmptySpaces(inputString: string) {
-  if (!inputString || typeof inputString != "string") return "";
-  const lines = inputString.split("\n");
+  if (!inputString || typeof inputString !== "string") return "";
 
-  // Initialize an empty array to store the processed lines
-  const processedLines = [];
+  // Split into words and line breaks
+  const parts = inputString.split(/([^\n]+)/);
 
-  for (let i = 0; i < lines.length; i++) {
-    const last = lines[i + 1] == undefined;
-    // If the current line is empty, push an empty string to processedLines
-    const nextLineHasText = i < lines.length - 1 && lines[i + 1]?.trim() !== "";
+  return parts
+    .map((part, index) => {
+      // If it's a word, trim it
+      if (part.trim().length > 0) {
+        return part.trim();
+      }
 
-    const lineEnding = last ? "" : nextLineHasText ? "\n" : "\n⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀";
-    const line = lines[i]?.trim();
-    processedLines.push(line + lineEnding);
-  }
+      // Count consecutive newlines
+      const newlines = part.match(/\n/g)?.length || 0;
+      if (newlines <= 2) return part;
 
-  // Join the processed lines with '\n'
-  const result = processedLines.join("");
+      // Keep first and last \n untouched
+      const middleNewlines = newlines - 2;
+      const result = ["\n"]; // First newline
 
-  return result;
+      // Create batches of newlines
+      const batches = [];
+      for (let i = 0; i < middleNewlines; i += 2) {
+        const batch = i + 1 < middleNewlines ? "\n\n" : "\n";
+        batches.push(batch);
+      }
+      // Process batches with spaces
+      const processedBatches = batches.map((batch, i) => {
+        if (i === 0) batch = ` ${batch}`;
+        if (i === batches.length - 1) batch = `${batch} `;
+        return batch;
+      });
+
+      result.push(processedBatches.join(" "));
+      result.push("\n"); // Last newline
+      return result.join("");
+    })
+    .join("");
 }
 export function checkTextExceedsTweetCharLimit(text: string) {
   return parseTweet(text).weightedLength > 280;
