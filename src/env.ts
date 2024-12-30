@@ -1,5 +1,4 @@
 import {NotionBlockType, SocialPlatformTypes, StorageBucketName} from "./types";
-
 export const dev = getEnv("NODE_ENV", "development") == "development";
 export const prod = getEnv("NODE_ENV", "development") == "production";
 export const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24; // 30 days in seconds

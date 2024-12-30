@@ -7,14 +7,25 @@ const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
 import {FormattingOptions, NotionBlockType} from "types";
 
+function mkdwn(block) {
+  try {
+    let markdown = NBMPInstance.parse([block]);
+    return markdown;
+  } catch (e) {
+    console.log("An error occurred while parsing the block", e);
+    return "";
+  }
+}
+
 export function parseNotionBlockToText(
   block,
   nextBlock,
   index,
   options?: FormattingOptions
 ): [string, number] {
-  let markdown = NBMPInstance.parse([block]);
+  let markdown = mkdwn(block);
   const type = block.type as NotionBlockType;
+  const hasChildren = block.has_children;
   const isListItem = type == "numbered_list_item";
   const isBulletItem = type == "bulleted_list_item";
   const isDivider = type == "divider";
@@ -33,7 +44,7 @@ export function parseNotionBlockToText(
   if (iframeUrl?.includes("widgets.notionsocial.app")) return ["", index];
   if (iframeUrl) return [iframeUrl, index];
 
-  if (!hasText(paragraph) || isMedia) return ["", index];
+  if (!hasText(paragraph) || isMedia || hasChildren) return ["", index];
 
   if (index && !isListItem) index = 0;
   if (isListItem) index++;
