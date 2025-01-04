@@ -182,6 +182,12 @@ export interface PostOptionsSchema {
   youtube_privacy_status_prop: string;
   pinterest_board_prop?: string;
 }
+export interface PublicApiRecord {
+  created_at: number;
+  status: "active" | "revoked";
+  hashed_api_key: string;
+  user_id: string;
+}
 export interface UserData {
   uid: string;
   uuid: string;
