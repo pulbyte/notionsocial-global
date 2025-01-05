@@ -1,12 +1,15 @@
 import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "./env";
 import {ArrayElement, NotionFiles, Media, SocialPlatformTypes} from "./types";
 import * as mime from "@alshdavid/mime-types";
+
 import {notionRichTextParser, trimAndRemoveWhitespace} from "./text";
 import {
   getUrlContentHeaders,
   getGdriveContentHeaders,
   isBase64String,
   alterGDriveLink,
+  alterDescriptLink,
+  isDescriptLink,
 } from "./url";
 
 export function getMediaRef(url: string) {
@@ -96,7 +99,7 @@ export function getMediaFromNotionBlock(block): Promise<Media | null> {
 
 export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise<Media> {
   return new Promise((resolve) => {
-    const extUrl = file?.["external"]?.["url"];
+    const extUrl = file?.["external"]?.["url"] as string;
     const gDriveMedia = alterGDriveLink(extUrl);
 
     const notionUrl = file?.["file"]?.url;
@@ -149,11 +152,12 @@ export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise
           resolve(null);
         });
     } else if (extUrl) {
-      getUrlContentHeaders(extUrl)
+      (isDescriptLink(extUrl) ? alterDescriptLink(extUrl) : Promise.resolve(extUrl))
+        .then((url) => getUrlContentHeaders(url))
         .then((headers) => {
           if (headers.contentType && headers.contentLength) {
             const packed = packMedia(
-              extUrl,
+              headers.url,
               headers.name,
               headers.mediaType,
               headers.mimeType,
@@ -167,7 +171,7 @@ export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise
           }
         })
         .catch((e) => {
-          console.info("Error while fetching headers of external URL", extUrl, e);
+          console.info("Error while fetching external URL", extUrl, e);
           resolve(null);
         });
     } else return resolve(null);

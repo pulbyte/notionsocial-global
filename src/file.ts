@@ -1,5 +1,5 @@
 import {Readable} from "stream";
-import ogs from "open-graph-scraper";
+import urlMetadata from "url-metadata";
 import axios from "axios";
 import {maxMediaSize} from "./env";
 import {formatBytesIntoReadable} from "./text";
@@ -16,21 +16,19 @@ export function bufferToStream(binary) {
 export function getOGData(
   url: string
 ): Promise<{ogTitle: string; ogImage: string; ogSiteName: string}> {
-  return new Promise((resolve, reject) => {
-    const options = {url, onlyGetOpenGraphInfo: true};
-    ogs(options)
-      .then((data) => {
-        if (data?.error || !data.result) return reject(data?.error);
-        const result = data.result || {};
-        const {ogTitle, ogImage, ogSiteName} = result;
-        const toReturn = {ogTitle, ogImage: ogImage?.[0]?.url, ogSiteName};
-        resolve(toReturn);
-      })
-      .catch((e) => {
-        console.log(`Error in gettting URL ${url} OG data`, e?.result?.errorDetails);
-        reject(e);
-      });
-  });
+  return urlMetadata(url)
+    .then((metadata) => {
+      const {"og:title": ogTitle, "og:image": ogImage, "og:site_name": ogSiteName} = metadata;
+      return {
+        ogTitle,
+        ogImage,
+        ogSiteName,
+      };
+    })
+    .catch((e) => {
+      console.log(`Error in getting URL ${url} OG data`, e);
+      throw e;
+    });
 }
 export async function downloadFromUrl(url, name?: string) {
   if (!url || typeof url !== "string") {

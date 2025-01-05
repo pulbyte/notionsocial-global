@@ -4,6 +4,7 @@ import {
   getMediaTypeFromMimeType,
   getMimeTypeFromContentType,
 } from "./_media";
+import urlMetadata from "url-metadata";
 
 export function extractTweetIdFromUrl(url) {
   if (!url) return null;
@@ -38,6 +39,25 @@ export function getFileNameFromContentDisposition(contentDisposition) {
     return match[1];
   } else {
     return null; // No filename found
+  }
+}
+
+export function isDescriptLink(inputURL: string): boolean {
+  if (!inputURL) return false;
+  const descriptRegex = /^https:\/\/share\.descript\.com\/view\/[a-zA-Z0-9]+\/?$/;
+  return descriptRegex.test(inputURL);
+}
+async function getDescriptVideoUrl(shareUrl: string) {
+  const metadata = await urlMetadata(shareUrl);
+  return metadata["descript:video"] as string;
+}
+export async function alterDescriptLink(inputURL: string) {
+  try {
+    const videoUrl = await getDescriptVideoUrl(inputURL);
+    return videoUrl;
+  } catch (error) {
+    console.error("Error fetching Descript video URL:", error);
+    return null;
   }
 }
 
@@ -124,15 +144,16 @@ export function getGdriveContentHeaders(url): Promise<{
       });
   });
 }
-export function getUrlContentHeaders(url): Promise<{
+export function getUrlContentHeaders(url: string): Promise<{
   contentType: string;
   contentLength: number;
   mimeType?: string;
   mediaType?: "image" | "video" | "doc";
   name?: string;
+  url: string;
 }> {
   if (!url) {
-    return Promise.reject(new Error("Not a valid url"));
+    return Promise.reject(new Error(`Not a valid url ${url}`));
   }
   return new Promise((resolve, reject) => {
     return axios
@@ -169,7 +190,7 @@ export function getUrlContentHeaders(url): Promise<{
         if (err) {
           reject(new Error(`Cannot get media type for ${contentType}`));
         }
-        resolve({contentType, contentLength, mimeType, mediaType, name});
+        resolve({contentType, contentLength, mimeType, mediaType, name, url});
       })
       .catch((error) => {
         console.error(`Error while fetching headers for ${url}:`, error);

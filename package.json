@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "2.0.9",
+  "version": "2.1.0",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -63,12 +63,14 @@
     "lodash": "^4.17.21",
     "markdown-to-txt": "^2.0.1",
     "notion-types": "^6.16.0",
-    "open-graph-scraper": "^6.7.2",
     "string-to-unicode-variant": "^1.0.9",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.1",
     "tsup": "^8.1.0",
     "twitter-text": "^3.1.0",
     "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "url-metadata": "^4.1.1"
   }
 }
