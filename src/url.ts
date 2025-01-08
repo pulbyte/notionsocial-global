@@ -198,14 +198,23 @@ export function getUrlContentHeaders(url: string): Promise<{
       });
   });
 }
-export function convertToHttps(url) {
+export function convertToHttps(url: string) {
   if (!url || typeof url !== "string") return url;
-  // Check if the URL starts with "http://"
+
+  // Remove any leading/trailing whitespace
+  url = url.trim();
+
+  // If it starts with http://, convert to https://
   if (url.startsWith("http://")) {
-    // Replace "http://" with "https://"
     return url.replace(/^http:\/\//, "https://");
   }
-  return url; // If it's already HTTPS or doesn't start with HTTP, return as-is
+
+  // If it starts with www. or doesn't have a protocol, add https://
+  if (!url.startsWith("https://")) {
+    return `https://${url.startsWith("www.") ? "" : ""}${url}`;
+  }
+
+  return url;
 }
 export function extractUrlFromString(text: string, removeUrl?: boolean): [string, string] {
   if (!text) return ["", ""];
@@ -232,4 +241,22 @@ export function extractUrlFromString(text: string, removeUrl?: boolean): [string
 export function extractUrlsFromString(inputString) {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return inputString.match(urlRegex) || [];
+}
+// Inside files, Cause it's a server function, And can't run in browser
+export function getOGData(
+  url: string
+): Promise<{ogTitle: string; ogImage: string; ogSiteName: string}> {
+  return urlMetadata(convertToHttps(url))
+    .then((metadata) => {
+      const {"og:title": ogTitle, "og:image": ogImage, "og:site_name": ogSiteName} = metadata;
+      return {
+        ogTitle,
+        ogImage,
+        ogSiteName,
+      };
+    })
+    .catch((e) => {
+      console.log(`Error in getting URL ${url} OG data`, e);
+      throw e;
+    });
 }
