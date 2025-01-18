@@ -326,3 +326,19 @@ export function mapFulfilled<T>(results: PromiseSettledResult<T>[]) {
 export function dog(...args) {
   if (dev) console.log(...args);
 }
+
+export function arrayToAsyncIterator<T>(array: T[]): AsyncIterableIterator<T> {
+  let index = 0;
+
+  return {
+    async next() {
+      if (index < array.length) {
+        return {value: array[index++], done: false};
+      }
+      return {value: undefined, done: true};
+    },
+    [Symbol.asyncIterator]() {
+      return this;
+    },
+  };
+}

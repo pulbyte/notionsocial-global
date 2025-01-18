@@ -48,11 +48,12 @@ export function catchPublishError(
 
   const isTaskProcessing = code == "task-processing";
 
-  const updateProcessingPromise = isTaskProcessing
-    ? Promise.resolve()
-    : isPostPoned
-    ? postRecordUpdateCallback({processing: false})
-    : postRecordUpdateCallback({processing: false, status: "error"}, true);
+  const updateProcessingPromise =
+    isTaskProcessing || isServerError
+      ? Promise.resolve()
+      : isPostPoned
+      ? postRecordUpdateCallback({processing: false})
+      : postRecordUpdateCallback({processing: false, status: "error"}, true);
 
   return updateProcessingPromise?.finally(() => {
     // If a server error occurs during publishing, return error, so that it can be retried

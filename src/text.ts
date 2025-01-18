@@ -108,7 +108,7 @@ export function notionRichTextParser(richTextArray: RichTextItemResponse[], trim
       if (trim) return str.trim();
       return str;
     })
-    .join(" ");
+    .join("");
 }
 
 export function trimAndRemoveWhitespace(inputString: string): string {
@@ -140,10 +140,10 @@ export function splitStrIntoChunks(str: string, size = 280) {
   }
   return chunks;
 }
-export function trimString(str: string): string {
+export function trimString(str: string, removeNewLines = true, trim = true): string {
   if (!str) return "";
-  str = str.replace(/^\n+|\n+$/g, ""); // remove \n from start and end
-  str = str.trim(); // trim whitespace
+  if (removeNewLines) str = str.replace(/^\n+|\n+$/g, ""); // remove \n from start and end
+  if (trim) str = str.trim(); // trim whitespace
   return str;
 }
 export const urlRegexp =
@@ -322,4 +322,41 @@ export function snakeCaseToCamelCase(str: string) {
 }
 export function camelCaseToSnakeCase(str: string) {
   return str.replace(/([A-Z])/g, (g) => `_${g[0].toLowerCase()}`);
+}
+export function numberToLetter(num: number): string {
+  // Subtract 1 to make 1-based index into 0-based index
+  num = num - 1;
+  // Handle numbers greater than 26 by wrapping around
+  const letterIndex = num % 26;
+  // Convert to lowercase letter (97 is ASCII for 'a')
+  return String.fromCharCode(97 + letterIndex);
+}
+export function numberToRoman(num: number): string {
+  const romanNumerals = [
+    {value: 1000, symbol: "M"},
+    {value: 900, symbol: "CM"},
+    {value: 500, symbol: "D"},
+    {value: 400, symbol: "CD"},
+    {value: 100, symbol: "C"},
+    {value: 90, symbol: "XC"},
+    {value: 50, symbol: "L"},
+    {value: 40, symbol: "XL"},
+    {value: 10, symbol: "X"},
+    {value: 9, symbol: "IX"},
+    {value: 5, symbol: "V"},
+    {value: 4, symbol: "IV"},
+    {value: 1, symbol: "I"},
+  ];
+
+  let result = "";
+
+  // Convert number to roman numeral
+  for (let i = 0; i < romanNumerals.length; i++) {
+    while (num >= romanNumerals[i].value) {
+      result += romanNumerals[i].symbol;
+      num -= romanNumerals[i].value;
+    }
+  }
+
+  return result.toLowerCase(); // Return lowercase for consistency
 }

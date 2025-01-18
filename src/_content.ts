@@ -9,12 +9,14 @@ import {
   Content,
   FormattingOptions,
   Media,
+  NotionBlock,
+  ParsedNotionBlock,
   Thread,
   TwitterContent,
 } from "types";
 import {extractTweetIdFromUrl} from "./url";
 
-export function convertBlocksToParagraphs(
+export function convertSectionsToParagraphs(
   textArray: string[],
   mediaArray: Media[][]
 ): Thread[] {
@@ -26,7 +28,7 @@ export function convertBlocksToParagraphs(
 
 export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boolean} {
   const limit = 63206;
-  let rawContentArray = [];
+  let rawContentArray: ParsedNotionBlock[] = [];
 
   let listIndex = 0;
   for (let i = 0; i < blocks.length; i++) {
@@ -44,7 +46,7 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
     if (!_limitLeft) break;
   }
 
-  const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
+  const [caption, textArray, mediaArray] = processParsedNotionBlocks(rawContentArray);
 
   mediaArray.forEach((mediaArr, index) => {
     const ht = hasText(textArray[index]);
@@ -54,8 +56,8 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
     }
   });
 
-  const paragraphs = convertBlocksToParagraphs(textArray, mediaArray);
-  const twitter = convertBlocksToTwitterThread(textArray, mediaArray);
+  const paragraphs = convertSectionsToParagraphs(textArray, mediaArray);
+  const twitter = convertSectionsToTwitterThread(textArray, mediaArray);
   // const threads = convertTextToThreads(textArray, mediaArray);
 
   const content: Content & {hasMedia: boolean} = {
@@ -63,80 +65,80 @@ export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boo
     paragraphs,
     threads: [],
     twitter,
+    bluesky: [],
     hasMedia: paragraphs.some((p) => p.media?.length > 0),
   };
 
   return content;
 }
-export function processRawContentBlock(
-  block,
-  i,
-  textArray: string[],
-  textArrayLast: string,
-  mediaArray: Media[][],
-  mediaArrayBuffer: Media[],
-  rawContentArray: any[]
+export function processParsedNotionBlock(
+  parsed: ParsedNotionBlock,
+  i: number,
+  textSections: string[],
+  textBuffer: string,
+  mediaSections: Media[][],
+  mediaBuffer: Media[],
+  parsedBlocks: ParsedNotionBlock[]
 ): [string, Media[]] {
-  const isDivider = block == "---";
-  const previewsOneWasDivider = rawContentArray[i - 1] == "---";
+  //@ts-ignore
+  let text = parsed.content || "";
+  const isDivider = parsed.type == "divider";
+  const previewsOneWasDivider = parsedBlocks[i - 1]?.type == "divider";
+  const nextOne = parsedBlocks[i + 1];
+  const nextOneIsText = nextOne?.type == "text";
   if (isDivider) {
-    if (previewsOneWasDivider) {
-      block = "\n";
-    } else if (textArrayLast.length > 0) {
-      textArray.push(textArrayLast);
-      mediaArray.push([...mediaArrayBuffer]);
-      mediaArrayBuffer = [];
+    if (textBuffer.length && !previewsOneWasDivider) {
+      textSections.push(textBuffer);
+      mediaSections.push([...mediaBuffer]);
+      mediaBuffer = [];
+      textBuffer = "";
     }
-    textArrayLast = "\n";
-  } else if (typeof block == "object") {
-    mediaArrayBuffer.push(block);
+  } else if (parsed.type == "media") {
+    mediaBuffer.push(parsed.media);
   } else {
-    textArrayLast = textArrayLast.concat(block);
-    if (i < rawContentArray.length - 1 && rawContentArray[i + 1] != "---")
-      textArrayLast = textArrayLast.concat(`\n`);
-    if (i == rawContentArray.length - 1) {
-      textArray.push(textArrayLast);
-      mediaArray.push([...mediaArrayBuffer]);
-      mediaArrayBuffer = [];
+    textBuffer = textBuffer + text;
+    if (nextOneIsText) textBuffer = textBuffer + `\n`;
+    if (i == parsedBlocks.length - 1) {
+      textSections.push(textBuffer);
+      mediaSections.push([...mediaBuffer]);
+      mediaBuffer = [];
     }
   }
-  return [textArrayLast, mediaArrayBuffer];
+  return [textBuffer, mediaBuffer];
 }
-export function processRawContentBlocks(rawContentArray): [string, string[], Media[][]] {
-  let mediaArray: Media[][] = [];
-  let mediaArrayBuffer: Media[] = [];
-  let textArray: string[] = [];
-  let textArrayLast = "";
+export function processParsedNotionBlocks(
+  parsedBlocks: ParsedNotionBlock[]
+): [string, string[], Media[][]] {
+  let mediaSections: Media[][] = [];
+  let mediaBuffer: Media[] = [];
+  let textSections: string[] = [];
+  let textBuffer = "";
 
-  rawContentArray.forEach((rawBlock, i) => {
-    const [_textArrayLast, _mediaArrayBuffer] = processRawContentBlock(
-      rawBlock,
+  parsedBlocks.forEach((parsed, i) => {
+    const [_textBuffer, _mediaBuffer] = processParsedNotionBlock(
+      parsed,
       i,
-      textArray,
-      textArrayLast,
-      mediaArray,
-      mediaArrayBuffer,
-      rawContentArray
+      textSections,
+      textBuffer,
+      mediaSections,
+      mediaBuffer,
+      parsedBlocks
     );
-    textArrayLast = _textArrayLast;
-    mediaArrayBuffer = _mediaArrayBuffer;
+    textBuffer = _textBuffer;
+    mediaBuffer = _mediaBuffer;
   });
-  textArray = textArray
-    .map((s) => trimString(s))
-    .filter((str, i) => {
-      return str.length > 0;
-    });
-  const caption = textArray.join("\n").trim();
+  textSections = textSections.map((s) => trimString(s)).filter((s) => s.length > 0);
+  const caption = textSections.join("\n\n");
 
-  return [caption, textArray, mediaArray];
+  return [caption, textSections, mediaSections];
 }
 
-export function convertBlocksToTwitterThread(
-  textArray: string[],
+export function convertSectionsToTwitterThread(
+  sections: string[],
   mediaArray: Media[][]
 ): TwitterContent {
   let threads: TwitterContent = [];
-  textArray.forEach((str, index) => {
+  sections.forEach((str, index) => {
     const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(str);
     const firstTweet = tweets.splice(0, 1)[0];
     threads.push({
@@ -146,10 +148,7 @@ export function convertBlocksToTwitterThread(
       replyToTweetId,
       retweetId,
     });
-    tweets.forEach((t) => {
-      const trimmedString = t.trim();
-      threads.push({text: trimmedString, media: []});
-    });
+    tweets.forEach((text) => threads.push({text, media: []}));
   });
   threads = threads.filter((obj) => {
     return hasText(obj.text) || hasText(obj.retweetId) || !!obj.media?.length;
@@ -170,10 +169,10 @@ export function tweetifyString(text, maxTweetLength = 280) {
   for (const word of words) {
     const newTweet = currentTweet + " " + word;
     if (parseTweet(newTweet).weightedLength > maxTweetLength) {
-      tweets.push(currentTweet.trim());
+      tweets.push(currentTweet);
       currentTweet = word;
     } else {
-      currentTweet = newTweet.trim();
+      currentTweet = newTweet;
     }
   }
   tweets.push(currentTweet);
@@ -218,42 +217,64 @@ export function extractTwitterPostFromString(text: string): BaseTwitterPost {
 }
 
 function processNotionBlockCommon(
-  rawContentArray: any[],
-  block,
-  nextBlock,
-  index: number,
+  parsedBlocks: ParsedNotionBlock[],
+  block: NotionBlock,
+  nextBlock: NotionBlock,
+  listIndex: number,
   limit = 63206,
   media: Media | null,
   options?: FormattingOptions
 ): [number, number] {
   if (media) {
-    rawContentArray.push(media);
+    parsedBlocks.push({type: "media", media});
   }
 
-  let [text, _index] = parseNotionBlockToText(block, nextBlock, index, options);
-  index = _index;
+  let nestIndex = 1;
+  let [result, _listIndex, _nestIndex] = parseNotionBlockToText(
+    block,
+    nextBlock,
+    listIndex,
+    nestIndex,
+    options
+  );
 
-  const leftLimit = limit - rawContentArray.join("").length;
+  listIndex = _listIndex;
+  nestIndex = _nestIndex;
+  const currentLength = parsedBlocks.join("").length;
+  const leftLimit = limit - currentLength;
 
-  if (text.length > leftLimit && text.length < 4) return [index, leftLimit];
-  const str = text.substring(0, leftLimit);
-  if (leftLimit > 0) {
-    rawContentArray.push(str);
+  // ?  Only push limited text
+  if (result.type == "text") {
+    const text = result.content || "";
+    if (text.length > leftLimit && text.length < 4) {
+      console.warn("Terminating early - text too long but < 4 chars", {
+        "text.length": text.length,
+        leftLimit,
+        limit,
+        currentLength,
+      });
+    } else if (leftLimit > 0) {
+      parsedBlocks.push({type: "text", content: text.substring(0, leftLimit)});
+    } else {
+      console.warn("! Skipping text - character limit exceeded");
+    }
+  } else {
+    parsedBlocks.push(result);
   }
-  return [index, leftLimit];
+  return [listIndex, leftLimit];
 }
 
 export async function processNotionBlock(
-  rawContentArray: any[],
-  block,
-  nextBlock,
+  parsedNotionBlocks: ParsedNotionBlock[],
+  block: NotionBlock,
+  nextBlock: NotionBlock,
   listIndex: number,
-  limit = 63206,
+  limit: number,
   options?: FormattingOptions
 ) {
   const media = await getMediaFromNotionBlock(block);
   return processNotionBlockCommon(
-    rawContentArray,
+    parsedNotionBlocks,
     block,
     nextBlock,
     listIndex,
@@ -264,16 +285,16 @@ export async function processNotionBlock(
 }
 
 export function processStaticNotionBlock(
-  rawContentArray: any[],
-  block,
-  nextBlock,
+  parsedNotionBlocks: ParsedNotionBlock[],
+  block: NotionBlock,
+  nextBlock: NotionBlock,
   listIndex: number,
-  limit = 63206,
+  limit: number,
   options?: FormattingOptions
 ) {
   const media = getStaticMediaFromNotionBlock(block);
   return processNotionBlockCommon(
-    rawContentArray,
+    parsedNotionBlocks,
     block,
     nextBlock,
     listIndex,
@@ -298,8 +319,12 @@ export function getContentFromTextProperty(string: string, limit = 63206): Conte
     });
   });
 
-  let texts = threadifyString(text);
-  const threads = texts.map((text, index) => {
+  let threadTexts = threadifyString(text, 500);
+  const threads = threadTexts.map((text, index) => {
+    return {text, media: []};
+  });
+  let blueskyTexts = threadifyString(text, 300);
+  const bluesky = blueskyTexts.map((text, index) => {
     return {text, media: []};
   });
   return {
@@ -307,36 +332,38 @@ export function getContentFromTextProperty(string: string, limit = 63206): Conte
     twitter,
     paragraphs: [{text, media: []}],
     threads,
+    bluesky,
   };
 }
-export function threadifyString(text: string, maxTweetLength = 500) {
+export function threadifyString(text: string, maxTextLength: number) {
   // text = replaceLineBreaksWithEmptySpaces(text);
   const words = text.split(" ");
   const threads: string[] = [];
   let currentThread = "";
   for (const word of words) {
     const newTweet = currentThread + " " + word;
-    if (newTweet.length > maxTweetLength) {
-      threads.push(currentThread.trim());
+    if (newTweet.length > maxTextLength) {
+      threads.push(currentThread);
       currentThread = word;
     } else {
-      currentThread = newTweet.trim();
+      currentThread = newTweet;
     }
   }
   threads.push(currentThread);
   return threads;
 }
 
-export function convertTextToThreads(textArray: string[], mediaArray: Media[][]): Thread[] {
+export function convertTextToThreads(
+  textArray: string[],
+  mediaArray: Media[][],
+  maxTextLength: number
+): Thread[] {
   let __: Thread[] = [];
   textArray.forEach((str, index) => {
-    const threads = threadifyString(str);
+    const threads = threadifyString(str, maxTextLength);
     const firstThread = threads.splice(0, 1)[0];
     __.push({text: firstThread, media: mediaArray[index]});
-    threads.forEach((t) => {
-      const trimmedString = t.trim();
-      __.push({text: trimmedString, media: []});
-    });
+    threads.forEach((text) => __.push({text, media: []}));
   });
   __ = __.filter((obj) => {
     return hasText(obj.text) || obj.media?.length > 0;

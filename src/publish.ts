@@ -5,13 +5,13 @@ import {
   Content,
   NotionFiles,
   NotionPagePostConfig,
-  MediaFile,
   UserData,
   Media,
   PostRecord,
   MediaTransformation,
   MediaType,
   SocialPlatformTypes,
+  NotionBlock,
 } from "./types";
 import {callFunctionsSequentiallyBreak, callNestedFunctionsSequentially, dog} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
@@ -54,13 +54,16 @@ export const postPublishStages = [
 ] as const;
 export const publishStageIndex = postPublishStages.indexOf("publish");
 
-export function getNotionPageContent(config: NotionPagePostConfig): Promise<Content> {
+export function getNotionPageContent(
+  config: NotionPagePostConfig
+): Promise<[Content, NotionBlock[]]> {
   return new Promise(async (res, rej) => {
     try {
       let __: Content = {
         text: "",
         paragraphs: [],
         threads: [],
+        bluesky: [],
         altText: config.altText,
         twitter: [],
       };
@@ -70,21 +73,27 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
         timeoutMs: 15000,
       });
 
+      function getChildrenIterator(blockId: string) {
+        const iterateArr = iteratePaginatedAPI(notion.blocks.children.list, {
+          block_id: blockId,
+        });
+        return iterateArr;
+      }
+
       // ** Caption from caption rich_text property
       if (hasText(config.captionText)) {
         const content = getContentFromTextProperty(config.captionText);
         Object.assign(__, content);
-        res(__);
+        res([__, []]);
         return;
       }
 
-      const iterateArr = iteratePaginatedAPI(notion.blocks.children.list, {
-        block_id: config._pageId,
-      });
+      const pageChildrenIterator = getChildrenIterator(config._pageId);
 
-      const content = await getContentFromNotionBlocksAsync(
-        iterateArr,
-        config.formattingOptions
+      const [content, blocks] = await getContentFromNotionBlocksAsync(
+        pageChildrenIterator,
+        config.formattingOptions,
+        getChildrenIterator
       );
       Object.assign(__, content);
 
@@ -94,7 +103,7 @@ export function getNotionPageContent(config: NotionPagePostConfig): Promise<Cont
         Object.assign(__, content);
       }
 
-      return res(__);
+      return res([__, blocks]);
     } catch (error) {
       rej(error);
     }

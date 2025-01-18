@@ -1,55 +1,83 @@
-import {Content, FormattingOptions} from "./types";
-import {
-  BlockObjectResponse,
-  PartialBlockObjectResponse,
-} from "@notionhq/client/build/src/api-endpoints";
+import {Content, FormattingOptions, Media, NotionBlock, ParsedNotionBlock} from "./types";
+import {PartialBlockObjectResponse} from "@notionhq/client/build/src/api-endpoints";
 import {
   convertTextToThreads,
-  convertBlocksToTwitterThread,
+  convertSectionsToTwitterThread,
   processNotionBlock,
-  processRawContentBlocks,
-  convertBlocksToParagraphs,
+  processParsedNotionBlocks,
+  convertSectionsToParagraphs,
 } from "_content";
 import {hasText} from "text";
-import {callFunctionsSequentially} from "utils";
+import {arrayToAsyncIterator, callFunctionsSequentially} from "utils";
 
-type Block = PartialBlockObjectResponse | BlockObjectResponse;
-type NotionBlocksIter = AsyncIterableIterator<Block>;
+type NotionBlocksIter = AsyncIterableIterator<NotionBlock | PartialBlockObjectResponse>;
 
-export async function getContentFromNotionBlocksAsync(
-  blocksIter: NotionBlocksIter,
-  options?: FormattingOptions
-): Promise<Content & {hasMedia: boolean}> {
-  const limit = 10000;
-  let rawContentArray = [];
-
-  // Needed for list-item blocks
+// New helper function for iterating and processing blocks
+export async function processNotionBlocks(
+  blocksArray: NotionBlocksIter | NotionBlock[],
+  options?: FormattingOptions,
+  charLimit: number = 10000,
+  getChildrenIterator?: (blockId: string) => NotionBlocksIter
+): Promise<{
+  blocks: NotionBlock[];
+  caption: string;
+  textArray: string[];
+  mediaArray: Media[][];
+}> {
+  const iterator = Array.isArray(blocksArray)
+    ? arrayToAsyncIterator(blocksArray)
+    : blocksArray;
+  const blocks: NotionBlock[] = [];
+  let rawContentArray: ParsedNotionBlock[] = [];
   let listIndex = 0;
-  // hard copy the limit
+  let limitLeft = Number(charLimit);
+  let batch: NotionBlock[] = [];
 
-  let limitLeft = limit;
-
-  // We will first push the blocks to a batch of 3 and then process them
-  let batch: Block[] = [];
-
-  async function blockProcess(_batch: Block[], currentBlock: Block, index: number) {
+  async function processBlock(
+    _batch: NotionBlock[],
+    currentBlock: NotionBlock,
+    index: number
+  ) {
     const nextBlock = index < _batch.length - 1 ? _batch[index + 1] : null;
-    return processNotionBlock(
+
+    // Recursively process children if they exist
+    if (currentBlock.has_children && getChildrenIterator) {
+      try {
+        const iterator = Array.isArray(currentBlock.children)
+          ? arrayToAsyncIterator(currentBlock.children)
+          : getChildrenIterator(currentBlock.id);
+        const {blocks: childBlocks} = await processNotionBlocks(
+          iterator,
+          options,
+          limitLeft,
+          getChildrenIterator
+        );
+        currentBlock.children = childBlocks;
+      } catch (e) {
+        console.error("Error processing children blocks", e);
+      }
+    }
+    // push the current block to the blocks array
+    blocks.push(currentBlock);
+
+    // Process current block
+    const [newListIndex, newLimitLeft] = await processNotionBlock(
       rawContentArray,
       currentBlock,
       nextBlock,
       listIndex,
-      limit,
+      charLimit,
       options
     );
+    return [newListIndex, newLimitLeft];
   }
 
-  async function batchProcess(_: Block[]) {
+  async function batchProcess(_: NotionBlock[]) {
     // process the batch
     return callFunctionsSequentially(
       _.map(
         (block, index) => () =>
-          blockProcess(_, block, index).then(([_listIndex, _limitLeft]) => {
+          processBlock(_, block, index).then(([_listIndex, _limitLeft]) => {
             listIndex = _listIndex;
             limitLeft = _limitLeft;
             return _listIndex;
@@ -61,38 +89,65 @@ export async function getContentFromNotionBlocksAsync(
     });
   }
 
-  for await (const block of blocksIter) {
-    // cancel if limitLeft is 0
-    if (!limitLeft) break;
-    // batch-batching
-    batch.push(block);
-    // processing the batch
+  for await (const block of iterator) {
+    if (!limitLeft) {
+      console.log(`Character limit of ${charLimit} for parsing blocks exhausted.`);
+      break;
+    }
+    batch.push(block as NotionBlock);
     if (batch.length === 25) await batchProcess(batch);
   }
-  // After the async loop batch-batcher is done, process any remaining blocks in the batch
   if (batch.length > 0) await batchProcess(batch);
 
-  const [caption, textArray, mediaArray] = processRawContentBlocks(rawContentArray);
+  const [caption, textArray, mediaArray] = processParsedNotionBlocks(rawContentArray);
+  return {blocks, caption, textArray, mediaArray};
+}
 
-  mediaArray.forEach((mediaArr, index) => {
-    const ht = hasText(textArray[index]);
+// Refactored main function
+export async function getContentFromNotionBlocksAsync(
+  blocksIter: NotionBlocksIter,
+  options?: FormattingOptions,
+  getChildrenIterator?: (blockId: string) => NotionBlocksIter,
+  chatLimit?: number
+): Promise<[Content & {hasMedia: boolean}, NotionBlock[]]> {
+  const {caption, textArray, mediaArray, blocks} = await processNotionBlocks(
+    blocksIter,
+    options,
+    chatLimit,
+    getChildrenIterator
+  );
+
+  return getContentFromProcessedBlocks(caption, textArray, mediaArray, blocks);
+}
+export function getContentFromProcessedBlocks(
+  caption: string,
+  textSections: string[],
+  mediaSections: Media[][],
+  blocks: NotionBlock[]
+): [Content & {hasMedia: boolean}, NotionBlock[]] {
+  // Process media and text arrays
+  mediaSections.forEach((mediaArr, index) => {
+    const ht = hasText(textSections[index]);
     const hm = mediaArr?.length > 0;
     if (!ht && hm) {
-      textArray[index] = "";
+      textSections[index] = "";
     }
   });
 
-  const twitter = convertBlocksToTwitterThread(textArray, mediaArray);
-  const threads = convertTextToThreads(textArray, mediaArray);
-  const paragraphs = convertBlocksToParagraphs(textArray, mediaArray);
+  // Convert to different formats
+  const twitter = convertSectionsToTwitterThread(textSections, mediaSections);
+  const threads = convertTextToThreads(textSections, mediaSections, 500);
+  const bluesky = convertTextToThreads(textSections, mediaSections, 300);
+  const paragraphs = convertSectionsToParagraphs(textSections, mediaSections);
 
   const content: Content & {hasMedia: boolean} = {
-    text: caption,
+    text: caption, // or however you want to handle the caption
     paragraphs,
     threads,
+    bluesky,
     twitter,
     hasMedia: paragraphs.some((p) => p.media?.length > 0),
   };
 
-  return content;
+  return [content, blocks];
 }

@@ -97,6 +97,11 @@ export function getMediaFromNotionBlock(block): Promise<Media | null> {
   } else return Promise.resolve(null);
 }
 
+export function getNotionMediaName(str: string, mimeType: string) {
+  if (!str || !mimeType) return null;
+  return str.split(`.${mimeType}`)[0];
+}
+
 export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise<Media> {
   return new Promise((resolve) => {
     const extUrl = file?.["external"]?.["url"] as string;

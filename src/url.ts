@@ -20,7 +20,7 @@ export function isBase64String(str) {
 
   return base64Regex.test(str);
 }
-export function removeAtSymbolFromLinks(inputParagraph) {
+export function removeAtSymbolFromUrls(inputParagraph) {
   // Define a regular expression to match the pattern: @http or @https
   const regex = /@https?:\/\//g;
 

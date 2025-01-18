@@ -1,65 +1,160 @@
-import {extractIframeUrl, hasText, notionRichTextParser, trimString} from "./text";
+import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "env";
+import {
+  extractIframeUrl,
+  hasText,
+  notionRichTextParser,
+  numberToLetter,
+  numberToRoman,
+  trimString,
+} from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
 const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
   emptyParagraphToNonBreakingSpace: false,
 });
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
-import {FormattingOptions, NotionBlockType} from "types";
+import {FormattingOptions, NotionBlock, NotionBlockType, ParsedNotionBlock} from "types";
 
 function mkdwn(block) {
   try {
     let markdown = NBMPInstance.parse([block]);
     return markdown;
   } catch (e) {
-    console.log("An error occurred while parsing the block", e);
+    console.warn("An error occurred while parsing the block", e.message);
     return "";
   }
 }
 
 export function parseNotionBlockToText(
-  block,
-  nextBlock,
-  index,
-  options?: FormattingOptions
-): [string, number] {
+  block: NotionBlock,
+  nextBlock: NotionBlock | null,
+  listIndex: number,
+  nestIndex: number,
+  options?: FormattingOptions,
+  parentBlock?: NotionBlock
+): [ParsedNotionBlock, number, number] {
   let markdown = mkdwn(block);
   const type = block.type as NotionBlockType;
   const hasChildren = block.has_children;
-  const isListItem = type == "numbered_list_item";
+  const hasChildrenBlocks = block.children?.length > 0;
+  const isNumberedListItem = type == "numbered_list_item";
+  const parentType = block.parent?.type;
+  const isNested = parentType == "block_id";
   const isBulletItem = type == "bulleted_list_item";
+  const stacked = ["bulleted_list_item", "numbered_list_item", "to_do"];
+  const isStacked = stacked.includes(type);
+  const isList = isNumberedListItem || isBulletItem;
   const isDivider = type == "divider";
   const isEmbed = type == "embed";
   const isMedia = type == "video" || type == "image";
-  const isParagraph = type == "paragraph";
   const isText = ["paragraph", "heading_1", "heading_2", "heading_3"].includes(type);
+  const isParagraph = type == "paragraph";
   const paragraph = getParagraphText(block);
-
-  const isNextBlockParagraph = nextBlock?.type == "paragraph";
+  const isEmpty = !hasText(paragraph);
+  const isToggleable = block[type]?.["is_toggleable"];
   const nextParagraph = getParagraphText(nextBlock);
-  const isNextParagraphEmpty = isNextBlockParagraph && !hasText(trimString(nextParagraph));
+  const notSupported = !SUPPORTED_NOTION_CONTENT_BLOCKS.includes(type);
+  const isNextBlockEmpty = nextParagraph && !hasText(trimString(nextParagraph));
 
-  if (isDivider) return ["---", index];
+  function __(result?: string | boolean): [ParsedNotionBlock, number, number] {
+    const obj: ParsedNotionBlock =
+      typeof result === "boolean"
+        ? {type: "divider"}
+        : typeof result === "string"
+        ? {
+            type: "text",
+            content: result || "",
+            ...(parentBlock && {parentBlockType: parentBlock}),
+          }
+        : {type: "nil", content: null};
+    return [obj, listIndex, nestIndex];
+  }
+
+  if (isDivider) return __(true);
+
+  if ((!isText && !isList && hasChildren) || isMedia || isToggleable || notSupported)
+    return __();
+
   const iframeUrl = isEmbed ? extractIframeUrl(markdown) : null;
-  if (iframeUrl?.includes("widgets.notionsocial.app")) return ["", index];
-  if (iframeUrl) return [iframeUrl, index];
+  if (iframeUrl?.includes("widgets.notionsocial.app")) return __();
+  if (iframeUrl) return __(iframeUrl);
+  if (isEmpty) return __("");
 
-  if (!hasText(paragraph) || isMedia || hasChildren) return ["", index];
+  if (listIndex && !isNumberedListItem) listIndex = 0;
+  if (isNumberedListItem) listIndex++;
 
-  if (index && !isListItem) index = 0;
-  if (isListItem) index++;
+  // Calculate indent with 2 special spaces per nest level, starting with 2 spaces at level 1
+  const indent = "⠀".repeat(2 * nestIndex);
+
+  let childrenText = "";
+  let childrenListIndex = 0;
+
+  if (hasChildrenBlocks) {
+    nestIndex++;
+    for (let i = 0; i < block.children.length; i++) {
+      const child = block.children[i];
+      const [result, _index, _nestIndex] = parseNotionBlockToText(
+        child,
+        nextBlock,
+        childrenListIndex,
+        nestIndex,
+        options,
+        block
+      );
+      childrenListIndex = _index;
+      const childText = result.type == "text" ? result.content : "";
+      if (childText) {
+        childrenText += `\n${indent}${childText}`;
+      }
+    }
+  } else nestIndex = 1;
 
   let formatted = formatMarkdown(markdown);
+  let text = markdownToTxt(formatted, {gfm: false}); //.split("\n\n").join("\n");
 
-  let text = markdownToTxt(formatted, {gfm: false}).split("\n\n").join("\n");
-  const trimmedText = trimString(formatted);
-  if (isText) {
-    if (isParagraph) text = trimmedText;
-    if (options?.addLineBreakOnParagraphBlock && !isNextParagraphEmpty) text = text + "\n";
-  }
-  if (text && isListItem) text = `${index}. ${text}`;
-  if (text && isBulletItem) text = `• ${text}`;
-  return [text, index];
+  if (text && isNumberedListItem)
+    text = `${getNumberedListPrefix(listIndex, nestIndex, isNested)}. ${text}`;
+  if (text && isBulletItem) text = `${getBulletListPrefix(nestIndex, isNested)} ${text}`;
+
+  if (isParagraph) text = trimString(formatted);
+
+  text += childrenText;
+
+  if (
+    options?.addLineBreakOnParagraphBlock &&
+    !isNextBlockEmpty &&
+    !parentBlock &&
+    (isStacked ? nextBlock?.type != block.type : true)
+  )
+    text = text + "\n";
+  return __(text);
+}
+function getBulletListPrefix(nestIndex: number, isNested: boolean) {
+  // Different bullet styles for different nesting levels
+  const bullets = ["•", "◦", "▪"];
+  const bullet = bullets[(nestIndex - 1) % bullets.length];
+  // return bullet || "•";
+  if (isNested) return "◦";
+  else return "•";
+  // const bullets = ["•","◦", "▪"];
+  // return bullets[(nestIndex - 1) % bullets.length];
+}
+
+function getNumberedListPrefix(listIndex: number, nestIndex: number, isNested: boolean) {
+  // Different numbering styles for different nesting levels
+  if (isNested) return numberToLetter(listIndex);
+  else return listIndex;
+  // switch (nestIndex % 4) {
+  //   case 0:
+  //     return listIndex; // 1, 2, 3
+  //   case 1:
+  //     return numberToLetter(listIndex); // a, b, c
+  //   case 2:
+  //     return numberToRoman(listIndex); // i, ii, iii
+  //   case 3:
+  //     return numberToLetter(listIndex); // a, b, c (repeats)
+  // }
+  // return listIndex;
 }
 
 function getParagraphText(block) {

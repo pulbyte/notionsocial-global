@@ -1,7 +1,6 @@
 import {Client, NotionClientError} from "@notionhq/client";
 import {
   UpdateDatabaseResponse,
-  GetDatabaseResponse,
   CreatePageResponse,
   UpdatePageResponse,
   GetPageResponse,

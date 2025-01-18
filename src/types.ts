@@ -17,10 +17,10 @@ import {
   UrlPropertyItemObjectResponse,
   BlockObjectResponse,
   PageObjectResponse,
+  PartialBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
-
 // Notion File, Which is extracted from Notion
 export interface Media {
   name: string;
@@ -284,7 +284,8 @@ export interface SocialAccountData {
     access_secret?: string;
     oauth_token?: string;
     oauth_token_secret?: string;
-    enc_password?: string;
+    enc_access_token?: string;
+    enc_refresh_token?: string;
     last_updated_at?: number;
   };
   fb_auth?: {
@@ -448,6 +449,7 @@ export interface Content {
   title?: string;
   altText?: string;
   threads: Thread[];
+  bluesky: Thread[];
   twitter: TwitterContent;
   media?: Array<MediaType>;
 }
@@ -499,7 +501,13 @@ export interface UpdateNdbPayload {
 }
 export type NotionPage = GetPageResponse;
 export type NotionProperties = Record<string, NotionProperty>;
-export type NotionBlock = BlockObjectResponse;
+export type NotionBlock = BlockObjectResponse & {children?: NotionBlock[]};
+export type ParsedNotionBlock =
+  | {type: "divider"}
+  | {type: "text"; content: string}
+  | {type: "media"; media: Media}
+  | {type: "nil"; content: null};
+
 export type NotionBlockType = BlockObjectResponse["type"];
 export type NotionSelectProperty = Extract<NotionProperty, {type: "select"}>;
 export type NotionTitleProperty = Extract<
