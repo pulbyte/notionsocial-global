@@ -284,10 +284,9 @@ export interface SocialAccountData {
     access_secret?: string;
     oauth_token?: string;
     oauth_token_secret?: string;
-    enc_access_token?: string;
-    enc_refresh_token?: string;
     last_updated_at?: number;
   };
+  secure_auth_token?: SecureAuthToken;
   fb_auth?: {
     access_token: string;
     expires?: number;
@@ -652,3 +651,21 @@ export interface FirestoreDoc<T = firestore.DocumentData> {
 export type StorageBucketName = "raw-post-media" | "optimized-post-media";
 export type RequiredPick<T> = {[K in keyof T]-?: {} extends Pick<T, K> ? never : K}[keyof T];
 export type OptionalPick<T> = {[K in keyof T]-?: {} extends Pick<T, K> ? K : never}[keyof T];
+export interface SecureAuthToken {
+  token: string; // The main token
+  secret?: string; // Optional secret (used with some API tokens)
+  refresh?: {
+    token: string;
+    expires_at?: number;
+    refreshed_at?: number;
+  }; // For OAuth2
+  scopes?: string[]; // Permissions granted
+  expires_at?: number; // Unix timestamp for expiration
+  issued_at?: number; // When the token was created
+  encryption?: {
+    // For encrypted tokens
+    algorithm?: "aes-256-cbc";
+    iv: string; // Initialization vector
+    key_version: number; // For key rotation
+  };
+}

@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -68,9 +68,7 @@
     "ts-node": "^10.9.1",
     "tsup": "^8.1.0",
     "twitter-text": "^3.1.0",
-    "typescript": "^5.5.2"
-  },
-  "dependencies": {
+    "typescript": "^5.5.2",
     "url-metadata": "^4.1.1"
   }
 }
