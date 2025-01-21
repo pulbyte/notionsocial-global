@@ -121,26 +121,33 @@ export function getPropertyMedia(
     });
 }
 
-export async function processMedia(
-  propertyMediaArray: Media[],
-  pageMediaListArray: Media[][],
+// Cache to store processed media by ref
+const processedMediaCache: Map<string, MediaType> = new Map();
+
+export function processMedia(
+  media: Media[],
   typesToDownload: Array<"video" | "image" | "doc">,
   processedMedia: PostRecord["processed_media"]
-): Promise<[MediaType[], MediaType[][]]> {
-  if (!propertyMediaArray && !pageMediaListArray) {
-    return [[], []];
-  }
-
+) {
   // Media processing functions
   async function fetchMedia(
     media: Media,
     transformations?: MediaTransformation[],
     fallback: boolean = false
   ): Promise<MediaType> {
+    // Check cache first
+    if (media.refId && processedMediaCache.has(media.refId)) {
+      return processedMediaCache.get(media.refId)!;
+    }
+
     const toDownload = typesToDownload?.includes(media.type);
     if (transformations && transformations.length > 0 && !fallback) {
       try {
         const tMediaFile = await getTransformedMedia(media, transformations, toDownload);
+        // Cache the result
+        if (media.refId) {
+          processedMediaCache.set(media.refId, tMediaFile);
+        }
         console.log("Transformed media -->", tMediaFile);
         return tMediaFile;
       } catch (error) {
@@ -152,10 +159,20 @@ export async function processMedia(
       }
     }
     if (!toDownload) return media;
-    return getMediaFile(media);
+    const result = await getMediaFile(media);
+    // Cache the result
+    if (media.refId) {
+      processedMediaCache.set(media.refId, result);
+    }
+    return result;
   }
 
   function getMediaFetcher(media: Media) {
+    // Check cache first
+    if (media.refId && processedMediaCache.has(media.refId)) {
+      return () => Promise.resolve(processedMediaCache.get(media.refId)!);
+    }
+
     const transformations = getMediaTransformations(media, processedMedia);
     const isTransformed = transformations && transformations.length > 0;
     const Type = media.type ? String(media.type).toUpperCase() : "Media file";
@@ -182,25 +199,46 @@ export async function processMedia(
     return () => fetchMedia(media, transformations);
   }
 
-  const propertyMediaPromises = propertyMediaArray.map(getMediaFetcher);
-
-  let filteredPropertyMediaResults: MediaType[] = [];
-  let filteredPageMediaResults: MediaType[][] = [];
-
-  return callFunctionsSequentiallyBreak<MediaType>(propertyMediaPromises)
-    .then((propertyMediaResults: MediaType[]) => {
-      filteredPropertyMediaResults = propertyMediaResults.filter(Boolean);
-      return callNestedFunctionsSequentially<MediaType>(
-        pageMediaListArray.map((list) => list.map(getMediaFetcher))
-      );
-    })
-    .then((pageMediaResults: MediaType[][]) => {
-      filteredPageMediaResults = pageMediaResults.map((tweetMedia) =>
-        tweetMedia.filter(Boolean)
-      );
-      return [filteredPropertyMediaResults, filteredPageMediaResults];
-    });
+  return callFunctionsSequentiallyBreak<MediaType>(media.map(getMediaFetcher)).then(
+    (taskResults: MediaType[]) => {
+      const results = taskResults.filter(Boolean);
+      return results;
+    }
+  );
 }
+
+export async function processContentMedia(
+  content: Content,
+  typesToDownload: Array<"video" | "image" | "doc">,
+  processedMedia: PostRecord["processed_media"]
+): Promise<Content> {
+  // Process main content media
+  if (content.media) {
+    content.media = await processMedia(content.media, typesToDownload, processedMedia);
+  }
+
+  // Process Twitter media
+  if (content.twitter) {
+    for (const tweet of content.twitter) {
+      if (tweet.media) {
+        tweet.media = await processMedia(tweet.media, typesToDownload, processedMedia);
+      }
+    }
+  }
+
+  // Process Bluesky media
+  if (content.bluesky) {
+    for (const post of content.bluesky) {
+      if (post.media) {
+        post.media = await processMedia(post.media, typesToDownload, processedMedia);
+      }
+    }
+  }
+
+  processedMediaCache.clear();
+  return content;
+}
+
 export function getAuthor(
   uuid,
   noReject?: boolean

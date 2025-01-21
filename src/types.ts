@@ -658,7 +658,8 @@ export interface SecureAuthToken {
     token: string;
     expires_at?: number;
     refreshed_at?: number;
-  }; // For OAuth2
+  };
+  type: "oauth2" | "key" | "jwt" | "password";
   scopes?: string[]; // Permissions granted
   expires_at?: number; // Unix timestamp for expiration
   issued_at?: number; // When the token was created
@@ -666,6 +667,6 @@ export interface SecureAuthToken {
     // For encrypted tokens
     algorithm?: "aes-256-cbc";
     iv: string; // Initialization vector
-    key_version: number; // For key rotation
+    key_version: string; // For key rotation
   };
 }

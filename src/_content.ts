@@ -139,7 +139,7 @@ export function convertSectionsToTwitterThread(
 ): TwitterContent {
   let threads: TwitterContent = [];
   sections.forEach((str, index) => {
-    const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(str);
+    const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(str, 280);
     const firstTweet = tweets.splice(0, 1)[0];
     threads.push({
       text: firstTweet,
@@ -319,11 +319,11 @@ export function getContentFromTextProperty(string: string, limit = 63206): Conte
     });
   });
 
-  let threadTexts = threadifyString(text, 500);
+  let threadTexts = threadifyString(text, 500, "twitter-text");
   const threads = threadTexts.map((text, index) => {
     return {text, media: []};
   });
-  let blueskyTexts = threadifyString(text, 300);
+  let blueskyTexts = threadifyString(text, 300, "string");
   const bluesky = blueskyTexts.map((text, index) => {
     return {text, media: []};
   });
@@ -335,18 +335,27 @@ export function getContentFromTextProperty(string: string, limit = 63206): Conte
     bluesky,
   };
 }
-export function threadifyString(text: string, maxTextLength: number) {
-  // text = replaceLineBreaksWithEmptySpaces(text);
+export function threadifyString(
+  text: string,
+  maxTextLength: number,
+  lengthMethod: "twitter-text" | "string"
+) {
   const words = text.split(" ");
   const threads: string[] = [];
   let currentThread = "";
+
   for (const word of words) {
-    const newTweet = currentThread + " " + word;
-    if (newTweet.length > maxTextLength) {
+    const newThread = currentThread + " " + word;
+    const exceedsLength =
+      lengthMethod === "twitter-text"
+        ? parseTweet(newThread).weightedLength > maxTextLength
+        : newThread.length > maxTextLength;
+
+    if (exceedsLength) {
       threads.push(currentThread);
       currentThread = word;
     } else {
-      currentThread = newTweet;
+      currentThread = newThread;
     }
   }
   threads.push(currentThread);
@@ -356,11 +365,12 @@ export function threadifyString(text: string, maxTextLength: number) {
 export function convertTextToThreads(
   textArray: string[],
   mediaArray: Media[][],
-  maxTextLength: number
+  maxTextLength: number,
+  lengthMethod: "twitter-text" | "string"
 ): Thread[] {
   let __: Thread[] = [];
   textArray.forEach((str, index) => {
-    const threads = threadifyString(str, maxTextLength);
+    const threads = threadifyString(str, maxTextLength, lengthMethod);
     const firstThread = threads.splice(0, 1)[0];
     __.push({text: firstThread, media: mediaArray[index]});
     threads.forEach((text) => __.push({text, media: []}));

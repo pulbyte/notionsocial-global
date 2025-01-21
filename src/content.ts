@@ -136,8 +136,8 @@ export function getContentFromProcessedBlocks(
 
   // Convert to different formats
   const twitter = convertSectionsToTwitterThread(textSections, mediaSections);
-  const threads = convertTextToThreads(textSections, mediaSections, 500);
-  const bluesky = convertTextToThreads(textSections, mediaSections, 300);
+  const threads = convertTextToThreads(textSections, mediaSections, 500, "twitter-text");
+  const bluesky = convertTextToThreads(textSections, mediaSections, 300, "string");
   const paragraphs = convertSectionsToParagraphs(textSections, mediaSections);
 
   const content: Content & {hasMedia: boolean} = {

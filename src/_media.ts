@@ -78,8 +78,19 @@ export function getMediaTypeFromContentType(ct: string) {
   }
 }
 
-export const binaryUploadSocialPlatforms = ["twitter", "linkedin", "youtube", "tiktok"];
-export const urlUploadSocialPlatforms = ["facebook", "instagram", "pinterest", "threads"];
+export const binaryUploadSocialPlatforms: SocialPlatformTypes[] = [
+  "twitter",
+  "linkedin",
+  "youtube",
+  "tiktok",
+  "bluesky",
+];
+export const urlUploadSocialPlatforms: SocialPlatformTypes[] = [
+  "facebook",
+  "instagram",
+  "pinterest",
+  "threads",
+];
 
 export const mediaMimeTypes = imageMimeTypes.concat(videoMimeTypes).concat(docMimeTypes);
 
