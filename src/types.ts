@@ -19,7 +19,7 @@ import {
   PageObjectResponse,
   PartialBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import {firestore} from "firebase-admin";
+import {firestore, storage} from "firebase-admin";
 import {postPublishStages} from "./publish";
 // Notion File, Which is extracted from Notion
 export interface Media {
@@ -202,7 +202,6 @@ export interface UserData {
   notion_db_limit_incr?: number;
 
   affiliate_partner?: boolean;
-  customLimits?: boolean;
   billing: {
     plan_id: PRICING_PLAN_ID;
     trial_end: number;
@@ -274,24 +273,25 @@ export interface SocialAccountData {
   author_uid: string;
   platform_uid: string;
   platform: SocialPlatformTypes;
+  created_at?: number;
   tag?: string;
   name: string;
   username: string;
   dp: string;
-  image: string;
-  auth: {
-    access_token: string;
+  auth?: {
+    access_token?: string;
     access_secret?: string;
+    refresh_token?: string;
     oauth_token?: string;
     oauth_token_secret?: string;
     last_updated_at?: number;
+    expires?: number;
   };
   secure_auth_token?: SecureAuthToken;
   fb_auth?: {
     access_token: string;
     expires?: number;
   };
-  uid: string;
   handle?: string;
   urn?: string;
   active?: boolean;
@@ -302,6 +302,9 @@ export interface SocialAccountData {
   li_user_id?: string;
   fb_user_id?: string;
   boards?: PinterestBoard[];
+  privacy_options?: string;
+  video_duration_limit?: number;
+  comment_disabled?: boolean;
 }
 
 export type SocialPlatformTypes =
