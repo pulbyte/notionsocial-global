@@ -427,12 +427,12 @@ export interface User {
   subActive: boolean;
   paidUser: boolean;
   readyToPost: boolean;
-  trialDaysLeft: number;
-  trialPeriodDays: number;
+  trialDaysLeft?: number;
+  trialPeriodDays?: number;
   plan?: PricingPlan;
-  uid: String;
-  uuid: String;
-  email: String;
+  uid: string;
+  uuid: string;
+  email: string;
   emailVerified: boolean;
   isNewUser?: boolean;
   created_at?: number;
@@ -481,10 +481,10 @@ export interface NotionAuthData {
   bot_id: string;
   workspace_id: string;
   access_token: string;
-  workspace_name: string;
-  workspace_icon: string;
-  duplicated_template_id: string;
-  owner: {workspace: true} | {object: "user"};
+  workspace_name?: string;
+  workspace_icon?: string;
+  duplicated_template_id?: string;
+  owner?: {workspace: true} | {object: "user"};
 }
 export interface InstagramPostOptions {
   imageUserTags: string[];
