@@ -50,7 +50,8 @@ export function parseNotionRule(filterStr: string, properties): boolean {
 export function createCodedRichText(texts: NotionCodedTextPayload[]) {
   const richText: NotionRichTextPayload[] = [];
 
-  texts.forEach(({text, color, br, sp, ul}, index) => {
+  texts.forEach((payload, index) => {
+    const {text, color, br, sp, ul, code, bold} = payload;
     const nextText = texts[index + 1];
     const isLast = index === texts.length - 1;
     const hasNext = hasText(nextText?.text) && !isLast;
@@ -61,6 +62,13 @@ export function createCodedRichText(texts: NotionCodedTextPayload[]) {
     // Split the text by URLs
     const parts = text.split(urlRegex);
 
+    const annotations = {
+      bold: Object.keys(payload).includes("bold") ? bold : true,
+      color: color || "default",
+      code: Object.keys(payload).includes("code") ? code : true,
+      underline: ul,
+    };
+
     parts.forEach((part, partIndex) => {
       if (urlRegex.test(part)) {
         // This part is a URL
@@ -69,23 +77,13 @@ export function createCodedRichText(texts: NotionCodedTextPayload[]) {
             content: part,
             link: {url: part},
           },
-          annotations: {
-            bold: true,
-            color: color || "default",
-            code: true,
-            underline: ul,
-          },
+          annotations,
         });
       } else if (part.length > 0) {
         // This part is regular text
         richText.push({
           text: {content: part},
-          annotations: {
-            bold: true,
-            color: color || "default",
-            code: true,
-            underline: ul,
-          },
+          annotations,
         });
       }
     });
