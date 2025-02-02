@@ -88,6 +88,7 @@ export function getNotionPageConfig(
     captionText: "",
     commentText: "",
     schTime: null,
+    schTimeMs: null,
     status: null,
     media: [],
     pinterestBoardOption: null,
@@ -133,7 +134,8 @@ export function getNotionPageConfig(
   } else if (captionProp?.type == "formula") {
     __.captionText = captionProp?.["formula"]?.["string"];
   }
-  __.schTime = getDate(schTimeProp?.["date"]?.["start"]);
+  __.schTime = new Date(schTimeProp?.["date"]?.["start"]);
+  __.schTimeMs = __.schTime?.getTime();
   __.media = mediaProp?.["files"];
 
   __.status = statusProp?.["select"]?.["name"];
@@ -193,8 +195,8 @@ export function getNotionPageConfig(
   const isStatusDone = __.nsFilter == __.status;
   const isNsPropertyEmpty = !hasText(nsText);
   const hasSelectPlatform = __.smAccs?.length > 0;
-  const isScheduledWithin30Days = __.schTime
-    ? (__.schTime - Date.now()) / (1000 * 60 * 60 * 24) <= 30
+  const isScheduledWithin30Days = __.schTimeMs
+    ? (__.schTimeMs - Date.now()) / (1000 * 60 * 60 * 24) <= 30
     : true;
 
   const isPostReadyToSchedule =
@@ -219,7 +221,7 @@ export function getNotionPageConfig(
 export function examinePostConfig(taskTime?: number, config?: NotionPagePostConfig) {
   const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
 
-  if (config?.schTime > taskTime) {
+  if (config?.schTimeMs > taskTime) {
     return PublishError.reject("post-postponed");
   } else if (!allowdStatus.includes(config?.status)) {
     return PublishError.reject("post-cancelled");
