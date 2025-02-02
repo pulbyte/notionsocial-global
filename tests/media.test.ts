@@ -49,6 +49,23 @@ describe("getMediaRef", () => {
   it("should return the input if it's not a string", () => {
     expect(getMediaRef("")).toBe(null);
   });
+
+  it("should remove non-ASCII characters from the ref", () => {
+    const urlWithUnicode = "https://example.com/path/测试_テスト_image_漢字.jpg";
+    expect(getMediaRef(urlWithUnicode)).toBe("path___image_.jpg");
+
+    const urlWithAccents = "https://example.com/résumé/études/café.jpg";
+    expect(getMediaRef(urlWithAccents)).toBe("rsum_tudes_caf.jpg");
+
+    const urlWithEmoji = "https://example.com/folder/🌟photo📸/test.jpg";
+    expect(getMediaRef(urlWithEmoji)).toBe("folder_photo_test.jpg");
+
+    const notionUrlWithUnicode =
+      "https://prod-files-secure.s3.us-west-2.amazonaws.com/4aca8b34-cbcd-496b-8548-c558c07ba144/71ef465f-00cf-4ca3-96b1-6653a409ccec/The测试テストName.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20241022%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20241022T153343Z&X-Amz-Expires=3600&X-Amz-Signature=ba3a41b89b8d462afa742528967dfce7345dd44d79fbd84ef0f31af79c71b6c8&X-Amz-SignedHeaders=host&x-id=GetObject";
+    expect(getMediaRef(notionUrlWithUnicode)).toBe(
+      "4aca8b34-cbcd-496b-8548-c558c07ba144_71ef465f-00cf-4ca3-96b1-6653a409ccec_TheName.png"
+    );
+  });
 });
 
 describe("makeMediaPostReady", () => {

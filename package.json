@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "2.5.4",
+  "version": "2.5.5",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -40,7 +40,8 @@
     "prepublishOnly": "npm run build",
     "start": "tsup --watch",
     "test": "jest",
-    "test:text": "jest tests/text.test.ts"
+    "test:text": "jest tests/text.test.ts",
+    "test:media": "jest tests/media.test.ts"
   },
   "author": "",
   "license": "ISC",

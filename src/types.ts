@@ -58,12 +58,21 @@ export type MediaMetadata = {
   contentType?: string;
 };
 export type MediaCompression = "lossy" | "lossless";
-export type MediaOrientation = "vertical" | "original";
+/**
+ * Media orientation types:
+ * - "vertical": The media has been adjusted to fit a vertical aspect ratio (e.g., 4:5 or 9:16)
+ * - "horizontal": The media has been adjusted to fit a horizontal aspect ratio (e.g., 16:9 or 1.91:1)
+ * - "square": The media has been adjusted to fit a square aspect ratio (1:1)
+ * - "original": The media retains its original dimensions and aspect ratio
+ */
+export type MediaOrientation = "vertical" | "horizontal" | "square" | "original";
 export type MediaTransformationMethod =
   | "gcp-transcoder"
   | "ffmpeg"
   | "shortpixel.com"
-  | "media.io";
+  | "media.io"
+  | "sharp"
+  | "mux.com";
 
 export interface MediaTransformation {
   metadata: MediaMetadata;
@@ -81,11 +90,17 @@ export interface UrlSrc {
   type: "url";
   url: string;
 }
+export interface MuxSrc {
+  type: "mux";
+  asset_id: string;
+  playback_id: string;
+}
 export interface BucketSrc {
   type: "bucket";
   path: string;
   uri?: string;
 }
+
 export type MediaSrc = BufferSrc | UrlSrc | BucketSrc;
 
 export interface MetricPropertyConfig {
@@ -616,7 +631,8 @@ export interface NotionPagePostConfig {
   titleText: string;
   captionText: string;
   commentText: string;
-  schTime: number;
+  schTime: Date | null;
+  schTimeMs: number | null;
   status: string;
   pinterestBoardOption: NotionSelectProperty["select"];
   altText: string;
@@ -637,6 +653,8 @@ export interface NotionCodedTextPayload {
   br?: boolean;
   sp?: boolean;
   ul?: boolean;
+  code?: boolean;
+  bold?: boolean;
 }
 export interface BaseLinkedInPost {
   text: string;
