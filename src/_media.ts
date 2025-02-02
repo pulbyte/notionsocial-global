@@ -16,9 +16,11 @@ export function getMediaRef(url: string) {
   if (!url || typeof url != "string") return null;
   try {
     const {pathname} = new URL(url);
-    return trimAndRemoveWhitespace(
+    const ref = trimAndRemoveWhitespace(
       decodeURIComponent(pathname).split("/").slice(-3).filter(Boolean).join("_")
     );
+    // Replace non-ASCII characters with empty string
+    return ref.replace(/[^\x20-\x7E]/g, "");
   } catch (error) {
     return null;
   }
