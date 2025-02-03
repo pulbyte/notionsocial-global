@@ -12,7 +12,7 @@ import {
   NotionDatabase,
 } from "./types";
 import {hasText, notionRichTextParser, processInstagramTags} from "./text";
-import {getDate, isAnyValueInArray} from "./utils";
+import {isAnyValueInArray} from "./utils";
 import {parseNotionRule} from "./_notion";
 import {
   binaryUploadSocialPlatforms,
@@ -21,6 +21,7 @@ import {
 } from "./_media";
 import {PublishError} from "./PublishError";
 import _ from "lodash";
+import {getReadableTimeByTimeZone} from "time";
 
 export function getNotionPageConfig(
   notionPage: NotionPage,
@@ -87,13 +88,18 @@ export function getNotionPageConfig(
     titleText: "",
     captionText: "",
     commentText: "",
-    schTime: null,
-    schTimeMs: null,
+    schTime: {
+      rawStr: null,
+      fmtTz: null,
+      epochMs: null,
+      date: null,
+    },
     status: null,
     media: [],
     pinterestBoardOption: null,
     altText: "",
     imageUserTags: [],
+
     collaboratorTags: [],
     locationTag: null,
     youtubePrivacyStatus: null,
@@ -134,8 +140,16 @@ export function getNotionPageConfig(
   } else if (captionProp?.type == "formula") {
     __.captionText = captionProp?.["formula"]?.["string"];
   }
-  __.schTime = new Date(schTimeProp?.["date"]?.["start"]);
-  __.schTimeMs = __.schTime?.getTime();
+  const time = schTimeProp?.["date"]?.["start"];
+  const date = new Date(time);
+  if (time) {
+    __.schTime = {
+      rawStr: time,
+      fmtTz: getReadableTimeByTimeZone(time),
+      epochMs: date.getTime(),
+      date,
+    };
+  }
   __.media = mediaProp?.["files"];
 
   __.status = statusProp?.["select"]?.["name"];
@@ -195,8 +209,8 @@ export function getNotionPageConfig(
   const isStatusDone = __.nsFilter == __.status;
   const isNsPropertyEmpty = !hasText(nsText);
   const hasSelectPlatform = __.smAccs?.length > 0;
-  const isScheduledWithin30Days = __.schTimeMs
-    ? (__.schTimeMs - Date.now()) / (1000 * 60 * 60 * 24) <= 30
+  const isScheduledWithin30Days = __.schTime?.epochMs
+    ? (__.schTime.epochMs - Date.now()) / (1000 * 60 * 60 * 24) <= 30
     : true;
 
   const isPostReadyToSchedule =
@@ -221,7 +235,7 @@ export function getNotionPageConfig(
 export function examinePostConfig(taskTime?: number, config?: NotionPagePostConfig) {
   const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
 
-  if (config?.schTimeMs > taskTime) {
+  if (config?.schTime?.epochMs > taskTime) {
     return PublishError.reject("post-postponed");
   } else if (!allowdStatus.includes(config?.status)) {
     return PublishError.reject("post-cancelled");

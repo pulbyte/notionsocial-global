@@ -631,8 +631,12 @@ export interface NotionPagePostConfig {
   titleText: string;
   captionText: string;
   commentText: string;
-  schTime: Date | null;
-  schTimeMs: number | null;
+  schTime: {
+    rawStr: string;
+    fmtTz: string;
+    epochMs: number;
+    date: Date;
+  };
   status: string;
   pinterestBoardOption: NotionSelectProperty["select"];
   altText: string;

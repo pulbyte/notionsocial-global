@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -71,5 +71,8 @@
     "twitter-text": "^3.1.0",
     "typescript": "^5.5.2",
     "url-metadata": "^4.1.1"
+  },
+  "dependencies": {
+    "date-fns-tz": "^3.2.0"
   }
 }

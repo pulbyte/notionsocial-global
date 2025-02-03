@@ -56,11 +56,6 @@ export function isObjectEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
-export function addSeconds(numOfSeconds, date = new Date()) {
-  date.setSeconds(date.getSeconds() + numOfSeconds);
-  return date;
-}
-
 export function getSmAccColor(platform) {
   switch (platform) {
     case "facebook":
@@ -159,8 +154,6 @@ export function incrementObjectValues(sourceObj, destObj) {
   }
   return destObj;
 }
-
-export const getDate = (date) => new Date(date).getTime();
 
 export function splitStringCharacters(inputString, maxTweetLength = 280): string[] {
   const words = inputString.split(" ");
