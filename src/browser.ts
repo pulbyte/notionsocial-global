@@ -12,3 +12,4 @@ export * from "./url";
 export * from "./html";
 export * from "./utils";
 export * from "./PublishError";
+export * from "./time";
