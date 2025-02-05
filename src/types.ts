@@ -65,7 +65,7 @@ export type MediaCompression = "lossy" | "lossless";
  * - "square": The media has been adjusted to fit a square aspect ratio (1:1)
  * - "original": The media retains its original dimensions and aspect ratio
  */
-export type MediaOrientation = "vertical" | "horizontal" | "square" | "original";
+export type MediaOrientation = "vertical" | "original";
 export type MediaTransformationMethod =
   | "gcp-transcoder"
   | "ffmpeg"
@@ -215,6 +215,17 @@ export interface UserData {
   notion_db_limit: number;
   notion_db_count: number;
   notion_db_limit_incr?: number;
+
+  on_connection?: {
+    sm_acc: {
+      auto_link_to_all_ndbs?: boolean;
+      ask_to_choose_ndbs?: boolean;
+    };
+    ndb: {
+      ask_to_choose_props?: boolean;
+      ask_to_add_more_ndbs?: boolean;
+    };
+  };
 
   affiliate_partner?: boolean;
   billing: {
