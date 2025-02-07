@@ -707,3 +707,19 @@ export interface SecureAuthToken {
     key_version: string; // For key rotation
   };
 }
+export type QueueName =
+  | "post-schedule-queue"
+  | "bg-job-queue"
+  | "crawl-queue"
+  | "dev-post-queue"
+  | "first-comment-queue";
+
+export type CloudRunFunction =
+  | "schedule"
+  | "postcrawl"
+  | "publish"
+  | "first_comment"
+  | "smaccaudit"
+  | "api"
+  | "crawl";
+export type CloudRunService = "post_process";

@@ -1,7 +1,10 @@
-import {NotionBlockType, SocialPlatformTypes, StorageBucketName} from "./types";
+import {NotionBlockType, QueueName, SocialPlatformTypes, StorageBucketName} from "./types";
 export const dev = ["development", "test"].includes(getEnv("NODE_ENV", "development"));
 export const prod = getEnv("NODE_ENV", "development") == "production";
 export const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24; // 30 days in seconds
+export const GCP_PROJECT = "notionsocial";
+export const GCP_LOCATION = "us-central1";
+export const POST_QUEUE: QueueName = dev ? "dev-post-queue" : "post-schedule-queue";
 export const supportedPlatforms: SocialPlatformTypes[] = [
   "twitter",
   "instagram",
