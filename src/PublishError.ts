@@ -15,6 +15,7 @@ export const publishErrorCodes = [
   "post-cancelled",
   "server-error",
   "task-processing",
+  "post-not-processed",
   "no-social-account-selected",
 ] as const;
 

@@ -390,9 +390,10 @@ export interface PostRecord {
   completed: boolean;
   last_processed_at?: number;
   push_id?: string;
+  // Publish Task, processing, Not post_process processing
   processing?: boolean;
   success_platforms?: string[];
-  status?: "success" | "error" | "partial_error";
+  status?: "success" | "error" | "partial_error" | "publishing" | "processing" | "processed";
   processed_media?: ProcessedMediaRecord[];
 }
 

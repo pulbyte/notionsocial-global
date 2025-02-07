@@ -4,6 +4,7 @@ import {getNotionError} from "./notion";
 import {publishDisruptErrorMessages, PublishError, PublishErrorCode} from "./PublishError";
 import {PostPublishStage} from "./types";
 import {postPublishStages, publishStageIndex} from "publish";
+import {dog} from "utils";
 
 export function isNetworkServerError(error: AxiosError | any) {
   const message = String(error?.message)?.toLowerCase() || String(error)?.toLowerCase();
@@ -34,7 +35,6 @@ export function catchPublishError(
   }) => Promise<any>,
   postRecordUpdateCallback: (updates: object, completed?: boolean) => Promise<any>
 ) {
-  PublishError.log(e);
   const {
     message,
     isNotionDatabaseDeleted,
@@ -47,13 +47,17 @@ export function catchPublishError(
   } = decodePublishError(e, stage);
 
   const isTaskProcessing = code == "task-processing";
+  const postNotProcessed = code == "post-not-processed";
 
-  const updateProcessingPromise =
-    isTaskProcessing || isServerError
-      ? Promise.resolve()
-      : isPostPoned
-      ? postRecordUpdateCallback({processing: false})
-      : postRecordUpdateCallback({processing: false, status: "error"}, true);
+  const toReject = isTaskProcessing || isServerError || postNotProcessed;
+
+  if (!toReject) PublishError.log(e);
+
+  const updateProcessingPromise = toReject
+    ? Promise.resolve()
+    : isPostPoned
+    ? postRecordUpdateCallback({processing: false})
+    : postRecordUpdateCallback({processing: false, status: "error"}, true);
 
   return updateProcessingPromise?.finally(() => {
     // If a server error occurs during publishing, return error, so that it can be retried
@@ -62,6 +66,9 @@ export function catchPublishError(
       return Promise.reject(e);
     } else if (isTaskProcessing) {
       console.info("⨂ rejecting as the task processing is in progress ⨂");
+      return Promise.reject(e);
+    } else if (postNotProcessed) {
+      console.info("⨂ rejecting as the post processing is not done ⨂");
       return Promise.reject(e);
     }
 
@@ -84,8 +91,8 @@ export function catchPublishError(
 }
 
 export function decodePublishError(e: PublishFunctionError, stage: PostPublishStage) {
-  if (stage) console.log(`Stage: ${stage}`);
-  if (e["status"]) console.log(`Status: ${e["status"]}`);
+  dog(`Stage: ${stage}`);
+  if (e["status"]) console.info(`Status: ${e["status"]}`);
 
   const code: PublishErrorCode = e?.["code"];
   const _msg = String(e?.message || e) || String(code) || "unknown error occured";
