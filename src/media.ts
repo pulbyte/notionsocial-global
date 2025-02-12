@@ -7,6 +7,8 @@ import {
   PostRecord,
   MediaTransformation,
   MediaType,
+  TransformedMedia,
+  TMediaFile,
   TMedia,
 } from "./types";
 
@@ -74,7 +76,7 @@ export async function getTransformedMedia(
   media: Media,
   transformations: MediaTransformation[],
   toDownload: boolean = true
-): Promise<TMedia> {
+): Promise<TransformedMedia> {
   const _ = await Promise.all(
     transformations.map(async (transformation: MediaTransformation) => {
       let buffer: Buffer;
@@ -136,16 +138,16 @@ export async function getTransformedMedia(
 }
 
 export function makeMediaPostReady<T extends "file" | "media">(
-  media: MediaType | TMedia
-): T extends "file" ? MediaFile : Media {
+  media: MediaType
+): T extends "file" ? TMediaFile : TMedia {
   // Helper function to extract the first transformation
-  const getTransformation = (transformations: TMedia["transformations"]) => {
+  const getTransformation = (transformations: TransformedMedia["transformations"]) => {
     // In the future, implement platform-specific logic here
     return transformations[0];
   };
 
   // Base media object
-  const m: MediaFile = {
+  const m: TMediaFile = {
     // ? CONSTANT
     name: media.name,
     refId: media.refId,
@@ -159,16 +161,16 @@ export function makeMediaPostReady<T extends "file" | "media">(
     size: media.size,
     url: media.url,
     ...((media as MediaFile).buffer && {buffer: (media as MediaFile).buffer}),
+    transformation: null,
   };
 
-  // Handle TMedia and TMediaFile
   if ("transformations" in media && Array.isArray(media.transformations)) {
     const transformation = getTransformation(media.transformations);
     if (transformation) {
       const ct = transformation.metadata?.contentType || m.contentType;
       const mt = getMimeTypeFromContentType(ct) || m.mimeType;
 
-      const transformedMedia = {
+      const transformedMedia: TMediaFile = {
         ...m,
         url: transformation.url || m.url,
         size: transformation.metadata?.size || m.size,
@@ -179,6 +181,7 @@ export function makeMediaPostReady<T extends "file" | "media">(
         contentType: ct,
         mimeType: mt,
         type: getMediaTypeFromContentType(ct) || m.type,
+        transformation,
       };
       return transformedMedia;
     }

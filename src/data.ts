@@ -8,14 +8,7 @@ export let db: Firestore = getFirestore(app);
 db.settings({ignoreUndefinedProperties: true});
 
 import {dashifyNotionId, removeHyphens} from "./text";
-import {
-  FirestoreDoc,
-  NotionDatabase,
-  PostRecord,
-  SocialAccountData,
-  User,
-  UserData,
-} from "./types";
+import {FirestoreDoc, NotionDatabase, PostRecord, SocialAccountData, UserData} from "./types";
 import {Storage} from "@google-cloud/storage";
 const storage = new Storage();
 

@@ -1,4 +1,4 @@
-import {MediaFile, TMedia} from "types";
+import {MediaFile, TransformedMedia} from "types";
 import {getMediaRef} from "../src/_media";
 import {makeMediaPostReady} from "../src/media";
 
@@ -82,11 +82,11 @@ describe("makeMediaPostReady", () => {
     };
 
     const result = makeMediaPostReady<"file">(input);
-    expect(result).toEqual(input);
+    expect(result).toEqual(Object.assign(input, {transformation: null}));
   });
 
-  it("should handle TMedia with transformations", () => {
-    const input: TMedia = {
+  it("should handle MediaRecord with transformations", () => {
+    const input: TransformedMedia = {
       name: "test.pdf",
       refId: "test-ref",
       mimeType: "application/pdf",
@@ -120,11 +120,24 @@ describe("makeMediaPostReady", () => {
       type: "image",
       size: 500,
       url: "https://example.com/test-optimized.jpg",
+      transformation: {
+        url: "https://example.com/test-optimized.jpg",
+        metadata: {
+          contentType: "image/png",
+          size: 500,
+          height: 100,
+          width: 100,
+          //@ts-ignore
+          method: "ffmpeg",
+          orientation: "original",
+          compression: "lossy",
+        },
+      },
     });
   });
 
-  it("should handle TMedia without transformations", () => {
-    const input: TMedia = {
+  it("should handle MediaRecord without transformations", () => {
+    const input: TransformedMedia = {
       name: "test.jpg",
       refId: "test-ref",
       mimeType: "image/jpeg",
@@ -144,6 +157,7 @@ describe("makeMediaPostReady", () => {
       type: "image",
       size: 1000,
       url: "https://example.com/test.jpg",
+      transformation: null,
     });
   });
 });

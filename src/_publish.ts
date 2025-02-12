@@ -30,7 +30,6 @@ export function getNotionPageConfig(
   authorRecord?: UserData
 ): NotionPagePostConfig {
   const properties = notionPage["properties"];
-  const archived = notionPage["archived"];
 
   let _props: NotionPagePropertiesForPost = {
     titleProp: null,
@@ -109,7 +108,9 @@ export function getNotionPageConfig(
     filesToDownload: [],
     formattingOptions: {},
     isPostReadyToSchedule: false,
+    archived: null,
   };
+  __.archived = notionPage["archived"];
   const {
     commentProp,
     captionProp,
@@ -218,7 +219,7 @@ export function getNotionPageConfig(
     isNsPropertyEmpty &&
     hasSelectPlatform &&
     isScheduledWithin30Days &&
-    !archived;
+    !__.archived;
   __.isPostReadyToSchedule = isPostReadyToSchedule;
 
   __.formattingOptions = {
@@ -234,6 +235,11 @@ export function getNotionPageConfig(
 
 export function examinePostConfig(taskTime?: number, config?: NotionPagePostConfig) {
   const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
+
+  if (config?.archived) {
+    console.warn(`Post is archived [${config?._pageId}]`);
+    // return PublishError.reject("notion-page-deleted");
+  }
 
   if (config?.schTime?.epochMs > taskTime) {
     return PublishError.reject("post-postponed");

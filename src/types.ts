@@ -38,16 +38,26 @@ export interface MediaFile extends Media {
   size: number;
 }
 
-export type TMediaTransformation = Omit<MediaTransformation, "src"> & {
-  buffer?: Buffer;
-  url: string;
+export type TransformedMedia = Media & {
+  transformations: Array<
+    Omit<MediaTransformation, "src"> & {
+      buffer?: Buffer;
+      url: string;
+    }
+  >;
 };
 
-export type TMedia = Media & {
-  transformations: Array<TMediaTransformation>;
-};
+// Media, Which is transformed.
+export interface TMedia extends Media {
+  transformation: Omit<MediaTransformation, "src"> | null;
+}
 
-export type MediaType = Media | MediaFile | TMedia;
+// MediaFile, Which is downloaded.
+export interface TMediaFile extends MediaFile {
+  transformation: Omit<MediaTransformation, "src"> | null;
+}
+
+export type MediaType = Media | MediaFile | TransformedMedia;
 export type MediaMetadata = {
   size: number;
   height: number;
@@ -639,6 +649,7 @@ export interface NotionPagePostConfig {
   _properties: NotionProperties;
   _data: NotionDatabase;
   nsFilter: string;
+  archived: boolean;
   media: NotionFilesProperty["files"];
   titleText: string;
   captionText: string;

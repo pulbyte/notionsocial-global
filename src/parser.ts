@@ -4,7 +4,6 @@ import {
   hasText,
   notionRichTextParser,
   numberToLetter,
-  numberToRoman,
   trimString,
 } from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
