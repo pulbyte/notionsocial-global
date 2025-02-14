@@ -1,4 +1,4 @@
-import {PRICING_PLAN_ID, PricingPlan} from "./pricing";
+import {PricePlanLabel, PRICING_PLAN_ID, PricingPlan} from "./pricing";
 import {
   CheckboxPropertyItemObjectResponse,
   DatePropertyItemObjectResponse,
@@ -439,6 +439,8 @@ export interface Affiliate {
   referral: AffiliateReferral;
   total_payout: number;
   paypal?: string;
+  trial_days?: number;
+  trial_plan?: Exclude<PricePlanLabel, "free">;
 }
 
 export interface User {
