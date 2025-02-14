@@ -165,8 +165,11 @@ export function tweetifyString(text, maxTweetLength = 280) {
   } = extractTwitterPostFromString(text);
   const words = sanitizedText.split(" ");
   const tweets = [];
-  let currentTweet = "";
-  for (const word of words) {
+  let currentTweet = words[0] || ""; // Start with first word
+
+  // Start loop from second word
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
     const newTweet = currentTweet + " " + word;
     if (parseTweet(newTweet).weightedLength > maxTweetLength) {
       tweets.push(currentTweet);
@@ -342,9 +345,11 @@ export function threadifyString(
 ) {
   const words = text.split(" ");
   const threads: string[] = [];
-  let currentThread = "";
+  let currentThread = words[0] || ""; // Start with first word
 
-  for (const word of words) {
+  // Start loop from second word
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
     const newThread = currentThread + " " + word;
     const exceedsLength =
       lengthMethod === "twitter-text"
