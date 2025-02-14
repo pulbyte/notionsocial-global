@@ -227,13 +227,13 @@ export interface UserData {
   notion_db_limit_incr?: number;
 
   on_connection?: {
-    sm_acc: {
-      auto_link_to_all_ndbs?: boolean;
-      ask_to_choose_ndbs?: boolean;
+    sm_acc?: {
+      to_link_to_ndbs?: "all" | "ask" | "none";
     };
-    ndb: {
+    ndb?: {
       ask_to_choose_props?: boolean;
       ask_to_add_more_ndbs?: boolean;
+      to_link_sm_accs?: "all" | "ask" | "none";
     };
   };
 
