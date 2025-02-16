@@ -522,7 +522,7 @@ export interface NotionAuthData {
   access_token: string;
   workspace_name?: string;
   workspace_icon?: string;
-  duplicated_template_id?: string;
+  duplicated_template_id?: string | null;
   owner?: {workspace: true} | {object: "user"};
 }
 export interface InstagramPostOptions {

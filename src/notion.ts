@@ -7,9 +7,12 @@ import {
   SearchResponse,
   DatabaseObjectResponse,
   UpdateDatabaseParameters,
+  CreateDatabaseParameters,
+  BlockObjectResponse,
+  ListBlockChildrenResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {APIErrorCode, ClientErrorCode, isNotionClientError} from "@notionhq/client";
-import {ignorePromiseError, retryOnCondition} from "./utils";
+import {dog, ignorePromiseError, retryOnCondition} from "./utils";
 import {dev} from "./env";
 import {createCodedRichText} from "./_notion";
 import {NotionCodedTextPayload} from "./types";
@@ -60,6 +63,8 @@ export function NotionAPI(accessToken) {
           ...query,
         })
       ),
+    createDatabase: (payload: CreateDatabaseParameters) =>
+      retry<DatabaseObjectResponse>(() => notion.databases.create(payload)),
   };
 }
 
@@ -160,4 +165,52 @@ export async function updateStatusProperty(
       } else rej(`False -> id && tkn && property && status`);
     })
   );
+}
+
+async function getBlockChildren(
+  notion: Client,
+  blockId: string,
+  level: number = 0,
+  maxLevel: number = 5
+): Promise<ListBlockChildrenResponse["results"]> {
+  if (level >= maxLevel) return [];
+
+  const children = await notion.blocks.children.list({block_id: blockId});
+  let allBlocks = [...children.results];
+
+  // Recursively get children of each block
+  for (const block of children.results) {
+    if ("has_children" in block && block.has_children) {
+      const childBlocks = await getBlockChildren(notion, block.id, level + 1, maxLevel);
+      allBlocks = [...allBlocks, ...childBlocks];
+    }
+  }
+
+  return allBlocks;
+}
+
+export async function findNotionInlineDatabases(tkn: string, pageId: string) {
+  try {
+    const notion = new Client({
+      auth: tkn,
+      timeoutMs: 30000,
+    });
+
+    const allBlocks = await getBlockChildren(notion, pageId);
+
+    const childDatabases = allBlocks.filter(
+      (block: BlockObjectResponse) => block.type === "child_database"
+    );
+
+    const inlineDatabases = childDatabases.map((db) => ({
+      id: db.id,
+      name: db.child_database.title,
+    }));
+
+    dog("Found inline databases", inlineDatabases);
+    return inlineDatabases;
+  } catch (error) {
+    console.error("Error finding inline database:", error);
+    throw error;
+  }
 }
