@@ -16,6 +16,7 @@ import {dog, ignorePromiseError, retryOnCondition} from "./utils";
 import {dev} from "./env";
 import {createCodedRichText} from "./_notion";
 import {NotionCodedTextPayload} from "./types";
+import {PollUntil} from "poll-until-promise";
 
 function retry<T>(func) {
   return retryOnCondition<T>(func, isNotionServerError, notionServerErrorMessage);
@@ -65,12 +66,15 @@ export function NotionAPI(accessToken) {
       ),
     createDatabase: (payload: CreateDatabaseParameters) =>
       retry<DatabaseObjectResponse>(() => notion.databases.create(payload)),
+    deletePage: (id: string) =>
+      retry<UpdatePageResponse>(() => notion.pages.update({page_id: id, archived: true})),
   };
 }
 
 export function getNotionError(err: NotionClientError | any) {
   const isNtnError = isNotionClientError(err);
   const code = err?.code;
+  const status = err?.status;
   let message = err?.message;
   message = String(message);
   const archived = message?.includes("archive");
@@ -85,6 +89,7 @@ export function getNotionError(err: NotionClientError | any) {
         (!isPageError || message?.includes("Could not find database")) &&
         code == APIErrorCode.ObjectNotFound,
       code,
+      status,
       message: message,
       isPageError,
       pageDlt:
@@ -190,25 +195,55 @@ async function getBlockChildren(
 }
 
 export async function findNotionInlineDatabases(tkn: string, pageId: string) {
+  dog("Finding inline databases", pageId);
+
+  const poll = new PollUntil({
+    interval: 2500, // 2.5 seconds delay
+    maxAttempts: 5, // 5 attempts max
+    timeout: 30_000, // 30 second total timeout
+    message: "Failed to fetch inline databases after exhausting max attempts",
+  });
+
   try {
-    const notion = new Client({
-      auth: tkn,
-      timeoutMs: 30000,
+    const result = await poll.execute(async () => {
+      try {
+        const notion = new Client({
+          auth: tkn,
+          timeoutMs: 30000,
+        });
+
+        const allBlocks = await getBlockChildren(notion, pageId);
+        const childDatabases = allBlocks.filter(
+          (block: BlockObjectResponse) => block.type === "child_database"
+        );
+
+        const inlineDatabases = childDatabases.map((db) => ({
+          id: db.id,
+          name: db.child_database.title,
+        }));
+
+        dog("Found inline databases", inlineDatabases);
+        return inlineDatabases;
+      } catch (error) {
+        const isNotionError = isNotionClientError(error);
+        if (isNotionError) {
+          const isServerError = isNotionServerError(error.code);
+          const isVldError = error.code === APIErrorCode.ValidationError;
+          console.info("Got server error, While fetching inline databases", isServerError);
+          console.info("Got validation error, While fetching inline databases", isVldError);
+          if (isServerError || isVldError) {
+            // Return false to trigger another retry
+            return false;
+          }
+          // For other Notion errors, throw immediately
+          throw error;
+        }
+        // For non-Notion errors, throw immediately
+        throw error;
+      }
     });
 
-    const allBlocks = await getBlockChildren(notion, pageId);
-
-    const childDatabases = allBlocks.filter(
-      (block: BlockObjectResponse) => block.type === "child_database"
-    );
-
-    const inlineDatabases = childDatabases.map((db) => ({
-      id: db.id,
-      name: db.child_database.title,
-    }));
-
-    dog("Found inline databases", inlineDatabases);
-    return inlineDatabases;
+    return result;
   } catch (error) {
     console.error("Error finding inline database:", error);
     throw error;

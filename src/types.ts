@@ -516,7 +516,7 @@ export interface SocialMediaPostData {
   newFollowers?: number;
 }
 
-export interface NotionAuthData {
+export interface NotionAuthResponse {
   bot_id: string;
   workspace_id: string;
   access_token: string;

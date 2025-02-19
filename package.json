@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -73,6 +73,7 @@
     "url-metadata": "^4.1.1"
   },
   "dependencies": {
-    "date-fns-tz": "^3.2.0"
+    "date-fns-tz": "^3.2.0",
+    "poll-until-promise": "^4.2.0"
   }
 }
