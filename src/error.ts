@@ -32,6 +32,7 @@ export function catchPublishError(
     code: PublishErrorCode;
     toClearNsProp: boolean;
     toResetStatus: boolean;
+    toIgnore?: boolean;
   }) => Promise<any>,
   postRecordUpdateCallback: (updates: object, completed?: boolean) => Promise<any>
 ) {
@@ -44,6 +45,7 @@ export function catchPublishError(
     isPostPoned,
     isNotionPageDeleted,
     code,
+    isAlreadyCompleted,
   } = decodePublishError(e, stage);
 
   const isTaskProcessing = code == "task-processing";
@@ -83,6 +85,7 @@ export function catchPublishError(
         code,
         toClearNsProp,
         toResetStatus,
+        toIgnore: isAlreadyCompleted,
       });
     } else {
       return Promise.resolve(message);
