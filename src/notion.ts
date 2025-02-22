@@ -199,9 +199,10 @@ export async function findNotionInlineDatabases(tkn: string, pageId: string) {
 
   const poll = new PollUntil({
     interval: 2500, // 2.5 seconds delay
-    maxAttempts: 5, // 5 attempts max
+    maxAttempts: 10, // 5 attempts max
     timeout: 30_000, // 30 second total timeout
-    message: "Failed to fetch inline databases after exhausting max attempts",
+    message:
+      "Failed to fetch inline databases after exhausting max attempts, Please connect the database manually.",
   });
 
   try {

@@ -296,10 +296,11 @@ export function processInstagramTags(inputArray: string[]) {
         return match[2];
       } else {
         // Validate if the input is a valid username (no spaces)
-        const usernamePattern = /^[a-zA-Z0-9._-]+$/;
+        const usernamePattern = /^@?[a-zA-Z0-9._-]+$/; // Made @ optional with ?
         input = trimString(input);
         if (usernamePattern.test(input)) {
-          return input;
+          // Remove @ if present
+          return input.startsWith("@") ? input.substring(1) : input;
         } else {
           // Return null for invalid usernames
           return null;

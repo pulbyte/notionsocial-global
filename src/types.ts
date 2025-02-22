@@ -183,6 +183,7 @@ export interface NotionDatabase {
     add_line_break_on_paragraph_block?: boolean;
     disable_text_formatting?: boolean;
   };
+  template_page_id?: string;
 }
 
 export type PostType =
