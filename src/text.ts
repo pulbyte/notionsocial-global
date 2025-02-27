@@ -307,7 +307,8 @@ export function processInstagramTags(inputArray: string[]) {
         }
       }
     })
-    .filter((username) => username !== null); // Filter out invalid usernames
+    .filter((username) => username !== null)
+    .map((s) => s.toLowerCase());
 }
 
 export function sanitizePinterestBoardName(inputString: string) {
