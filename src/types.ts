@@ -17,9 +17,8 @@ import {
   UrlPropertyItemObjectResponse,
   BlockObjectResponse,
   PageObjectResponse,
-  PartialBlockObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import {firestore, storage} from "firebase-admin";
+import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
 // Notion File, Which is extracted from Notion
 export interface Media {
@@ -68,14 +67,6 @@ export type MediaMetadata = {
   contentType?: string;
 };
 export type MediaCompression = "lossy" | "lossless";
-/**
- * Media orientation types:
- * - "vertical": The media has been adjusted to fit a vertical aspect ratio (e.g., 4:5 or 9:16)
- * - "horizontal": The media has been adjusted to fit a horizontal aspect ratio (e.g., 16:9 or 1.91:1)
- * - "square": The media has been adjusted to fit a square aspect ratio (1:1)
- * - "original": The media retains its original dimensions and aspect ratio
- */
-export type MediaOrientation = "vertical" | "original";
 export type MediaTransformationMethod =
   | "gcp-transcoder"
   | "ffmpeg"
@@ -88,8 +79,8 @@ export interface MediaTransformation {
   metadata: MediaMetadata;
   method: MediaTransformationMethod;
   compression: MediaCompression;
-  orientation: MediaOrientation;
   src: MediaSrc;
+  platforms: SocialPlatformTypes[];
 }
 
 export interface BufferSrc {

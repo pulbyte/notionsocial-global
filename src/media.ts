@@ -10,6 +10,7 @@ import {
   TransformedMedia,
   TMediaFile,
   TMedia,
+  SocialPlatformTypes,
 } from "./types";
 
 import {getCloudBucketFile} from "./data";
@@ -81,7 +82,7 @@ export async function getTransformedMedia(
     transformations.map(async (transformation: MediaTransformation) => {
       let buffer: Buffer;
       let url: string;
-      const {src, metadata, orientation, compression, method} = transformation;
+      const {src, metadata, compression, method, platforms} = transformation;
 
       switch (src.type) {
         case "bucket": {
@@ -122,10 +123,10 @@ export async function getTransformedMedia(
         );
       }
       return {
-        orientation,
         compression,
         method,
         metadata,
+        platforms,
         ...(toDownload && {buffer}),
         url,
       };
@@ -138,11 +139,24 @@ export async function getTransformedMedia(
 }
 
 export function makeMediaPostReady<T extends "file" | "media">(
-  media: MediaType
+  media: MediaType,
+  platform?: SocialPlatformTypes
 ): T extends "file" ? TMediaFile : TMedia {
-  // Helper function to extract the first transformation
+  // Helper function to extract the transformation based on platform
   const getTransformation = (transformations: TransformedMedia["transformations"]) => {
-    // In the future, implement platform-specific logic here
+    // First, try to find a transformation that includes the specified platform
+    if (platform) {
+      const platformSpecific = transformations.find((t) => t.platforms?.includes(platform));
+      if (platformSpecific) return platformSpecific;
+    }
+
+    // Then, look for a transformation with empty platforms array
+    const defaultTransform = transformations.find(
+      (t) => Array.isArray(t.platforms) && t.platforms.length === 0
+    );
+    if (defaultTransform) return defaultTransform;
+
+    // Finally, fall back to the first transformation
     return transformations[0];
   };
 
