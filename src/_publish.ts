@@ -234,7 +234,11 @@ export function getNotionPageConfig(
 }
 
 export function examinePostConfig(taskTime?: number, config?: NotionPagePostConfig) {
-  const allowdStatus = [config?.nsFilter, config?._data?.publish_changes?.schedule_status];
+  const statusValue = config?.status?.toLowerCase();
+  const isStatusDone =
+    config?.nsFilter && config?.status && statusValue == config?.nsFilter?.toLowerCase();
+  const schStatus = config?._data?.publish_changes?.schedule_status;
+  const isStatusScheduled = schStatus && statusValue == schStatus?.toLowerCase();
 
   if (config?.archived) {
     console.warn(`Post is archived [${config?._pageId}]`);
@@ -243,7 +247,7 @@ export function examinePostConfig(taskTime?: number, config?: NotionPagePostConf
 
   if (config?.schTime?.epochMs > taskTime) {
     return PublishError.reject("post-postponed");
-  } else if (!allowdStatus.includes(config?.status)) {
+  } else if (!isStatusDone && !isStatusScheduled) {
     return PublishError.reject("post-cancelled");
   }
 
