@@ -110,7 +110,33 @@ export function getNotionPageContent(
   });
 }
 
-export function getPropertyMedia(
+export async function getPropertyMedia(
+  config: NotionPagePostConfig
+): Promise<{media: Media[]; videoThumbnail: Media}> {
+  try {
+    const media = await getMediaFromNotionFiles(config.media).then((media) =>
+      filterPublishMedia(
+        media,
+        config.smAccs.map((acc) => acc.platform)
+      )
+    );
+    const videoThumbnail = await getMediaFromNotionFiles(config.videoThumbnail).then(
+      (media) => {
+        const filtered = filterPublishMedia(
+          media,
+          config.smAccs.map((acc) => acc.platform),
+          "image"
+        );
+        return filtered[0];
+      }
+    );
+    return {media, videoThumbnail};
+  } catch (error) {
+    throw PublishError.create("error-getting-property-media", {cause: error});
+  }
+}
+
+export function getMediaFromNotionProperty(
   files: NotionFiles,
   smAccPlatforms: SocialPlatformTypes[]
 ): Promise<Media[]> {
@@ -215,6 +241,15 @@ export async function processContentMedia(
   // Process main content media
   if (content.media) {
     content.media = await processMedia(content.media, typesToDownload, processedMedia);
+  }
+
+  if (content.videoThumbnail) {
+    const processedThumbnails = await processMedia(
+      [content.videoThumbnail],
+      ["image"],
+      processedMedia
+    );
+    content.videoThumbnail = processedThumbnails[0];
   }
 
   // Process Twitter media

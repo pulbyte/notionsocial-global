@@ -198,6 +198,8 @@ export interface PostOptionsSchema {
   location_tag_prop: string;
   youtube_privacy_status_prop: string;
   pinterest_board_prop?: string;
+  video_thumbnail_image_prop?: string;
+  video_thumbnail_offset_prop?: string;
 }
 export interface PublicApiRecord {
   created_at: number;
@@ -485,6 +487,7 @@ export interface Content {
   bluesky: Thread[];
   twitter: TwitterContent;
   media?: Array<MediaType>;
+  videoThumbnail?: Media;
 }
 
 export interface PlatformError {
@@ -574,23 +577,6 @@ export type NotionProperty =
   | RichTextPropertyItemObjectResponse
   | TitlePropertyItemObjectResponse
   | FormulaPropertyItemObjectResponse;
-export type NotionRichTextPayload = {
-  text: {
-    content: string;
-    link?: {
-      url: string;
-    } | null;
-  };
-  type?: "text";
-  annotations?: {
-    bold?: boolean;
-    italic?: boolean;
-    strikethrough?: boolean;
-    underline?: boolean;
-    code?: boolean;
-    color?: NotionColor;
-  };
-};
 export type NotionFiles = NotionFilesProperty["files"];
 
 export type ArrayElement<ArrayType extends readonly unknown[]> =
@@ -636,6 +622,7 @@ export interface NotionPagePropertiesForPost {
   collaboratorTagsProp: NotionMultiSelectProperty;
   locationTagsProp: NotionSelectProperty;
   youtubePrivacyStatusProp: NotionSelectProperty;
+  videoThumbnailProp?: NotionFilesProperty;
 }
 export interface NotionPagePostConfig {
   _pageId: string;
@@ -644,6 +631,7 @@ export interface NotionPagePostConfig {
   _data: NotionDatabase;
   nsFilter: string;
   archived: boolean;
+  videoThumbnail: NotionFilesProperty["files"];
   media: NotionFilesProperty["files"];
   titleText: string;
   captionText: string;

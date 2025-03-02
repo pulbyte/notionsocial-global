@@ -1,4 +1,4 @@
-import {NotionCodedTextPayload, NotionRichTextPayload, NotionRule} from "./types";
+import {NotionCodedTextPayload, NotionRule} from "./types";
 import {hasText, notionRichTextParser} from "./text";
 
 export function getNotionPropertyMatchVal(property) {
@@ -48,7 +48,7 @@ export function parseNotionRule(filterStr: string, properties): boolean {
 }
 
 export function createCodedRichText(texts: NotionCodedTextPayload[]) {
-  const richText: NotionRichTextPayload[] = [];
+  const richText: any[] = [];
 
   texts.forEach((payload, index) => {
     const {text, color, br, sp, ul, code, bold} = payload;

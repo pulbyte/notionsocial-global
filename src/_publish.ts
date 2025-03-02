@@ -46,6 +46,7 @@ export function getNotionPageConfig(
     collaboratorTagsProp: null,
     locationTagsProp: null,
     youtubePrivacyStatusProp: null,
+    videoThumbnailProp: null,
   };
 
   const titlePropName = Object.keys(properties).find(
@@ -78,6 +79,9 @@ export function getNotionPageConfig(
   _props.youtubePrivacyStatusProp =
     properties[notionDatabaseData.options?.["youtube_privacy_status_prop"]];
 
+  _props.videoThumbnailProp =
+    properties[notionDatabaseData.options?.video_thumbnail_image_prop];
+
   let __: NotionPagePostConfig = {
     _pageId: notionPage.id,
     _props,
@@ -94,11 +98,11 @@ export function getNotionPageConfig(
       date: null,
     },
     status: null,
+    videoThumbnail: [],
     media: [],
     pinterestBoardOption: null,
     altText: "",
     imageUserTags: [],
-
     collaboratorTags: [],
     locationTag: null,
     youtubePrivacyStatus: null,
@@ -126,6 +130,7 @@ export function getNotionPageConfig(
     titleProp,
     nsProp,
     youtubePrivacyStatusProp,
+    videoThumbnailProp,
   } = _props;
   __.nsFilter = notionDatabaseData["ns_filter"];
   if (commentProp?.type == "rich_text") {
@@ -152,6 +157,8 @@ export function getNotionPageConfig(
     };
   }
   __.media = mediaProp?.["files"];
+
+  __.videoThumbnail = videoThumbnailProp?.["files"];
 
   __.status = statusProp?.["select"]?.["name"];
 
