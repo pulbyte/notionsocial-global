@@ -38,10 +38,20 @@ export function packMedia(
 ): Media {
   return {mimeType, url, name, refId, size, type, contentType, ...(caption ? {caption} : {})};
 }
-export function filterPublishMedia(media: Media[], smAccPlatforms: SocialPlatformTypes[]) {
+export function filterPublishMedia(
+  media: Media[],
+  smAccPlatforms: SocialPlatformTypes[],
+  mediaType?: Media["type"]
+) {
   if (!media || !Array.isArray(media)) return [];
 
   let _ = media.filter((v) => !!v.type);
+
+  // Filter by media type if specified
+  if (mediaType) {
+    _ = _.filter((m) => m.type === mediaType);
+  }
+
   const docs = _.filter((m) => m.type == "doc");
 
   const singleSmAcc = smAccPlatforms.length == 1;
