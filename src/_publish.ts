@@ -246,13 +246,15 @@ export function examinePostConfig(taskTime?: number, config?: NotionPagePostConf
     config?.nsFilter && config?.status && statusValue == config?.nsFilter?.toLowerCase();
   const schStatus = config?._data?.publish_changes?.schedule_status;
   const isStatusScheduled = schStatus && statusValue == schStatus?.toLowerCase();
-
+  const time = config?.schTime?.epochMs;
   if (config?.archived) {
     console.warn(`Post is archived [${config?._pageId}]`);
     // return PublishError.reject("notion-page-deleted");
   }
 
-  if (config?.schTime?.epochMs > taskTime) {
+  // ? If the post is scheduled to be published in the future, reject the post
+  // Check if the post is updated to publish in the next 5 minutes
+  if (time && time > Date.now() + 60_000 * 5) {
     return PublishError.reject("post-postponed");
   } else if (!isStatusDone && !isStatusScheduled) {
     return PublishError.reject("post-cancelled");

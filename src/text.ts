@@ -118,7 +118,7 @@ export function trimAndRemoveWhitespace(inputString: string): string {
 
   return trimmedString;
 }
-export function hasText(inputString: string) {
+export function hasText(inputString: string | any) {
   if (!inputString) return false;
   if (typeof inputString !== "string") inputString = String(inputString);
   // Remove leading and trailing whitespace before checking
