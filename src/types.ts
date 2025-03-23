@@ -122,6 +122,7 @@ export interface NotionDatabase {
   locked?: boolean;
   ns_filter: string;
   created_at: number;
+  last_scanned_at?: number;
   image: string;
   state: "expired" | "unsynced" | "deleted" | "active";
   props: {

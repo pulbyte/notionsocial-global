@@ -22,6 +22,7 @@ import {
 import {PublishError} from "./PublishError";
 import _ from "lodash";
 import {getReadableTimeByTimeZone} from "time";
+import {dev} from "env";
 
 export function getNotionPageConfig(
   notionPage: NotionPage,
@@ -240,13 +241,14 @@ export function getNotionPageConfig(
   return __;
 }
 
-export function examinePostConfig(taskTime?: number, config?: NotionPagePostConfig) {
+export function examinePostConfig(config: NotionPagePostConfig, disallowPostponing: boolean) {
   const statusValue = config?.status?.toLowerCase();
   const isStatusDone =
     config?.nsFilter && config?.status && statusValue == config?.nsFilter?.toLowerCase();
   const schStatus = config?._data?.publish_changes?.schedule_status;
   const isStatusScheduled = schStatus && statusValue == schStatus?.toLowerCase();
   const time = config?.schTime?.epochMs;
+
   if (config?.archived) {
     console.warn(`Post is archived [${config?._pageId}]`);
     // return PublishError.reject("notion-page-deleted");
@@ -254,7 +256,7 @@ export function examinePostConfig(taskTime?: number, config?: NotionPagePostConf
 
   // ? If the post is scheduled to be published in the future, reject the post
   // Check if the post is updated to publish in the next 5 minutes
-  if (time && time > Date.now() + 60_000 * 5) {
+  if (!disallowPostponing && time && time > Date.now() + (dev ? 0 : 60_000 * 5)) {
     return PublishError.reject("post-postponed");
   } else if (!isStatusDone && !isStatusScheduled) {
     return PublishError.reject("post-cancelled");
@@ -285,12 +287,11 @@ export function getPostConfig(
   ndbData: NotionDatabase,
   postRecord: PostRecord,
   userRecord?: UserData,
-  taskTime?: number,
-  noExamine?: boolean
+  disallowPostponing?: boolean
 ): Promise<NotionPagePostConfig> {
   const config = getNotionPageConfig(ndbPage, ndbData, postRecord, userRecord);
-  if (noExamine) return Promise.resolve(config);
-  else return examinePostConfig(taskTime, config);
+  // if (noExamine) return Promise.resolve(config);
+  return examinePostConfig(config, disallowPostponing);
 }
 
 function getSelectedSocialAccounts(
