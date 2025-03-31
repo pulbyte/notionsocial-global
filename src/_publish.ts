@@ -241,7 +241,7 @@ export function getNotionPageConfig(
   return __;
 }
 
-export function examinePostConfig(config: NotionPagePostConfig, disallowPostponing: boolean) {
+export function examinePostConfig(config: NotionPagePostConfig, disallowPostponing?: boolean) {
   const statusValue = config?.status?.toLowerCase();
   const isStatusDone =
     config?.nsFilter && config?.status && statusValue == config?.nsFilter?.toLowerCase();
@@ -286,12 +286,10 @@ export function getPostConfig(
   ndbPage: NotionPage,
   ndbData: NotionDatabase,
   postRecord: PostRecord,
-  userRecord?: UserData,
-  disallowPostponing?: boolean
-): Promise<NotionPagePostConfig> {
+  userRecord?: UserData
+): NotionPagePostConfig {
   const config = getNotionPageConfig(ndbPage, ndbData, postRecord, userRecord);
-  // if (noExamine) return Promise.resolve(config);
-  return examinePostConfig(config, disallowPostponing);
+  return config;
 }
 
 function getSelectedSocialAccounts(

@@ -390,6 +390,8 @@ export interface PostRecord {
       };
     };
   };
+  notion_page_title?: string;
+  caption_spoiler?: string;
   publish_at?: number;
   scheduled_at: number;
   completed: boolean;
