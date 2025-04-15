@@ -218,10 +218,12 @@ export async function findNotionInlineDatabases(tkn: string, pageId: string) {
           (block: BlockObjectResponse) => block.type === "child_database"
         );
 
-        const inlineDatabases = childDatabases.map((db) => ({
-          id: db.id,
-          name: db.child_database.title,
-        }));
+        const inlineDatabases = childDatabases.map((db) => {
+          return {
+            id: db.id,
+            name: db.child_database.title,
+          };
+        });
 
         dog("Found inline databases", inlineDatabases);
         return inlineDatabases;

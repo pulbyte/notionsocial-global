@@ -248,7 +248,9 @@ export function getOGData(
 ): Promise<{ogTitle: string; ogImage: string; ogSiteName: string}> {
   return urlMetadata(convertToHttps(url))
     .then((metadata) => {
-      const {"og:title": ogTitle, "og:image": ogImage, "og:site_name": ogSiteName} = metadata;
+      const ogTitle = metadata["og:title"] || metadata["twitter:title"];
+      const ogImage = metadata["og:image"] || metadata["twitter:image"];
+      const ogSiteName = metadata["og:site_name"] || metadata["twitter:site"];
       return {
         ogTitle,
         ogImage,
