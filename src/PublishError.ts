@@ -17,6 +17,7 @@ export const publishErrorCodes = [
   "task-processing",
   "post-not-processed",
   "no-social-account-selected",
+  "invalid-social-account-selected",
 ] as const;
 
 export type PublishErrorCode = (typeof publishErrorCodes)[number];
@@ -33,6 +34,8 @@ export const publishDisruptErrorMessages: {[key in PublishErrorCode]?: string} =
     "🔴 Notion database got disconnected, Please refresh it in Notionsocial dashboard and try again.",
   "inactive-subscription": "🔒 Please upgrade your subscription or pay existing bill due.",
   "post-monthy-limit-reached": `🔒 You've reached your monthly limit of ${freeMonthlyPostLimit} posts for free accounts. Upgrade to a paid plan to post unlimited times.`,
+  "invalid-social-account-selected":
+    "🔴 Please select at least one social account to publish this post. (Make sure the social account is connected to Notionsocial)",
 };
 
 type ErrorWithPossibleToJSON = Error & {

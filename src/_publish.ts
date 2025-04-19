@@ -262,8 +262,11 @@ export function examinePostConfig(config: NotionPagePostConfig, disallowPostponi
     return PublishError.reject("post-cancelled");
   }
 
-  if (config?.smAccs?.length == 0) {
+  if (config?._props?.smAccsProp?.multi_select?.length == 0) {
     return PublishError.reject("no-social-account-selected");
+  }
+  if (config?.smAccs?.length == 0) {
+    return PublishError.reject("invalid-social-account-selected");
   }
 
   return Promise.resolve(config);

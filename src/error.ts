@@ -76,8 +76,8 @@ export function catchPublishError(
 
     const canUpdateNsProp =
       !isNotionDatabaseDeleted && !isNotionDatabaseDisconnected && !isNotionPageDeleted;
-    const toClearNsProp = isPostPoned || code == "no-social-account-selected" || isCancelled;
-    const toResetStatus = isPostPoned || code == "no-social-account-selected";
+    const toClearNsProp = isPostPoned || isCancelled;
+    const toResetStatus = isPostPoned;
 
     if (canUpdateNsProp) {
       return notionMessageUpdateCallback({
@@ -116,10 +116,14 @@ export function decodePublishError(e: PublishFunctionError, stage: PostPublishSt
 
   const isNotionDatabaseDeleted = isDltError || code == "notion-database-deleted";
   const isNotionDatabaseDisconnected = isTknError || code == "notion-database-disconnected";
+  const isInvalidSocialAccountSelected =
+    code == "invalid-social-account-selected" || code == "no-social-account-selected";
   if (isNotionDatabaseDeleted)
     message = publishDisruptErrorMessages["notion-database-deleted"];
   if (isNotionDatabaseDisconnected)
     message = publishDisruptErrorMessages["notion-database-disconnected"];
+  if (isInvalidSocialAccountSelected)
+    message = publishDisruptErrorMessages["invalid-social-account-selected"];
 
   return {
     isServerError,
