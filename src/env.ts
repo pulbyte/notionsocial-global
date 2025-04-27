@@ -68,3 +68,9 @@ export const ProcessedMediaBucket: StorageBucketName = getEnv(
   "PROCESSED_MEDIA_BUCKET",
   "optimized-post-media"
 );
+export const SmAccTagFormats = [
+  "{{ client.username }}",
+  "{{ sm_acc.username }}",
+  "{{ client.username }} : {{ sm_acc.username }}",
+  "{{ sm_acc.username }} ({{ client.username }})",
+];

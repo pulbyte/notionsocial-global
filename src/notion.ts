@@ -15,7 +15,7 @@ import {APIErrorCode, ClientErrorCode, isNotionClientError} from "@notionhq/clie
 import {dog, ignorePromiseError, retryOnCondition} from "./utils";
 import {dev} from "./env";
 import {createCodedRichText} from "./_notion";
-import {NotionCodedTextPayload} from "./types";
+import {NotionCodedTextPayload, NotionPropertyMetadata} from "./types";
 import {PollUntil} from "poll-until-promise";
 
 function retry<T>(func) {
@@ -251,4 +251,37 @@ export async function findNotionInlineDatabases(tkn: string, pageId: string) {
     console.error("Error finding inline database:", error);
     throw error;
   }
+}
+
+export function getNotionPropertyMetadata(
+  metadata: NotionPropertyMetadata | string
+): NotionPropertyMetadata {
+  if (typeof metadata === "string") {
+    return {
+      name: metadata,
+      id: undefined,
+      type: undefined,
+    };
+  }
+  return {
+    name: metadata.name,
+    id: metadata.id,
+    type: metadata.type,
+  };
+}
+
+export function getNotionProperty(
+  metadata: NotionPropertyMetadata,
+  properties: Record<string, any>
+): {metadata: NotionPropertyMetadata; property: any; value: any} {
+  // Find property by id first, then fallback to name
+  const property =
+    Object.values(properties).find((p) => p.id === metadata.id) || properties[metadata.name];
+  const propertyType = property["type"];
+  const value = property[propertyType];
+  return {
+    metadata: metadata,
+    property: property,
+    value: value,
+  };
 }
