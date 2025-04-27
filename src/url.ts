@@ -251,11 +251,13 @@ export function getOGData(
       const ogTitle = metadata["og:title"] || metadata["twitter:title"];
       const ogImage = metadata["og:image"] || metadata["twitter:image"];
       const ogSiteName = metadata["og:site_name"] || metadata["twitter:site"];
-      return {
+      const data = {
         ogTitle,
         ogImage,
         ogSiteName,
       };
+      console.log("OG Data for", url, data);
+      return data;
     })
     .catch((e) => {
       console.log(`Error in getting URL ${url} OG data`, e);

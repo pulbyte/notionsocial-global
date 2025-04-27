@@ -23,7 +23,10 @@ import {
 import {downloadFromUrl} from "./file";
 import {ProcessedMediaBucket} from "./env";
 
-export const getMediaFromNotionFiles = (files: NotionFiles): Promise<Media[]> => {
+export const getMediaFromNotionFiles = (
+  files: NotionFiles,
+  altTextArr?: string[]
+): Promise<Media[]> => {
   if (!files || files.length <= 0) {
     return Promise.resolve([]);
   } else {
@@ -32,7 +35,11 @@ export const getMediaFromNotionFiles = (files: NotionFiles): Promise<Media[]> =>
       files.map(
         (file, index) => () =>
           getMediaFromNotionFile(file).then((media) => {
-            mediaArr.splice(index, 0, media);
+            mediaArr.splice(
+              index,
+              0,
+              Object.assign(media, {caption: altTextArr?.[index]?.trim() || ""})
+            );
             return media;
           })
       )
@@ -165,6 +172,7 @@ export function makeMediaPostReady<T extends "file" | "media">(
     // ? CONSTANT
     name: media.name,
     refId: media.refId,
+    caption: media.caption,
 
     // ? CAN BE CHANGED DURING PROCESSING
     mimeType: media.mimeType,

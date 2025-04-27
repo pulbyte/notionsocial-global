@@ -11,7 +11,7 @@ import {
   SocialPlatformTypes,
   NotionDatabase,
 } from "./types";
-import {hasText, notionRichTextParser, processInstagramTags} from "./text";
+import {hasText, notionRichTextParser, processInstagramTags, splitByEmDashes} from "./text";
 import {isAnyValueInArray} from "./utils";
 import {parseNotionRule} from "./_notion";
 import {
@@ -103,6 +103,7 @@ export function getNotionPageConfig(
     media: [],
     pinterestBoardOption: null,
     altText: "",
+    altTextArr: [],
     imageUserTags: [],
     collaboratorTags: [],
     locationTag: null,
@@ -165,7 +166,9 @@ export function getNotionPageConfig(
 
   __.pinterestBoardOption = pinterestBoardProp?.select;
 
-  __.altText = notionRichTextParser(altTextProp?.["rich_text"], true);
+  const altText = notionRichTextParser(altTextProp?.["rich_text"], true);
+  __.altTextArr = splitByEmDashes(altText);
+  __.altText = __.altTextArr[0]?.trim();
 
   __.imageUserTags = processInstagramTags(
     imageUserTagsProp?.multi_select?.map((prop) => prop.name)

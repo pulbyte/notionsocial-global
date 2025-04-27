@@ -114,11 +114,12 @@ export async function getPropertyMedia(
   config: NotionPagePostConfig
 ): Promise<{media: Media[]; videoThumbnail: Media}> {
   try {
-    const media = await getMediaFromNotionFiles(config.media).then((media) =>
-      filterPublishMedia(
-        media,
-        config.smAccs.map((acc) => acc.platform)
-      )
+    const media = await getMediaFromNotionFiles(config.media, config.altTextArr).then(
+      (media) =>
+        filterPublishMedia(
+          media,
+          config.smAccs.map((acc) => acc.platform)
+        )
     );
     const videoThumbnail = await getMediaFromNotionFiles(config.videoThumbnail).then(
       (media) => {

@@ -362,3 +362,15 @@ export function numberToRoman(num: number): string {
 
   return result.toLowerCase(); // Return lowercase for consistency
 }
+export function splitByEmDashes(text) {
+  if (!text) return [];
+
+  // Match two or more em dashes (—) or hyphens (-) with optional whitespace
+  const regex = /\s*[—-]{2,}\s*/;
+
+  // Split the text and filter out empty strings
+  return text
+    .split(regex)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+}

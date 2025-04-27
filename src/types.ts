@@ -20,6 +20,7 @@ import {
 } from "@notionhq/client/build/src/api-endpoints";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
+import {SmAccTagFormats} from "env";
 // Notion File, Which is extracted from Notion
 export interface Media {
   name: string;
@@ -114,6 +115,11 @@ export interface MetricPropertyConfig {
   }[];
   method: "aggregate" | "separate";
 }
+export interface NotionPropertyMetadata {
+  name: string;
+  id?: string;
+  type?: NotionPropertyType;
+}
 export interface NotionDatabase {
   link_id: string;
   workspace_id: string;
@@ -136,15 +142,15 @@ export interface NotionDatabase {
   };
   post_metric_tracking?: {
     platforms: SocialPlatformTypes[];
-    likes?: MetricPropertyConfig;
-    comments?: MetricPropertyConfig;
-    shares?: MetricPropertyConfig;
-    views?: MetricPropertyConfig;
-    retweets?: MetricPropertyConfig;
-    reposts?: MetricPropertyConfig;
-    profile_visits?: MetricPropertyConfig;
-    new_followers?: MetricPropertyConfig;
-    saves?: MetricPropertyConfig;
+    likes?: MetricPropertyConfig | string;
+    comments?: MetricPropertyConfig | string;
+    shares?: MetricPropertyConfig | string;
+    views?: MetricPropertyConfig | string;
+    retweets?: MetricPropertyConfig | string;
+    reposts?: MetricPropertyConfig | string;
+    profile_visits?: MetricPropertyConfig | string;
+    new_followers?: MetricPropertyConfig | string;
+    saves?: MetricPropertyConfig | string;
   };
   stat_props?: {
     likes?: string;
@@ -256,7 +262,19 @@ export interface UserData {
     formatting_options: NotionDatabase["formatting_options"];
     options: NotionDatabase["options"];
   };
+  client_manager: {
+    clients_limit: number;
+    clients_count: number;
+    name: string;
+    username: string;
+    contact_email: string;
+    registered_at: number;
+  };
 }
+
+export type SmAccTagFormat = (typeof SmAccTagFormats)[number];
+
+// Define the tag format options
 export type AuthorUser = Partial<{
   uuid: string;
   email: string;
@@ -284,7 +302,6 @@ export const SupportedNotionRulePropTypes = [
   "multi_select",
   "checkbox",
 ] as const;
-export type NotionPropertyType = (typeof SupportedNotionRulePropTypes)[number];
 export type NotionRule = {
   property?: string;
   type?: NotionPropertyType;
@@ -472,6 +489,7 @@ export interface User {
   emailVerified: boolean;
   isNewUser?: boolean;
   created_at?: number;
+  client_manager?: UserData["client_manager"];
 }
 
 export interface PlatformPostPublishResult extends Partial<PlatformPublishResponse> {
@@ -648,6 +666,7 @@ export interface NotionPagePostConfig {
   status: string;
   pinterestBoardOption: NotionSelectProperty["select"];
   altText: string;
+  altTextArr: string[];
   imageUserTags: string[];
   collaboratorTags: string[];
   locationTag: string;
@@ -719,3 +738,5 @@ export type CloudRunFunction =
   | "api"
   | "crawl";
 export type CloudRunService = "post_process";
+export type NotionPropertyType =
+  PageObjectResponse["properties"][keyof PageObjectResponse["properties"]]["type"];
