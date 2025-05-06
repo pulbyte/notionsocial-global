@@ -125,7 +125,9 @@ export function getNotionMediaName(str: string, mimeType: string) {
   return str.split(`.${mimeType}`)[0];
 }
 
-export function getMediaFromNotionFile(file: ArrayElement<NotionFiles>): Promise<Media> {
+export function getMediaFromNotionFile(
+  file: ArrayElement<NotionFiles>
+): Promise<Media | null> {
   return new Promise((resolve) => {
     const extUrl = file?.["external"]?.["url"] as string;
     const gDriveMedia = alterGDriveLink(extUrl);

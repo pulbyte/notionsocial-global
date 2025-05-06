@@ -112,6 +112,10 @@ export function getGdriveContentHeaders(url): Promise<{
         timeout: 30000,
         responseType: "stream",
         maxRedirects: 5,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        },
         validateStatus: function (status) {
           return status >= 200 && status < 300; // default
         },
@@ -162,6 +166,10 @@ export function getUrlContentHeaders(url: string): Promise<{
         timeout: 30000,
         responseType: "stream",
         maxRedirects: 5,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        },
         validateStatus: function (status) {
           return status >= 200 && status < 300; // default
         },
@@ -246,11 +254,25 @@ export function extractUrlsFromString(inputString) {
 export function getOGData(
   url: string
 ): Promise<{ogTitle: string; ogImage: string; ogSiteName: string}> {
+  const _ = url;
   return urlMetadata(convertToHttps(url))
     .then((metadata) => {
-      const ogTitle = metadata["og:title"] || metadata["twitter:title"];
-      const ogImage = metadata["og:image"] || metadata["twitter:image"];
-      const ogSiteName = metadata["og:site_name"] || metadata["twitter:site"];
+      const _url = new URL(metadata.url);
+
+      const ogTitle = metadata["title"] || metadata["og:title"] || metadata["twitter:title"];
+      let ogImage =
+        metadata["image"] ||
+        metadata["og:image"] ||
+        metadata["twitter:image"] ||
+        metadata["imgTags"]?.find((_) => !!_.alt && !_.src?.startsWith("data:image"))?.["src"];
+      if (ogImage?.startsWith("/")) ogImage = _url.origin + ogImage;
+      const ogSiteName =
+        metadata["og:site_name"] ||
+        metadata["twitter:site"] ||
+        metadata["jsonld"]?.[0]?.name ||
+        _url.host ||
+        url;
+
       const data = {
         ogTitle,
         ogImage,

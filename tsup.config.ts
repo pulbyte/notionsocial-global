@@ -7,6 +7,7 @@ export default defineConfig([
     clean: true,
     name: "notionsocial-global",
     format: ["cjs", "esm"],
+    platform: "node",
   },
   {
     entry: ["src/browser.ts"],
@@ -15,5 +16,6 @@ export default defineConfig([
     dts: true,
     clean: false,
     platform: "browser",
+    external: ["net", "http", "https", "dns"],
   },
 ]);

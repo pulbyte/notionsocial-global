@@ -25,6 +25,10 @@ export async function downloadFromUrl(url, name?: string) {
       responseType: "arraybuffer",
       timeout: 15 * 60 * 1000, // 15 minutes
       maxContentLength: maxMediaSize.bytes, // 100 MB max file size
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      },
     });
 
     const buffer = Buffer.from(response.data);

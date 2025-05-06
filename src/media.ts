@@ -35,11 +35,13 @@ export const getMediaFromNotionFiles = (
       files.map(
         (file, index) => () =>
           getMediaFromNotionFile(file).then((media) => {
-            mediaArr.splice(
-              index,
-              0,
-              Object.assign(media, {caption: altTextArr?.[index]?.trim() || ""})
-            );
+            if (media) {
+              mediaArr.splice(
+                index,
+                0,
+                Object.assign(media, {caption: altTextArr?.[index]?.trim() || ""})
+              );
+            }
             return media;
           })
       )
