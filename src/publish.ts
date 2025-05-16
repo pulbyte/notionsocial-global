@@ -13,7 +13,7 @@ import {
   SocialPlatformTypes,
   NotionBlock,
 } from "./types";
-import {callFunctionsSequentiallyBreak} from "./utils";
+import {callFunctionsSequentiallyBreak, dog} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
 import {
   getMediaTransformations,
@@ -164,7 +164,9 @@ export function processMedia(
   ): Promise<MediaType> {
     // Check cache first
     if (media.refId && processedMediaCache.has(media.refId)) {
-      return processedMediaCache.get(media.refId)!;
+      const cachedMedia = processedMediaCache.get(media.refId);
+      dog("Media from cache -->", cachedMedia);
+      return cachedMedia;
     }
 
     const toDownload = typesToDownload?.includes(media.type);
@@ -258,6 +260,15 @@ export async function processContentMedia(
     for (const tweet of content.twitter) {
       if (tweet.media) {
         tweet.media = await processMedia(tweet.media, typesToDownload, processedMedia);
+      }
+    }
+  }
+
+  // Process Paragraph media
+  if (content.paragraphs) {
+    for (const paragraph of content.paragraphs) {
+      if (paragraph.media) {
+        paragraph.media = await processMedia(paragraph.media, typesToDownload, processedMedia);
       }
     }
   }

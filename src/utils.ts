@@ -82,25 +82,25 @@ export const getSocialPlatformImage = (platform: SocialPlatformTypes, imageUrl?:
   if (imageUrl) return imageUrl;
   switch (platform) {
     case "facebook":
-      return "https://res.cloudinary.com/pul/image/upload/v1675157338/icons/facebook.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746525812/icons/facebook.svg";
     case "twitter":
       return "https://res.cloudinary.com/pul/image/upload/v1675157336/icons/twitter.svg";
     case "x":
-      return "https://res.cloudinary.com/pul/image/upload/v1721560448/icons/x-124.png";
+      return "https://res.cloudinary.com/pul/image/upload/v1746516665/icons/x.svg";
     case "linkedin":
-      return "https://res.cloudinary.com/pul/image/upload/v1675157341/icons/linkedin.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746516793/icons/linkedin.svg";
     case "instagram":
-      return "https://res.cloudinary.com/pul/image/upload/v1675157339/icons/Instagram.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746517077/icons/instagram.svg";
     case "youtube":
-      return "https://res.cloudinary.com/pul/image/upload/v1676906720/icons/youtube.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746516706/icons/youtube.svg";
     case "tiktok":
-      return "https://res.cloudinary.com/pul/image/upload/v1689234905/icons/tiktok.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746516763/icons/tiktok.svg";
     case "pinterest":
-      return "https://res.cloudinary.com/pul/image/upload/v1696496110/icons/pinterest.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746516789/icons/pinterest.svg";
     case "threads":
-      return "https://res.cloudinary.com/pul/image/upload/v1719118919/icons/threads.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746516776/icons/threads.svg";
     case "bluesky":
-      return "https://res.cloudinary.com/pul/image/upload/v1735055145/icons/bluesky-glyph.svg";
+      return "https://res.cloudinary.com/pul/image/upload/v1746517720/icons/bluesky-glyph.svg";
     default:
       return "https://cdn.dribbble.com/users/1787323/screenshots/16418683/media/b698712269a006ae2b97c8cb787a6c14.png?compress=1&resize=1200x900&vertical=top";
   }
