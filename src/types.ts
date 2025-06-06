@@ -207,6 +207,8 @@ export interface PostOptionsSchema {
   pinterest_board_prop?: string;
   video_thumbnail_image_prop?: string;
   video_thumbnail_offset_prop?: string;
+  cta_button_prop?: string;
+  cta_link_prop?: string;
 }
 export interface PublicApiRecord {
   created_at: number;
@@ -644,6 +646,8 @@ export interface NotionPagePropertiesForPost {
   locationTagsProp: NotionSelectProperty;
   youtubePrivacyStatusProp: NotionSelectProperty;
   videoThumbnailProp?: NotionFilesProperty;
+  ctaButtonProp?: NotionTextProperty | NotionSelectProperty;
+  ctaLinkProp?: UrlPropertyItemObjectResponse;
 }
 export interface NotionPagePostConfig {
   _pageId: string;
@@ -671,6 +675,8 @@ export interface NotionPagePostConfig {
   collaboratorTags: string[];
   locationTag: string;
   youtubePrivacyStatus: "public" | "unlisted" | "private";
+  ctaButton: string;
+  ctaLink: string;
   smAccs: NotionDatabase["sm_accs"];
   smAccsPlatforms: SocialPlatformTypes[];
   filesToDownload: Array<"image" | "video" | "doc">;

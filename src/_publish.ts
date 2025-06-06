@@ -11,7 +11,13 @@ import {
   SocialPlatformTypes,
   NotionDatabase,
 } from "./types";
-import {hasText, notionRichTextParser, processInstagramTags, splitByEmDashes} from "./text";
+import {
+  hasText,
+  notionRichTextParser,
+  processInstagramTags,
+  splitByEmDashes,
+  toScreamingSnakeCase,
+} from "./text";
 import {isAnyValueInArray} from "./utils";
 import {parseNotionRule} from "./_notion";
 import {
@@ -48,6 +54,8 @@ export function getNotionPageConfig(
     locationTagsProp: null,
     youtubePrivacyStatusProp: null,
     videoThumbnailProp: null,
+    ctaButtonProp: null,
+    ctaLinkProp: null,
   };
 
   const titlePropName = Object.keys(properties).find(
@@ -83,6 +91,10 @@ export function getNotionPageConfig(
   _props.videoThumbnailProp =
     properties[notionDatabaseData.options?.video_thumbnail_image_prop];
 
+  _props.ctaButtonProp = properties[notionDatabaseData.options?.cta_button_prop];
+
+  _props.ctaLinkProp = properties[notionDatabaseData.options?.cta_link_prop];
+
   let __: NotionPagePostConfig = {
     _pageId: notionPage.id,
     _props,
@@ -108,6 +120,8 @@ export function getNotionPageConfig(
     collaboratorTags: [],
     locationTag: null,
     youtubePrivacyStatus: null,
+    ctaButton: "",
+    ctaLink: "",
     smAccs: [],
     smAccsPlatforms: [],
     rules: {},
@@ -133,6 +147,8 @@ export function getNotionPageConfig(
     nsProp,
     youtubePrivacyStatusProp,
     videoThumbnailProp,
+    ctaButtonProp,
+    ctaLinkProp,
   } = _props;
   __.nsFilter = notionDatabaseData["ns_filter"];
   if (commentProp?.type == "rich_text") {
@@ -186,6 +202,28 @@ export function getNotionPageConfig(
     : ytPrivacyStatus?.includes("unlisted")
     ? "unlisted"
     : "public";
+
+  // Process CTA Button property
+  if (ctaButtonProp?.type === "rich_text") {
+    __.ctaButton = notionRichTextParser(ctaButtonProp?.["rich_text"], true);
+  } else if (ctaButtonProp?.type === "select") {
+    __.ctaButton = ctaButtonProp?.["select"]?.name || "";
+  }
+
+  // Process CTA Link property
+  const rawCtaLink = ctaLinkProp?.["url"] || "";
+  try {
+    // Validate and sanitize URL
+    if (rawCtaLink) {
+      const urlObj = new URL(rawCtaLink);
+      __.ctaLink = urlObj.toString();
+    } else {
+      __.ctaLink = "";
+    }
+  } catch (error) {
+    console.warn(`Invalid CTA Link URL: ${rawCtaLink}`);
+    __.ctaLink = "";
+  }
 
   const smAccs = getSelectedSocialAccounts(smAccsProp, notionDatabaseData, postRecord);
   __.smAccs = smAccs;

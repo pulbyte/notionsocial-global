@@ -374,3 +374,50 @@ export function splitByEmDashes(text) {
     .map((part) => part.trim())
     .filter((part) => part.length > 0);
 }
+/**
+ * Removes unsupported Unicode characters from a string
+ *
+ * @param {string} text - The input string to clean
+ * @returns {string} - The cleaned string with unsupported characters removed
+ *
+ * @description
+ * This function removes control characters and other potentially problematic
+ * Unicode characters like directional formatting characters (U+202A - LRE,
+ * U+202B - RLE, U+202C - PDF, U+202D - LRO, U+202E - RLO) and other invisible
+ * characters that might cause issues in text processing or display.
+ */
+export function removeUnsupportedUnicodeChars(text: string): string {
+  if (!text) return text;
+
+  // Remove control characters (including directional formatting chars like U+202A)
+  // U+0000 to U+001F: C0 control characters
+  // U+007F: DEL
+  // U+0080 to U+009F: C1 control characters
+  // U+200B to U+200F: Zero width characters and directional marks
+  // U+202A to U+202E: Directional formatting characters
+  // U+2066 to U+2069: Directional isolate characters
+  return text.replace(
+    /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g,
+    ""
+  );
+}
+
+export function toScreamingSnakeCase(text: string): string {
+  if (!text) return "";
+
+  // Trim and normalize the string
+  let result = text.trim();
+
+  // Replace any existing camelCase with snake_case
+  result = result.replace(/([a-z])([A-Z])/g, "$1_$2");
+
+  // Replace spaces, hyphens, and multiple underscores with a single underscore
+  result = result.replace(/[\s-]+/g, "_");
+  result = result.replace(/_+/g, "_");
+
+  // Remove any non-alphanumeric characters (except underscores)
+  result = result.replace(/[^a-zA-Z0-9_]/g, "");
+
+  // Convert to uppercase
+  return result.toUpperCase();
+}

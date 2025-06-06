@@ -5,6 +5,7 @@ import {
   notionRichTextParser,
   numberToLetter,
   trimString,
+  removeUnsupportedUnicodeChars,
 } from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
@@ -119,6 +120,9 @@ export function parseNotionBlockToText(
 
   text += childrenText;
 
+  // Apply removeUnsupportedUnicodeChars to clean the final text
+  text = removeUnsupportedUnicodeChars(text);
+
   if (
     options?.addLineBreakOnParagraphBlock &&
     !isNextBlockEmpty &&
@@ -230,6 +234,9 @@ export function formatMarkdown(text) {
 }
 
 function applyStyleToText(text, style) {
+  // Clean the input text first to remove unsupported characters
+  text = removeUnsupportedUnicodeChars(text);
+
   const urlRegex = /https?:\/\/[^\s]+/g;
   let result = "";
   let lastIndex = 0;
