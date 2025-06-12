@@ -254,7 +254,6 @@ export function extractUrlsFromString(inputString) {
 export function getOGData(
   url: string
 ): Promise<{ogTitle: string; ogImage: string; ogSiteName: string}> {
-  const _ = url;
   return urlMetadata(convertToHttps(url))
     .then((metadata) => {
       const _url = new URL(metadata.url);

@@ -390,14 +390,14 @@ export function removeUnsupportedUnicodeChars(text: string): string {
   if (!text) return text;
 
   // Remove control characters (including directional formatting chars like U+202A)
-  // U+0000 to U+001F: C0 control characters
+  // U+0000 to U+001F: C0 control characters (except newlines U+000A)
   // U+007F: DEL
   // U+0080 to U+009F: C1 control characters
   // U+200B to U+200F: Zero width characters and directional marks
   // U+202A to U+202E: Directional formatting characters
   // U+2066 to U+2069: Directional isolate characters
   return text.replace(
-    /[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g,
+    /[\u0000-\u0009\u000B-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g,
     ""
   );
 }
