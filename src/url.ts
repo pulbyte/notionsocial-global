@@ -64,7 +64,7 @@ export async function alterDescriptLink(inputURL: string) {
 export function alterGDriveLink(inputURL) {
   if (!inputURL) return null;
   // Regular expression to match Google Drive file URL
-  const driveRegex = /drive\.google\.com\/(?:file\/d\/|document\/d\/)([^\/\?]+)\/?/;
+  const driveRegex = /drive\.google\.com\/(?:file\/d\/|document\/d\/|open\?id=)([^\/\?&]+)/;
 
   // Check if the input URL matches the Google Drive file URL pattern
   const match = inputURL.match(driveRegex);

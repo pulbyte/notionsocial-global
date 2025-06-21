@@ -320,14 +320,18 @@ export type PinterestBoard = {
 
 export interface SocialAccountData {
   state: "active" | "expired";
+  ig_auth_type?: "ig_oauth" | "fb_sdk";
+  ig_user_id?: string;
   author_uid: string;
   platform_uid: string;
   platform: SocialPlatformTypes;
   created_at?: number;
   tag?: string;
+  locked?: boolean;
   name: string;
   username: string;
   dp: string;
+  last_updated_at?: number;
   auth?: {
     access_token?: string;
     access_secret?: string;

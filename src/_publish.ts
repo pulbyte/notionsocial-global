@@ -11,13 +11,7 @@ import {
   SocialPlatformTypes,
   NotionDatabase,
 } from "./types";
-import {
-  hasText,
-  notionRichTextParser,
-  processInstagramTags,
-  splitByEmDashes,
-  toScreamingSnakeCase,
-} from "./text";
+import {hasText, notionRichTextParser, processInstagramTags, splitByEmDashes} from "./text";
 import {isAnyValueInArray} from "./utils";
 import {parseNotionRule} from "./_notion";
 import {
