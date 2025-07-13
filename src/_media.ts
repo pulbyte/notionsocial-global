@@ -1,5 +1,15 @@
 import {docMimeTypes, imageMimeTypes, videoMimeTypes} from "./env";
-import {ArrayElement, NotionFiles, Media, SocialPlatformTypes} from "./types";
+import {
+  ArrayElement,
+  NotionFiles,
+  Media,
+  SocialPlatformTypes,
+  MediaFile,
+  TransformedMedia,
+  MediaType,
+  PostMediaFile,
+  PostMedia,
+} from "./types";
 import * as mime from "@alshdavid/mime-types";
 
 import {notionRichTextParser, trimAndRemoveWhitespace} from "./text";
@@ -59,11 +69,16 @@ export function filterPublishMedia(
   const onlyLinkedIn = singleSmAcc && hasLinkedin;
 
   if (docs.length > 0) {
+    // If there are docs, we need to check if the user is only posting to linkedin
+    // if so, we need to limit the number of docs to 1
+    // if not, we need to remove the docs from the media array
     if (onlyLinkedIn) _ = docs.slice(0, 1);
     else if (!hasLinkedin) {
       _ = _.filter((m) => m.type != "doc");
     }
-  } else _ = _.slice(0, 20);
+    // Else we need to limit the number of media files to 35
+    // Cause the max images for TikTok is 35, And all other platforms have lowser max for carousel
+  } else _ = _.slice(0, 35);
   return _;
 }
 export function getContentTypeFromMimeType(mt) {
@@ -91,6 +106,7 @@ export function getMediaTypeFromContentType(ct: string) {
 }
 
 export const binaryUploadSocialPlatforms: SocialPlatformTypes[] = [
+  "x",
   "twitter",
   "linkedin",
   "youtube",
@@ -120,9 +136,12 @@ export function getMediaFromNotionBlock(block): Promise<Media | null> {
   } else return Promise.resolve(null);
 }
 
-export function getNotionMediaName(str: string, mimeType: string) {
-  if (!str || !mimeType) return null;
-  return str.split(`.${mimeType}`)[0];
+export function getNotionMediaName(str: string, mimeType?: string) {
+  if (!str) return null;
+  if (mimeType) {
+    return str.split(`.${mimeType}`)[0];
+  }
+  return str;
 }
 
 export function getMediaFromNotionFile(
@@ -252,4 +271,81 @@ export function getStaticMediaFromNotionBlock(block): Media | null {
     return getStaticMediaFromNotionFile(block[type]);
   }
   return null;
+}
+
+export function makeMediaPostReady<T extends "file" | "media">(
+  media: MediaType,
+  platform?: SocialPlatformTypes
+): T extends "file" ? PostMediaFile : PostMedia {
+  // Helper function to extract the transformation based on platform
+  const getTransformation = (transformations: TransformedMedia["transformations"]) => {
+    // First, try to find a transformation that includes the specified platform
+    if (platform) {
+      const platformSpecific = transformations.find((t) => t.platforms?.includes(platform));
+      if (platformSpecific) return platformSpecific;
+    }
+
+    // Then, look for a transformation with empty platforms array
+    const defaultTransform = transformations.find(
+      (t) => Array.isArray(t.platforms) && t.platforms.length === 0
+    );
+    if (defaultTransform) return defaultTransform;
+
+    // Finally, fall back to the first transformation
+    return transformations[0];
+  };
+
+  // Base media object
+  const m: PostMediaFile = {
+    // ? CONSTANT
+    name: media.name,
+    id: media.refId,
+    caption: media.caption,
+
+    // ? CAN BE CHANGED DURING PROCESSING
+    mimeType: media.mimeType,
+    contentType: media.contentType,
+    type: media.type,
+
+    // ? DEFAULT UN-PROCESSED SRC
+    metadata: {
+      size: media.size,
+      height: 0,
+      width: 0,
+    },
+    url: media.url,
+    ...((media as MediaFile).buffer && {buffer: (media as MediaFile).buffer}),
+  };
+
+  if ("transformations" in media && Array.isArray(media.transformations)) {
+    const transformation = getTransformation(media.transformations);
+    if (transformation) {
+      const contentType = transformation.metadata?.contentType || m.contentType;
+      const mimeType = getMimeTypeFromContentType(contentType) || m.mimeType;
+      const type = getMediaTypeFromContentType(contentType) || m.type;
+
+      const buffer = transformation.buffer || m.buffer;
+      const url = transformation.url || m.url;
+
+      const metadata = {
+        ...transformation.metadata,
+        size: transformation.metadata?.size || m.metadata.size,
+      };
+
+      const transformedMedia: PostMediaFile = {
+        ...m,
+        url,
+        metadata,
+        buffer,
+        // In some transformations, the content type is changed
+        // when we convert to a supprted mime type
+        // Even the type can be changed, For example, pdf to jpg images
+        contentType,
+        mimeType,
+        type,
+      };
+      return transformedMedia;
+    }
+  }
+  return m;
 }
