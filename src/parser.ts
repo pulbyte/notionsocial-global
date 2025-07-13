@@ -15,12 +15,14 @@ const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
 import {FormattingOptions, NotionBlock, NotionBlockType, ParsedNotionBlock} from "types";
 
-function mkdwn(block) {
+function mkdwn(block: NotionBlock) {
   try {
-    let markdown = NBMPInstance.parse([block]);
+    let markdown = NBMPInstance.parse([block] as Parameters<
+      NotionBlocksMarkdownParser["parse"]
+    >[0]);
     return markdown;
   } catch (e) {
-    console.warn("An error occurred while parsing the block", e.message);
+    console.warn(`An error occurred while parsing the ${block.type} block`, e.message);
     return "";
   }
 }

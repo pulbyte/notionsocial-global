@@ -7,6 +7,8 @@ export * from "./_content";
 export * from "./_media";
 export * from "./_publish";
 export * from "./_notion";
+export * from "./_richtext";
+export * from "./_post";
 export * from "./env";
 export * from "./url";
 export * from "./html";

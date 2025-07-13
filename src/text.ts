@@ -264,7 +264,7 @@ export function extractTags(inputString: string) {
   // Extract and return the tag names
   if (matches) {
     const tagNames = matches.map((match) => match.substring(1));
-    return tagNames;
+    return tagNames.filter(hasText);
   } else {
     return [];
   }
