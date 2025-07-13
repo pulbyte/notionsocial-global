@@ -10,6 +10,8 @@ db.settings({ignoreUndefinedProperties: true});
 import {dashifyNotionId, removeHyphens} from "./text";
 import {FirestoreDoc, NotionDatabase, PostRecord, SocialAccountData, UserData} from "./types";
 import {Storage} from "@google-cloud/storage";
+import {dog} from "utils";
+import {decryptSecureToken} from "./crypto";
 const storage = new Storage();
 
 export function getPostRecord(
@@ -97,4 +99,52 @@ export function getSmAccDoc(smAccId, authorUid): Promise<FirestoreDoc<SocialAcco
       else return rej("Social account does not exists");
     });
   });
+}
+export async function getSmAccByPlatformId(
+  id: string,
+  authorUid?: string
+): Promise<FirestoreDoc<SocialAccountData> | null> {
+  if (!id) return null;
+  let query = db.collection("sm_accs").where("platform_uid", "==", id);
+
+  if (authorUid) {
+    query = query.where("author_uid", "==", authorUid);
+  }
+
+  query = query.limit(1);
+
+  const snapshot = await query.get();
+  const doc = snapshot.docs[0];
+
+  if (!doc) {
+    dog(`Social account not found for platform id: ${id} and author uid: ${authorUid}`);
+    return null;
+  }
+
+  return {
+    data: doc.data() as SocialAccountData,
+    ref: doc.ref,
+  };
+}
+
+export function getSmAccAuthData(
+  smAccData: Pick<SocialAccountData, "platform" | "secure_auth_token" | "auth" | "fb_auth">
+) {
+  const {platform, secure_auth_token, auth, fb_auth} = smAccData;
+  let data = {
+    secure: secure_auth_token,
+    token: secure_auth_token
+      ? decryptSecureToken(secure_auth_token)?.token
+      : auth?.access_token,
+    secret: null,
+    refreshToken: auth?.refresh_token,
+  };
+  if (platform == "instagram" && fb_auth) {
+    data.token = fb_auth?.access_token;
+  }
+  if (["x", "twitter"].includes(platform)) {
+    data.token = auth?.oauth_token;
+    data.secret = auth?.oauth_token_secret;
+  }
+  return data;
 }
