@@ -1,19 +1,7 @@
-import {getMediaFromNotionBlock, getStaticMediaFromNotionBlock} from "./_media";
-import {parseNotionBlockToText} from "./parser";
-import {hasText, trimAndRemoveWhitespace, trimString} from "./text";
+import {extractTags, hasText, trimAndRemoveWhitespace} from "./text";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
-import {
-  BaseLinkedInPost,
-  BaseTwitterPost,
-  Content,
-  FormattingOptions,
-  Media,
-  NotionBlock,
-  ParsedNotionBlock,
-  Thread,
-  TwitterContent,
-} from "types";
+import {BaseLinkedInPost, BaseTweet, Paragraph, PostMediaFile, Thread, XContent} from "types";
 import {extractTweetIdFromUrl} from "./url";
 
 export function convertSectionsToParagraphs(
@@ -189,30 +177,29 @@ export function removeFirstTweetPostUrlFromText(text: string): string {
   return text.replace(TweetPostExtractRegex, "");
 }
 
-export function extractTwitterPostFromString(text: string): BaseTwitterPost {
-  if (!text) return {text: "", quoteTweetId: null, replyToTweetId: null};
+export function parseTextForXPost(text: string): BaseTweet {
+  const __: BaseTweet = {text: ""};
+  if (!text) return __;
 
   const urlMatch = text.match(TweetPostExtractRegex);
-  let quoteTweetId = null;
-  let replyToTweetId = null;
-  let retweetId = null;
+
   if (urlMatch) {
     const url = urlMatch[0];
     const tweetId = extractTweetIdFromUrl(url);
     const noText = !hasText(trimAndRemoveWhitespace(removeFirstTweetPostUrlFromText(text)));
     // Check if there is only the url, Which mean it is a retweet
     if (noText) {
-      retweetId = tweetId;
+      __.repostId = tweetId;
       text = "";
     }
     const trimmedText = text.trim();
     // Check if the URL is at the beginning of the text
     if (trimmedText.startsWith(url)) {
-      replyToTweetId = tweetId;
+      __.replyToPostId = tweetId;
       text = removeFirstTweetPostUrlFromText(text);
     } else if (trimmedText.endsWith(url)) {
       // URL is at the end or middle, treat it as a reply
-      quoteTweetId = tweetId;
+      __.quotePostId = tweetId;
       text = removeFirstTweetPostUrlFromText(text).trim();
     }
   }
@@ -392,7 +379,7 @@ export function removeFirstLinkedInPostUrlFromText(text: string): string {
   return text.replace(LinkedInPostExtractRegex, "");
 }
 
-export function extractLinkedInPostFromString(text: string): BaseLinkedInPost {
+export function parseTextForLinkedInPost(text: string): BaseLinkedInPost {
   if (!text) return {text: "", quotePostId: null, replyToPostId: null, repostId: null};
 
   const urlMatch = text.match(LinkedInPostExtractRegex);

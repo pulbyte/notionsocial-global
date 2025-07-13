@@ -130,7 +130,7 @@ export interface NotionDatabase {
   created_at: number;
   last_scanned_at?: number;
   image: string;
-  state: "expired" | "unsynced" | "deleted" | "active";
+  state: "expired" | "unsynced" | "deleted" | "active" | "dev-active";
   props: {
     media: string;
     sch_time: string;
@@ -224,7 +224,7 @@ export interface UserData {
   sm_acc_count: number;
   sm_acc_limit_incr?: number;
   sm_acc_limit: number;
-
+  is_test_user?: boolean;
   notion_db_limit: number;
   notion_db_count: number;
   notion_db_limit_incr?: number;
@@ -656,6 +656,7 @@ export interface NotionPagePropertiesForPost {
 export interface NotionPagePostConfig {
   _pageId: string;
   _props: NotionPagePropertiesForPost;
+  _postRecord: PostRecord;
   _properties: NotionProperties;
   _data: NotionDatabase;
   nsFilter: string;
@@ -664,7 +665,8 @@ export interface NotionPagePostConfig {
   media: NotionFilesProperty["files"];
   titleText: string;
   captionText: string;
-  commentText: string;
+  commentText?: string;
+  platformCaptions: Partial<Record<SocialPlatformTypes, string>>;
   schTime: {
     rawStr: string;
     fmtTz: string;
@@ -672,15 +674,15 @@ export interface NotionPagePostConfig {
     date: Date;
   };
   status: string;
-  pinterestBoardOption: NotionSelectProperty["select"];
-  altText: string;
+  selectedPinterestBoard?: NotionSelectProperty["select"] | null;
+  altText?: string;
   altTextArr: string[];
-  imageUserTags: string[];
-  collaboratorTags: string[];
-  locationTag: string;
-  youtubePrivacyStatus: "public" | "unlisted" | "private";
-  ctaButton: string;
-  ctaLink: string;
+  imageUserTags?: string[];
+  collaboratorTags?: string[];
+  locationTag?: string;
+  youtubePrivacyStatus?: "public" | "unlisted" | "private";
+  ctaButton?: string;
+  ctaLink?: string;
   smAccs: NotionDatabase["sm_accs"];
   smAccsPlatforms: SocialPlatformTypes[];
   filesToDownload: Array<"image" | "video" | "doc">;

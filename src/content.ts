@@ -1,8 +1,12 @@
-import {Content, FormattingOptions, Media, NotionBlock, ParsedNotionBlock} from "./types";
+import {
+  FormattingOptions,
+  NotionBlock,
+  NotionPagePostConfig,
+  ParsedNotionBlock,
+  RichTextContent,
+} from "./types";
 import {PartialBlockObjectResponse} from "@notionhq/client/build/src/api-endpoints";
 import {
-  convertTextToThreads,
-  convertSectionsToTwitterThread,
   processNotionBlock,
   processParsedNotionBlocks,
   convertSectionsToParagraphs,

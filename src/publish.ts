@@ -1,8 +1,8 @@
-import {getContentFromNotionBlocksAsync} from "./content";
-import {formatBytesIntoReadable, hasText} from "./text";
+import {getRichTextContent, processRichTextContentMedia} from "./content";
+import {formatBytesIntoReadable} from "./text";
 import {
   AuthorUser,
-  Content,
+  NotionPageContent,
   NotionFiles,
   NotionPagePostConfig,
   UserData,
@@ -11,11 +11,8 @@ import {
   MediaTransformation,
   MediaType,
   SocialPlatformTypes,
-  NotionBlock,
 } from "./types";
 import {callFunctionsSequentiallyBreak, dog} from "./utils";
-import {Client, iteratePaginatedAPI} from "@notionhq/client";
-import {
   getMediaTransformations,
   getMediaFromNotionFiles,
   getMediaFile,

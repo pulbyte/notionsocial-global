@@ -23,6 +23,7 @@ import {PublishError} from "./PublishError";
 import _ from "lodash";
 import {getReadableTimeByTimeZone} from "time";
 import {dev} from "env";
+import {containsAny, detectSocialPlatforms} from "@pulbyte/social-stack-lib";
 
 export function getNotionPageConfig(
   notionPage: NotionPage,
@@ -92,6 +93,7 @@ export function getNotionPageConfig(
   let __: NotionPagePostConfig = {
     _pageId: notionPage.id,
     _props,
+    _postRecord: postRecord,
     _data: notionDatabaseData,
     _properties: properties,
     nsFilter: null,
@@ -107,7 +109,7 @@ export function getNotionPageConfig(
     status: null,
     videoThumbnail: [],
     media: [],
-    pinterestBoardOption: null,
+    selectedPinterestBoard: null,
     altText: "",
     altTextArr: [],
     imageUserTags: [],
@@ -174,7 +176,7 @@ export function getNotionPageConfig(
 
   __.status = statusProp?.["select"]?.["name"];
 
-  __.pinterestBoardOption = pinterestBoardProp?.select;
+  __.selectedPinterestBoard = pinterestBoardProp?.select;
 
   const altText = notionRichTextParser(altTextProp?.["rich_text"], true);
   __.altTextArr = splitByEmDashes(altText);
