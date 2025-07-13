@@ -32,6 +32,49 @@ export const videoMimeTypes = [
 ];
 export const docMimeTypes = ["ppt", "pptx", "doc", "docx", "pdf", "xls", "xlsx", "txt", "csv"];
 
+// Platform-specific supported media types
+export const platformMimeTypeSupported = {
+  x: {
+    image: ["jpg", "png", "webp", "jpeg", "gif"],
+    video: ["mp4"],
+  },
+  instagram: {
+    image: ["jpg", "jpeg", "png"],
+    video: ["mp4", "mov", "qt"],
+  },
+  facebook: {
+    image: ["jpg", "jpeg", "png"],
+    video: ["mov", "mp4", "qt"],
+    storyImage: ["jpg", "jpeg", "png", "bmp", "gif", "tiff"],
+  },
+  linkedin: {
+    image: ["jpg", "png", "gif", "jpeg"],
+    video: ["mp4"],
+    doc: ["ppt", "pptx", "doc", "docx", "pdf"],
+    thumbnail: ["jpg", "png", "jpeg"],
+  },
+  tiktok: {
+    image: ["webp", "jpeg", "jpg"],
+    video: ["mp4", "webm", "mov", "qt"],
+  },
+  youtube: {
+    image: imageMimeTypes, // YouTube uses images only for thumbnails
+    video: videoMimeTypes, // Uses global videoMimeTypes
+  },
+  pinterest: {
+    image: ["jpeg", "jpg", "png"],
+    video: ["mp4", "m4v", "mov", "qt"],
+  },
+  threads: {
+    image: ["jpg", "jpeg", "png", "gif", "webp"], // Based on Instagram's support
+    video: ["mp4"], // Limited video support
+  },
+  bluesky: {
+    image: ["jpg", "jpeg", "png", "gif", "webp"],
+    video: ["mp4"],
+  },
+};
+
 function getEnv(key: string, defaultValue: any) {
   if (typeof process !== "undefined" && process.env && process.env[key] !== undefined) {
     return process.env[key];
