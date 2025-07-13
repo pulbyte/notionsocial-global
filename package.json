@@ -41,7 +41,9 @@
     "start": "tsup --watch",
     "test": "jest",
     "test:text": "jest tests/text.test.ts",
-    "test:media": "jest tests/media.test.ts"
+    "test:media": "jest tests/media.test.ts",
+    "ig": "npm i @pulbyte/social-stack-lib",
+    "il": "npm i \"./../../Social Stack/library (js)\""
   },
   "author": "",
   "license": "ISC",
@@ -51,6 +53,7 @@
     "@google-cloud/storage": "^7.11.2",
     "@notion-stuff/blocks-markdown-parser": "^6.0.0",
     "@notionhq/client": "^2.2.15",
+    "@pulbyte/social-stack-lib": "file:../../Social Stack/library (js)",
     "@redtea/format-axios-error": "^2.1.1",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.7",
