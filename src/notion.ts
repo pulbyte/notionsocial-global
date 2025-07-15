@@ -12,7 +12,8 @@ import {
   ListBlockChildrenResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {APIErrorCode, ClientErrorCode, isNotionClientError} from "@notionhq/client";
-import {dog, ignorePromiseError, retryOnCondition} from "./utils";
+import {ignorePromiseError, retryOnCondition} from "./utils";
+import {dog} from "./logging";
 import {dev} from "./env";
 import {createCodedRichText} from "./_notion";
 import {NotionCodedTextPayload, NotionPropertyMetadata} from "./types";

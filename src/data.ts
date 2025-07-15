@@ -10,7 +10,7 @@ db.settings({ignoreUndefinedProperties: true});
 import {dashifyNotionId, removeHyphens} from "./text";
 import {FirestoreDoc, NotionDatabase, PostRecord, SocialAccountData, UserData} from "./types";
 import {Storage} from "@google-cloud/storage";
-import {dog} from "utils";
+import {dog} from "./logging";
 import {decryptSecureToken} from "./crypto";
 const storage = new Storage();
 

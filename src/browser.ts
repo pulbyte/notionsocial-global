@@ -13,5 +13,6 @@ export * from "./env";
 export * from "./url";
 export * from "./html";
 export * from "./utils";
+export * from "./logging";
 export * from "./PublishError";
 export * from "./time";

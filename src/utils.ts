@@ -1,7 +1,6 @@
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
-import {SocialPlatformTypes} from "./types";
-import {dev} from "./env";
+import {SocialPlatformType} from "@pulbyte/social-stack-lib";
 
 export function callFunctionsSequentially<T>(
   functions: Array<() => Promise<any>>
@@ -56,7 +55,7 @@ export function isObjectEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
-export function getSmAccColor(platform) {
+export function getSmAccColor(platform: SocialPlatformType) {
   switch (platform) {
     case "facebook":
       return "blue";
@@ -78,7 +77,7 @@ export function getSmAccColor(platform) {
       return "default";
   }
 }
-export const getSocialPlatformImage = (platform: SocialPlatformTypes, imageUrl?: string) => {
+export const getSocialPlatformImage = (platform: SocialPlatformType, imageUrl?: string) => {
   if (imageUrl) return imageUrl;
   switch (platform) {
     case "facebook":
@@ -286,38 +285,10 @@ export function ignorePromiseError<T>(
   });
 }
 
-export function safeStringify(obj, maxLength = 50) {
-  const seen = new WeakSet();
-  return JSON.stringify(
-    obj,
-    (key, value) => {
-      if (typeof value === "object" && value !== null) {
-        if (seen.has(value)) {
-          return "[Circular]";
-        }
-        seen.add(value);
-      }
-      if (Buffer.isBuffer(value)) {
-        return `[Buffer: ${value.length} bytes]`;
-      }
-      if (ArrayBuffer.isView(value) || value instanceof ArrayBuffer) {
-        return "[ArrayBuffer]";
-      }
-      if (typeof value === "string" && value.length > maxLength) {
-        return value.slice(0, maxLength) + "...";
-      }
-      return value;
-    },
-    2
-  );
-}
 export function mapFulfilled<T>(results: PromiseSettledResult<T>[]) {
   return results
     .filter((result) => result.status == "fulfilled")
     .map((result) => result.value);
-}
-export function dog(...args) {
-  if (dev) console.log(...args);
 }
 
 export function arrayToAsyncIterator<T>(array: T[]): AsyncIterableIterator<T> {

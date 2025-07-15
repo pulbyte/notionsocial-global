@@ -4,7 +4,7 @@ import {getNotionError} from "./notion";
 import {publishDisruptErrorMessages, PublishError, PublishErrorCode} from "./PublishError";
 import {PostPublishStage} from "./types";
 import {postPublishStages, publishStageIndex} from "publish";
-import {dog} from "utils";
+import {dog} from "./logging";
 
 export function isNetworkServerError(error: AxiosError | any) {
   const message = String(error?.message)?.toLowerCase() || String(error)?.toLowerCase();
