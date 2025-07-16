@@ -28,9 +28,9 @@ import {
 import {auth} from "firebase-admin";
 import {maxMediaSize} from "./env";
 import {filterPublishMedia} from "./_media";
-import {getContentFromTextProperty} from "./_content";
 import {PublishError} from "./PublishError";
-
+import {SocialPlatformType} from "@pulbyte/social-stack-lib";
+import {dog} from "./logging";
 export const postPublishStages = [
   "get-ndb-data",
   "examine-ndb-data",
@@ -51,60 +51,61 @@ export const postPublishStages = [
 ] as const;
 export const publishStageIndex = postPublishStages.indexOf("publish");
 
-export function getNotionPageContent(
+/**
+ * Retrieves and processes Notion page content for publishing.
+ * This function handles media processing, caption extraction, and content assembly.
+ *
+ * @param config - Configuration object containing page settings and post record data
+ * @returns Promise resolving to processed page content and blocks
+ */
+export async function processPropertyMedia(
+  media: Media[],
+  videoThumbnail: Media,
   config: NotionPagePostConfig
-): Promise<[Content, NotionBlock[]]> {
-  return new Promise(async (res, rej) => {
-    try {
-      let __: Content = {
-        text: "",
-        paragraphs: [],
-        threads: [],
-        bluesky: [],
-        altText: config.altText,
-        twitter: [],
-      };
+): Promise<{media: Media[]; videoThumbnail: Media}> {
+  // Process main media files with specified download types
+  media = await processMedia(
+    media,
+    config.filesToDownload,
+    config._postRecord?.processed_media
+  );
 
-      const notion = new Client({
-        auth: config._data.access_token,
-        timeoutMs: 15000,
-      });
+  // Process video thumbnail if present
+  if (videoThumbnail) {
+    const processedThumbnails = await processMedia(
+      [videoThumbnail],
+      ["image"],
+      config._postRecord?.processed_media
+    );
+    videoThumbnail = processedThumbnails[0];
+  }
 
-      function getChildrenIterator(blockId: string) {
-        const iterateArr = iteratePaginatedAPI(notion.blocks.children.list, {
-          block_id: blockId,
-        });
-        return iterateArr;
-      }
+  return {media, videoThumbnail};
+}
 
-      // ** Caption from caption rich_text property
-      if (hasText(config.captionText)) {
-        const content = getContentFromTextProperty(config.captionText);
-        Object.assign(__, content);
-        res([__, []]);
-        return;
-      }
+export async function getNotionPageContent(
+  config: NotionPagePostConfig
+): Promise<NotionPageContent> {
+  let richText = await getRichTextContent(config);
+  let {media, videoThumbnail} = await getPropertyMedia(config);
 
-      const pageChildrenIterator = getChildrenIterator(config._pageId);
+  // Step 1: Process main media files
+  const {media: processedMedia, videoThumbnail: processedVideoThumbnail} =
+    await processPropertyMedia(media, videoThumbnail, config);
+  media = processedMedia;
+  videoThumbnail = processedVideoThumbnail;
 
-      const [content, blocks] = await getContentFromNotionBlocksAsync(
-        pageChildrenIterator,
-        config.formattingOptions,
-        getChildrenIterator
-      );
-      Object.assign(__, content);
+  // Step 2: Process rich text caption content
+  richText = await processRichTextContentMedia(richText, config);
 
-      // ** Caption from page title
-      if (!hasText(content.text) && !content.hasMedia) {
-        const content = getContentFromTextProperty(config.titleText);
-        Object.assign(__, content);
-      }
-
-      return res([__, blocks]);
-    } catch (error) {
-      rej(error);
-    }
-  });
+  // Step 3: Assemble final content object
+  return {
+    richText,
+    title: config.titleText,
+    media,
+    videoThumbnail,
+    altText: config.altText,
+  };
 }
 
 export async function getPropertyMedia(
@@ -136,7 +137,7 @@ export async function getPropertyMedia(
 
 export function getMediaFromNotionProperty(
   files: NotionFiles,
-  smAccPlatforms: SocialPlatformTypes[]
+  smAccPlatforms: SocialPlatformType[]
 ): Promise<Media[]> {
   return getMediaFromNotionFiles(files)
     .then((media) => filterPublishMedia(media, smAccPlatforms))
@@ -150,8 +151,8 @@ const processedMediaCache: Map<string, MediaType> = new Map();
 
 export function processMedia(
   media: Media[],
-  typesToDownload: Array<"video" | "image" | "doc">,
-  processedMedia: PostRecord["processed_media"]
+  typesToDownload?: Array<"video" | "image" | "doc">,
+  processedMedia?: PostRecord["processed_media"]
 ) {
   // Media processing functions
   async function fetchMedia(
@@ -231,56 +232,6 @@ export function processMedia(
       return results;
     }
   );
-}
-
-export async function processContentMedia(
-  content: Content,
-  typesToDownload: Array<"video" | "image" | "doc">,
-  processedMedia: PostRecord["processed_media"]
-): Promise<Content> {
-  // Process main content media
-  if (content.media) {
-    content.media = await processMedia(content.media, typesToDownload, processedMedia);
-  }
-
-  if (content.videoThumbnail) {
-    const processedThumbnails = await processMedia(
-      [content.videoThumbnail],
-      ["image"],
-      processedMedia
-    );
-    content.videoThumbnail = processedThumbnails[0];
-  }
-
-  // Process Twitter media
-  if (content.twitter) {
-    for (const tweet of content.twitter) {
-      if (tweet.media) {
-        tweet.media = await processMedia(tweet.media, typesToDownload, processedMedia);
-      }
-    }
-  }
-
-  // Process Paragraph media
-  if (content.paragraphs) {
-    for (const paragraph of content.paragraphs) {
-      if (paragraph.media) {
-        paragraph.media = await processMedia(paragraph.media, typesToDownload, processedMedia);
-      }
-    }
-  }
-
-  // Process Bluesky media
-  if (content.bluesky) {
-    for (const post of content.bluesky) {
-      if (post.media) {
-        post.media = await processMedia(post.media, typesToDownload, processedMedia);
-      }
-    }
-  }
-
-  processedMediaCache.clear();
-  return content;
 }
 
 export function getAuthor(

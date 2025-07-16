@@ -8,33 +8,91 @@ import {
 import {PartialBlockObjectResponse} from "@notionhq/client/build/src/api-endpoints";
 import {
   processNotionBlock,
-  processParsedNotionBlocks,
-  convertSectionsToParagraphs,
-} from "_content";
-import {hasText} from "text";
-import {arrayToAsyncIterator, callFunctionsSequentially} from "utils";
+  getRichTextContentFromParsedBlocks,
+  getRichTextFromText,
+} from "./_richtext";
+import {arrayToAsyncIterator, callFunctionsSequentially} from "./utils";
+import {Client, iteratePaginatedAPI} from "@notionhq/client";
+import {hasText} from "./text";
+import {processMedia} from "./publish";
+
+export async function getNotionPageRichTextContent(
+  config: NotionPagePostConfig
+): Promise<RichTextContent> {
+  const notion = new Client({
+    auth: config._data.access_token,
+    timeoutMs: 15000,
+  });
+
+  function getChildrenIterator(blockId: string) {
+    const iterateArr = iteratePaginatedAPI(notion.blocks.children.list, {
+      block_id: blockId,
+    });
+    return iterateArr;
+  }
+
+  const pageChildrenIterator = getChildrenIterator(config._pageId);
+
+  const {richText} = await getContentFromNotionBlocksAsync(
+    pageChildrenIterator,
+    config.formattingOptions,
+    getChildrenIterator
+  );
+
+  return richText;
+}
+
+export async function getRichTextContent(
+  config: NotionPagePostConfig
+): Promise<RichTextContent> {
+  let richText = await getNotionPageRichTextContent(config);
+  // Fallback to the page title if the body is empty
+  if (!hasText(richText?.text) && hasText(config.titleText)) {
+    const titleFromProp = getRichTextFromText(config.titleText);
+    richText = titleFromProp;
+  }
+  // The main priority is the caption in the property
+  if (hasText(config.captionText)) {
+    const captionFromProp = getRichTextFromText(config.captionText);
+    richText = captionFromProp;
+  }
+  return richText;
+}
+
+export async function processRichTextContentMedia(
+  richText: RichTextContent,
+  config: NotionPagePostConfig
+): Promise<RichTextContent> {
+  if (richText.paragraphs) {
+    for (const paragraph of richText.paragraphs) {
+      if (paragraph.media) {
+        paragraph.media = await processMedia(
+          paragraph.media,
+          config.filesToDownload,
+          config._postRecord.processed_media
+        );
+      }
+    }
+  }
+  return richText;
+}
 
 type NotionBlocksIter = AsyncIterableIterator<NotionBlock | PartialBlockObjectResponse>;
 
 // New helper function for iterating and processing blocks
-export async function processNotionBlocks(
+export async function getContentFromNotionBlocksAsync(
   blocksArray: NotionBlocksIter | NotionBlock[],
   options?: FormattingOptions,
-  charLimit: number = 10000,
-  getChildrenIterator?: (blockId: string) => NotionBlocksIter
-): Promise<{
-  blocks: NotionBlock[];
-  caption: string;
-  textArray: string[];
-  mediaArray: Media[][];
-}> {
+  getChildrenIterator?: (blockId: string) => NotionBlocksIter,
+  charLimit?: number
+): Promise<{richText: RichTextContent; blocks: NotionBlock[]}> {
   const iterator = Array.isArray(blocksArray)
     ? arrayToAsyncIterator(blocksArray)
     : blocksArray;
   const blocks: NotionBlock[] = [];
-  let rawContentArray: ParsedNotionBlock[] = [];
+  let parsedBlocks: ParsedNotionBlock[] = [];
   let listIndex = 0;
-  let limitLeft = Number(charLimit);
+  let limitLeft = Number(charLimit) || 10000;
   let batch: NotionBlock[] = [];
 
   async function processBlock(
@@ -43,18 +101,17 @@ export async function processNotionBlocks(
     index: number
   ) {
     const nextBlock = index < _batch.length - 1 ? _batch[index + 1] : null;
-
     // Recursively process children if they exist
     if (currentBlock.has_children && getChildrenIterator) {
       try {
         const iterator = Array.isArray(currentBlock.children)
           ? arrayToAsyncIterator(currentBlock.children)
           : getChildrenIterator(currentBlock.id);
-        const {blocks: childBlocks} = await processNotionBlocks(
+        const {blocks: childBlocks} = await getContentFromNotionBlocksAsync(
           iterator,
           options,
-          limitLeft,
-          getChildrenIterator
+          getChildrenIterator,
+          limitLeft
         );
         currentBlock.children = childBlocks;
       } catch (e) {
@@ -66,7 +123,7 @@ export async function processNotionBlocks(
 
     // Process current block
     const [newListIndex, newLimitLeft] = await processNotionBlock(
-      rawContentArray,
+      parsedBlocks,
       currentBlock,
       nextBlock,
       listIndex,
@@ -103,55 +160,5 @@ export async function processNotionBlocks(
   }
   if (batch.length > 0) await batchProcess(batch);
 
-  const [caption, textArray, mediaArray] = processParsedNotionBlocks(rawContentArray);
-  return {blocks, caption, textArray, mediaArray};
-}
-
-// Refactored main function
-export async function getContentFromNotionBlocksAsync(
-  blocksIter: NotionBlocksIter,
-  options?: FormattingOptions,
-  getChildrenIterator?: (blockId: string) => NotionBlocksIter,
-  chatLimit?: number
-): Promise<[Content & {hasMedia: boolean}, NotionBlock[]]> {
-  const {caption, textArray, mediaArray, blocks} = await processNotionBlocks(
-    blocksIter,
-    options,
-    chatLimit,
-    getChildrenIterator
-  );
-
-  return getContentFromProcessedBlocks(caption, textArray, mediaArray, blocks);
-}
-export function getContentFromProcessedBlocks(
-  caption: string,
-  textSections: string[],
-  mediaSections: Media[][],
-  blocks: NotionBlock[]
-): [Content & {hasMedia: boolean}, NotionBlock[]] {
-  // Process media and text arrays
-  mediaSections.forEach((mediaArr, index) => {
-    const ht = hasText(textSections[index]);
-    const hm = mediaArr?.length > 0;
-    if (!ht && hm) {
-      textSections[index] = "";
-    }
-  });
-
-  // Convert to different formats
-  const twitter = convertSectionsToTwitterThread(textSections, mediaSections);
-  const threads = convertTextToThreads(textSections, mediaSections, 500, "twitter-text");
-  const bluesky = convertTextToThreads(textSections, mediaSections, 300, "string");
-  const paragraphs = convertSectionsToParagraphs(textSections, mediaSections);
-
-  const content: Content & {hasMedia: boolean} = {
-    text: caption, // or however you want to handle the caption
-    paragraphs,
-    threads,
-    bluesky,
-    twitter,
-    hasMedia: paragraphs.some((p) => p.media?.length > 0),
-  };
-
-  return [content, blocks];
+  return {richText: getRichTextContentFromParsedBlocks(parsedBlocks), blocks};
 }

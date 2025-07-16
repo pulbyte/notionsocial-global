@@ -4,170 +4,99 @@ const {parseTweet} = TwitterText;
 import {BaseLinkedInPost, BaseTweet, Paragraph, PostMediaFile, Thread, XContent} from "types";
 import {extractTweetIdFromUrl} from "./url";
 
-export function convertSectionsToParagraphs(
-  textArray: string[],
-  mediaArray: Media[][]
-): Thread[] {
-  return textArray.map((text, index) => ({
-    text,
-    media: mediaArray[index] || [],
-  }));
-}
+/**
+ * Converts paragraphs of text into X (Twitter) content with associated media.
+ * Each paragraph is processed into one or more tweet posts, with the first post
+ * getting the media attachment and subsequent posts having no media.
+ *
+ * @param paragraphs - Array of text paragraphs to convert
+ * @param maxPostLength - Maximum character length for each post (default: 280)
+ * @returns Array of XContent objects ready for posting
+ */
+export function getXContentFromParagraphs(
+  paragraphs: Array<{text: string; media?: PostMediaFile[]}>,
+  maxPostLength = 280
+): XContent {
+  const content: XContent = [];
 
-export function getContentFromNotionBlocksSync(blocks): Content & {hasMedia: boolean} {
-  const limit = 63206;
-  let rawContentArray: ParsedNotionBlock[] = [];
-
-  let listIndex = 0;
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i];
-    const nextBlock = blocks[i + 1];
-    // if (!SUPPORTED_NOTION_CONTENT_BLOCKS?.includes(block["type"])) break;
-    const [_listIndex, _limitLeft] = processStaticNotionBlock(
-      rawContentArray,
-      block,
-      nextBlock,
-      listIndex,
-      limit
+  // Process each paragraph
+  paragraphs.forEach((paragraph, paragraphIndex) => {
+    // Split the paragraph text into multiple tweet posts if needed
+    const tweetPosts = getXContentFromText(paragraph.text, maxPostLength);
+    // Extract the media tagged usernames
+    const mediaTaggedUsernames = extractTags(
+      paragraph.media?.map((m) => m.description).join(" ") || ""
     );
-    listIndex = _listIndex;
-    if (!_limitLeft) break;
-  }
-
-  const [caption, textArray, mediaArray] = processParsedNotionBlocks(rawContentArray);
-
-  mediaArray.forEach((mediaArr, index) => {
-    const ht = hasText(textArray[index]);
-    const hm = mediaArr?.length > 0;
-    if (!ht && hm) {
-      textArray[index] = "";
-    }
-  });
-
-  const paragraphs = convertSectionsToParagraphs(textArray, mediaArray);
-  const twitter = convertSectionsToTwitterThread(textArray, mediaArray);
-  // const threads = convertTextToThreads(textArray, mediaArray);
-
-  const content: Content & {hasMedia: boolean} = {
-    text: caption,
-    paragraphs,
-    threads: [],
-    twitter,
-    bluesky: [],
-    hasMedia: paragraphs.some((p) => p.media?.length > 0),
-  };
-
-  return content;
-}
-export function processParsedNotionBlock(
-  parsed: ParsedNotionBlock,
-  i: number,
-  textSections: string[],
-  textBuffer: string,
-  mediaSections: Media[][],
-  mediaBuffer: Media[],
-  parsedBlocks: ParsedNotionBlock[]
-): [string, Media[]] {
-  //@ts-ignore
-  let text = parsed.content || "";
-  const isDivider = parsed.type == "divider";
-  const previewsOneWasDivider = parsedBlocks[i - 1]?.type == "divider";
-  const nextOne = parsedBlocks[i + 1];
-  const nextOneIsText = nextOne?.type == "text";
-  if (isDivider) {
-    if (textBuffer.length && !previewsOneWasDivider) {
-      textSections.push(textBuffer);
-      mediaSections.push([...mediaBuffer]);
-      mediaBuffer = [];
-      textBuffer = "";
-    }
-  } else if (parsed.type == "media") {
-    mediaBuffer.push(parsed.media);
-  } else {
-    textBuffer = textBuffer + text;
-    if (nextOneIsText) textBuffer = textBuffer + `\n`;
-    if (i == parsedBlocks.length - 1) {
-      textSections.push(textBuffer);
-      mediaSections.push([...mediaBuffer]);
-      mediaBuffer = [];
-    }
-  }
-  return [textBuffer, mediaBuffer];
-}
-export function processParsedNotionBlocks(
-  parsedBlocks: ParsedNotionBlock[]
-): [string, string[], Media[][]] {
-  let mediaSections: Media[][] = [];
-  let mediaBuffer: Media[] = [];
-  let textSections: string[] = [];
-  let textBuffer = "";
-
-  parsedBlocks.forEach((parsed, i) => {
-    const [_textBuffer, _mediaBuffer] = processParsedNotionBlock(
-      parsed,
-      i,
-      textSections,
-      textBuffer,
-      mediaSections,
-      mediaBuffer,
-      parsedBlocks
-    );
-    textBuffer = _textBuffer;
-    mediaBuffer = _mediaBuffer;
-  });
-  textSections = textSections.map((s) => trimString(s)).filter((s) => s.length > 0);
-  const caption = textSections.join("\n\n");
-
-  return [caption, textSections, mediaSections];
-}
-
-export function convertSectionsToTwitterThread(
-  sections: string[],
-  mediaArray: Media[][]
-): TwitterContent {
-  let threads: TwitterContent = [];
-  sections.forEach((str, index) => {
-    const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(str, 280);
-    const firstTweet = tweets.splice(0, 1)[0];
-    threads.push({
-      text: firstTweet,
-      media: mediaArray[index],
-      quoteTweetId,
-      replyToTweetId,
-      retweetId,
+    // Extract the first post and attach media to it
+    const firstPost = tweetPosts.splice(0, 1)[0];
+    content.push({
+      ...firstPost,
+      ...(paragraph.media?.length > 0 && {media: paragraph.media}),
+      ...(mediaTaggedUsernames?.length > 0 && {mediaTaggedUsernames}),
     });
-    tweets.forEach((text) => threads.push({text, media: []}));
+    // Push the rest of the posts to the content
+    tweetPosts.forEach((post) => content.push(post));
   });
-  threads = threads.filter((obj) => {
-    return hasText(obj.text) || hasText(obj.retweetId) || !!obj.media?.length;
+
+  // Filter out empty posts (no text, repost ID, or media)
+  const filteredContent = content.filter((post) => {
+    return hasText(post.text) || hasText(post.repostId) || !!post.media?.length;
   });
-  return threads;
+
+  return filteredContent;
 }
 
-export function tweetifyString(text, maxTweetLength = 280) {
-  const {
-    text: sanitizedText,
-    quoteTweetId,
-    replyToTweetId,
-    retweetId,
-  } = extractTwitterPostFromString(text);
-  const words = sanitizedText.split(" ");
-  const tweets = [];
-  let currentTweet = words[0] || ""; // Start with first word
+/**
+ * Extracts X (Twitter) tweets from a text string, splitting it into multiple posts
+ * if the content exceeds the maximum post length.
+ *
+ * @param text - The input text to process
+ * @param maxPostLength - Maximum character length for each post (default: 280)
+ * @returns Object containing posts array and metadata (quotePostId, replyToPostId, repostId)
+ */
+export function getXContentFromText(text: string, maxPostLength = 280): BaseTweet[] {
+  // Extract base tweet information and sanitize text
+  const {text: sanitizedText, quotePostId, replyToPostId, repostId} = parseTextForXPost(text);
 
-  // Start loop from second word
+  // Split text into words for processing
+  const words = sanitizedText.split(" ");
+  const tweetPosts: BaseTweet[] = [];
+
+  // Initialize with first word (or empty string if no words)
+  let currentText: string = words[0] || "";
+
+  // Process remaining words starting from the second word
   for (let i = 1; i < words.length; i++) {
     const word = words[i];
-    const newTweet = currentTweet + " " + word;
-    if (parseTweet(newTweet).weightedLength > maxTweetLength) {
-      tweets.push(currentTweet);
-      currentTweet = word;
+    const newText = currentText + " " + word;
+
+    // Check if adding this word would exceed the maximum post length
+    if (parseTweet(newText).weightedLength > maxPostLength) {
+      // Save current post and start a new one with the current word
+      tweetPosts.push({text: currentText});
+      currentText = word;
     } else {
-      currentTweet = newTweet;
+      // Add word to current post
+      currentText = newText;
     }
   }
-  tweets.push(currentTweet);
-  return {tweets, quoteTweetId, replyToTweetId, retweetId};
+
+  // Add the final post to the array
+  tweetPosts.push({text: currentText});
+
+  // Add metadata to the first tweet only
+  tweetPosts.map((post, index) => {
+    if (index === 0) {
+      return Object.assign(post, {
+        ...(quotePostId && {quotePostId}),
+        ...(replyToPostId && {replyToPostId}),
+        ...(repostId && {repostId}),
+      });
+    }
+    return post;
+  });
+
+  return tweetPosts;
 }
 
 export const TweetPostExtractRegex =
@@ -203,169 +132,42 @@ export function parseTextForXPost(text: string): BaseTweet {
       text = removeFirstTweetPostUrlFromText(text).trim();
     }
   }
-  return {text, quoteTweetId, replyToTweetId, retweetId};
+  return Object.assign(__, {text});
 }
 
-function processNotionBlockCommon(
-  parsedBlocks: ParsedNotionBlock[],
-  block: NotionBlock,
-  nextBlock: NotionBlock,
-  listIndex: number,
-  limit = 63206,
-  media: Media | null,
-  options?: FormattingOptions
-): [number, number] {
-  if (media) {
-    parsedBlocks.push({type: "media", media});
-  }
-
-  let nestIndex = 1;
-  let [result, _listIndex, _nestIndex] = parseNotionBlockToText(
-    block,
-    nextBlock,
-    listIndex,
-    nestIndex,
-    options
-  );
-
-  listIndex = _listIndex;
-  nestIndex = _nestIndex;
-  const currentLength = parsedBlocks.join("").length;
-  const leftLimit = limit - currentLength;
-
-  // ?  Only push limited text
-  if (result.type == "text") {
-    const text = result.content || "";
-    if (text.length > leftLimit && text.length < 4) {
-      console.warn("Terminating early - text too long but < 4 chars", {
-        "text.length": text.length,
-        leftLimit,
-        limit,
-        currentLength,
-      });
-    } else if (leftLimit > 0) {
-      parsedBlocks.push({type: "text", content: text.substring(0, leftLimit)});
-    } else {
-      console.warn("! Skipping text - character limit exceeded");
-    }
-  } else {
-    parsedBlocks.push(result);
-  }
-  return [listIndex, leftLimit];
-}
-
-export async function processNotionBlock(
-  parsedNotionBlocks: ParsedNotionBlock[],
-  block: NotionBlock,
-  nextBlock: NotionBlock,
-  listIndex: number,
-  limit: number,
-  options?: FormattingOptions
-) {
-  const media = await getMediaFromNotionBlock(block);
-  return processNotionBlockCommon(
-    parsedNotionBlocks,
-    block,
-    nextBlock,
-    listIndex,
-    limit,
-    media,
-    options
-  );
-}
-
-export function processStaticNotionBlock(
-  parsedNotionBlocks: ParsedNotionBlock[],
-  block: NotionBlock,
-  nextBlock: NotionBlock,
-  listIndex: number,
-  limit: number,
-  options?: FormattingOptions
-) {
-  const media = getStaticMediaFromNotionBlock(block);
-  return processNotionBlockCommon(
-    parsedNotionBlocks,
-    block,
-    nextBlock,
-    listIndex,
-    limit,
-    media,
-    options
-  );
-}
-
-export function getContentFromTextProperty(string: string, limit = 63206): Content {
-  const text: string = string.substring(0, limit);
-  const twitter: TwitterContent = [];
-  const {tweets, quoteTweetId, replyToTweetId, retweetId} = tweetifyString(text);
-  tweets.forEach((tweet, index) => {
-    twitter.push({
-      text: tweet,
-      media: [],
-      ...((index == 0 && retweetId && {retweetId}) ||
-        (quoteTweetId && {quoteTweetId}) ||
-        (replyToTweetId && {replyToTweetId})),
-    });
-  });
-
-  let threadTexts = threadifyString(text, 500, "twitter-text");
-  const threads = threadTexts.map((text, index) => {
-    return {text, media: []};
-  });
-  let blueskyTexts = threadifyString(text, 300, "string");
-  const bluesky = blueskyTexts.map((text, index) => {
-    return {text, media: []};
-  });
-  return {
-    text,
-    twitter,
-    paragraphs: [{text, media: []}],
-    threads,
-    bluesky,
-  };
-}
-export function threadifyString(
-  text: string,
-  maxTextLength: number,
-  lengthMethod: "twitter-text" | "string"
-) {
+export function chunkText(text: string, maxTextLength: number) {
   const words = text.split(" ");
-  const threads: string[] = [];
-  let currentThread = words[0] || ""; // Start with first word
+  const chunks: string[] = [];
+  let currentChunk = words[0] || ""; // Start with first word
 
   // Start loop from second word
   for (let i = 1; i < words.length; i++) {
     const word = words[i];
-    const newThread = currentThread + " " + word;
-    const exceedsLength =
-      lengthMethod === "twitter-text"
-        ? parseTweet(newThread).weightedLength > maxTextLength
-        : newThread.length > maxTextLength;
+    const newChunk = currentChunk + " " + word;
+    const exceedsLength = newChunk.length > maxTextLength;
 
     if (exceedsLength) {
-      threads.push(currentThread);
-      currentThread = word;
+      chunks.push(currentChunk);
+      currentChunk = word;
     } else {
-      currentThread = newThread;
+      currentChunk = newChunk;
     }
   }
-  threads.push(currentThread);
-  return threads;
+  chunks.push(currentChunk);
+  return chunks;
 }
 
-export function convertTextToThreads(
-  textArray: string[],
-  mediaArray: Media[][],
-  maxTextLength: number,
-  lengthMethod: "twitter-text" | "string"
-): Thread[] {
-  let __: Thread[] = [];
-  textArray.forEach((str, index) => {
-    const threads = threadifyString(str, maxTextLength, lengthMethod);
-    const firstThread = threads.splice(0, 1)[0];
-    __.push({text: firstThread, media: mediaArray[index]});
-    threads.forEach((text) => __.push({text, media: []}));
+export function chunkParagraphs(paragraphs: Paragraph[], maxTextLength: number): Paragraph[] {
+  let __: Paragraph[] = [];
+  paragraphs.forEach((paragraph) => {
+    const chunks = chunkText(paragraph.text, maxTextLength);
+    // Add the media to the first chunk
+    const firstChunk = chunks.splice(0, 1)[0];
+    __.push({text: firstChunk, media: paragraph.media});
+    // Add the remaining chunks without media
+    chunks.forEach((text) => __.push({text}));
   });
+  // Filter out empty chunks
   __ = __.filter((obj) => {
     return hasText(obj.text) || obj.media?.length > 0;
   });
