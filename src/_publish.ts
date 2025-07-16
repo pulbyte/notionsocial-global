@@ -8,7 +8,6 @@ import {
   PostRecord,
   Media,
   UserData,
-  SocialPlatformTypes,
   NotionDatabase,
 } from "./types";
 import {hasText, notionRichTextParser, processInstagramTags, splitByEmDashes} from "./text";
@@ -23,7 +22,12 @@ import {PublishError} from "./PublishError";
 import _ from "lodash";
 import {getReadableTimeByTimeZone} from "time";
 import {dev} from "env";
-import {containsAny, detectSocialPlatforms} from "@pulbyte/social-stack-lib";
+import {
+  containsAny,
+  detectSocialPlatforms,
+  SocialPlatformType,
+} from "@pulbyte/social-stack-lib";
+import {dog} from "./logging";
 
 export function getNotionPageConfig(
   notionPage: NotionPage,
@@ -100,6 +104,7 @@ export function getNotionPageConfig(
     titleText: "",
     captionText: "",
     commentText: "",
+    platformCaptions: {},
     schTime: {
       rawStr: null,
       fmtTz: null,
@@ -127,6 +132,45 @@ export function getNotionPageConfig(
     archived: null,
   };
   __.archived = notionPage["archived"];
+
+  // Process platform-specific captions
+  const captionKeywords = [
+    "caption",
+    "content",
+    "message",
+    notionDatabaseData.props["caption"],
+  ];
+  Object.keys(properties).forEach((propName) => {
+    const property = properties[propName];
+
+    // Check if property name contains caption-related keywords
+    if (containsAny(propName, captionKeywords)) {
+      // Detect which platforms this property is for
+      const detectedPlatforms = detectSocialPlatforms(propName);
+
+      if (detectedPlatforms.length > 0) {
+        // Get the text content from the property
+        let propText = "";
+        if (property?.type === "rich_text") {
+          propText = notionRichTextParser(property?.["rich_text"]);
+        } else if (property?.type === "formula") {
+          propText = property?.["formula"]?.["string"] || "";
+        }
+
+        // Store the text for each detected platform
+        detectedPlatforms.forEach((platform) => {
+          if (propText) {
+            __.platformCaptions[platform] = propText;
+            dog(
+              `✓ Detected ${platform} caption from property "${propName}":`,
+              propText.substring(0, 50) + "..."
+            );
+          }
+        });
+      }
+    }
+  });
+
   const {
     commentProp,
     captionProp,
@@ -242,9 +286,9 @@ export function getNotionPageConfig(
   __.filesToDownload = [];
 
   if (toDownload) __.filesToDownload = ["video", "image", "doc"];
-  // ? Pinterest needs video in buffer
+  // ? Pinterest needs buffer for videos, But not for images
   if (hasPinterest) __.filesToDownload.push("video");
-  // ? Facebook needs image in buffer for the video's cover image
+  // ? Facebook needs buffer for video thumbnail image, But not for other
   if (hasFacebook) __.filesToDownload.push("image");
 
   __.filesToDownload = _.uniq(__.filesToDownload);
@@ -349,6 +393,7 @@ function getSelectedSocialAccounts(
 
       const hadServerError = previousPlatformData?.isServerError == true;
       const alreadyCompleted =
+        // ? If the post has already been published in ongoing attempt.
         previousPlatformData?.completed == true ||
         !!previousPlatformData?.response ||
         !!previousPlatformData?.error;
@@ -370,7 +415,7 @@ function getSelectedSocialAccounts(
 
 export function getPropertyMediaStatic(
   files: NotionFiles,
-  smAccPlatforms: SocialPlatformTypes[]
+  smAccPlatforms: SocialPlatformType[]
 ): Media[] {
   return filterPublishMedia(files.map(getStaticMediaFromNotionFile), smAccPlatforms);
 }
