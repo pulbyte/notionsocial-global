@@ -196,4 +196,57 @@ const isValidForInstagram = validatePlatformContent(instagramContent, 'instagram
 npm run build        # Build the library
 npm start           # Development mode with watch
 npm test            # Run tests
-``` 
+```
+
+## Utility Functions
+
+### safeStringify
+
+A safe way to stringify objects that may contain circular references, Buffer objects, or TypedArrays.
+
+```typescript
+import { safeStringify } from '@pulbyte/notionsocial-global';
+
+const obj = {
+  name: "test",
+  buffer: Buffer.from("hello"),
+  nested: { arr: new Uint8Array([1, 2, 3]) }
+};
+
+console.log(safeStringify(obj));
+// Output:
+// {
+//   "name": "test",
+//   "buffer": "[Buffer: 5 bytes]",
+//   "nested": {
+//     "arr": "[TypedArray: 3 elements]"
+//   }
+// }
+```
+
+### prettyLog
+
+A colored console logging utility that makes debugging objects easier by applying color coding to different types.
+
+```typescript
+import { prettyLog } from '@pulbyte/notionsocial-global';
+
+// Basic usage
+prettyLog(myObject);
+
+// With a label
+prettyLog(myObject, "My Object Label");
+
+// With string truncation (for long strings)
+prettyLog(myObject, "Truncated Strings", 50);
+```
+
+Color coding:
+- **White**: Object keys (default color)
+- **Green**: Strings
+- **Cyan**: Numbers
+- **Yellow**: Booleans
+- **Gray**: null, undefined, empty objects/arrays, circular references
+- **Blue**: Special values like [Buffer], [TypedArray], etc.
+
+This function is particularly useful for debugging complex objects with nested structures, binary data, or circular references. 

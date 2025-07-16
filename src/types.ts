@@ -21,11 +21,12 @@ import {
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
 import {SmAccTagFormats} from "env";
+import {SocialPlatformType} from "@pulbyte/social-stack-lib";
 // Notion File, Which is extracted from Notion
 export interface Media {
   name: string;
   url: string;
-  caption?: string;
+  description?: string;
   mimeType: string;
   contentType: string;
   size: number;
@@ -81,7 +82,7 @@ export interface MediaTransformation {
   method: MediaTransformationMethod;
   compression: MediaCompression;
   src: MediaSrc;
-  platforms: SocialPlatformTypes[];
+  platforms: SocialPlatformType[];
 }
 
 export interface BufferSrc {
@@ -111,7 +112,7 @@ export interface MetricPropertyConfig {
   separate_props?: {
     prop: string;
     prop_id?: string;
-    platform: SocialPlatformTypes;
+    platform: SocialPlatformType;
   }[];
   method: "aggregate" | "separate";
 }
@@ -141,7 +142,7 @@ export interface NotionDatabase {
     caption?: string;
   };
   post_metric_tracking?: {
-    platforms: SocialPlatformTypes[];
+    platforms: SocialPlatformType[];
     likes?: MetricPropertyConfig | string;
     comments?: MetricPropertyConfig | string;
     shares?: MetricPropertyConfig | string;
@@ -166,7 +167,7 @@ export interface NotionDatabase {
     platform_uid: string;
     tag: string;
     username: string;
-    platform: SocialPlatformTypes;
+    platform: SocialPlatformType;
   }[];
   url: string;
   name: string;
@@ -324,7 +325,7 @@ export interface SocialAccountData {
   ig_user_id?: string;
   author_uid: string;
   platform_uid: string;
-  platform: SocialPlatformTypes;
+  platform: SocialPlatformType;
   created_at?: number;
   tag?: string;
   locked?: boolean;
@@ -361,18 +362,6 @@ export interface SocialAccountData {
   comment_disabled?: boolean;
 }
 
-export type SocialPlatformTypes =
-  | "twitter"
-  | "facebook"
-  | "linkedin"
-  | "instagram"
-  | "youtube"
-  | "tiktok"
-  | "pinterest"
-  | "threads"
-  | "x"
-  | "bluesky"
-  | "gmb";
 export interface NotionDatabaseClient {
   uid: NotionDatabase["link_id"];
   link_id: NotionDatabase["link_id"];
@@ -504,17 +493,33 @@ export interface PlatformPostPublishResult extends Partial<PlatformPublishRespon
   platform: string;
   username: string;
 }
-
-export interface Content {
+export type Paragraph = {
+  media?: Array<MediaType>;
   text: string;
-  paragraphs: Thread[];
+};
+export interface RichTextContent {
+  text: string;
+  paragraphs: Array<Paragraph>;
+  hasMediaInParagraphs: boolean;
+}
+
+export interface NotionPageContent {
+  richText: RichTextContent;
   title?: string;
   altText?: string;
-  threads: Thread[];
-  bluesky: Thread[];
-  twitter: TwitterContent;
-  media?: Array<MediaType>;
+  media: MediaType[];
   videoThumbnail?: Media;
+}
+
+export interface PlatformContent {
+  facebook: FacebookContent;
+  instagram: InstagramContent;
+  linkedin: LinkedInContent;
+  youtube: YouTubeContent;
+  tiktok: TikTokContent;
+  pinterest: PinterestContent;
+  threads: ThreadsContent;
+  bluesky: BlueskyContent;
 }
 
 export interface PlatformError {
@@ -546,11 +551,6 @@ export interface NotionAuthResponse {
   workspace_icon?: string;
   duplicated_template_id?: string | null;
   owner?: {workspace: true} | {object: "user"};
-}
-export interface InstagramPostOptions {
-  imageUserTags: string[];
-  collaboratorTags: string[];
-  locationTag: string;
 }
 export interface UpdateNdbPayload {
   props?: NotionDatabase["props"];
@@ -609,27 +609,6 @@ export type NotionFiles = NotionFilesProperty["files"];
 export type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
-export type Thread = {
-  media: Array<ArrayElement<Content["media"]> & {id?: string}>;
-  text: string;
-};
-export type BaseTwitterPost = {
-  text: string;
-  url?: string;
-  replyToTweetId?: string;
-  quoteTweetId?: string;
-  retweetId?: string;
-};
-export type TwitterTweet = Array<
-  BaseTwitterPost & {
-    media: Content["media"];
-  }
->;
-export type TwitterContent = Array<
-  BaseTwitterPost & {
-    media: Array<ArrayElement<Content["media"]> & {id?: string}>;
-  }
->;
 export interface FormattingOptions {
   addLineBreakOnParagraphBlock?: boolean;
   disableTextFormatting?: boolean;
@@ -666,7 +645,7 @@ export interface NotionPagePostConfig {
   titleText: string;
   captionText: string;
   commentText?: string;
-  platformCaptions: Partial<Record<SocialPlatformTypes, string>>;
+  platformCaptions: Partial<Record<Exclude<SocialPlatformType, "twitter">, string>>;
   schTime: {
     rawStr: string;
     fmtTz: string;
@@ -684,7 +663,7 @@ export interface NotionPagePostConfig {
   ctaButton?: string;
   ctaLink?: string;
   smAccs: NotionDatabase["sm_accs"];
-  smAccsPlatforms: SocialPlatformTypes[];
+  smAccsPlatforms: SocialPlatformType[];
   filesToDownload: Array<"image" | "video" | "doc">;
   rules: NotionRules;
   isPostReadyToSchedule: boolean;
@@ -752,3 +731,89 @@ export type CloudRunFunction =
 export type CloudRunService = "post_process";
 export type NotionPropertyType =
   PageObjectResponse["properties"][keyof PageObjectResponse["properties"]]["type"];
+
+// Platform-specific content interfaces
+export type Thread = {
+  media: Array<ArrayElement<Array<MediaType>> & {id?: string}>;
+  text: string;
+};
+export type BaseTweet = {
+  text: string;
+  replyToPostId?: string;
+  quotePostId?: string;
+  repostId?: string;
+};
+
+export interface PostMedia {
+  name: string;
+  url: string;
+  description?: string;
+  mimeType: string;
+  contentType: string;
+  metadata: MediaMetadata;
+  type: Media["type"];
+  _id: string;
+}
+export type PostMediaFile = PostMedia & {buffer: Buffer};
+
+export type XContent = Array<
+  BaseTweet & {media?: Array<PostMediaFile>; mediaTaggedUsernames?: string[]}
+>;
+export interface FacebookContent {
+  text: string;
+  media: PostMedia[];
+  videoThumbnail?: PostMediaFile;
+  ctaButton?: string;
+  ctaLink?: string;
+  postType: "reel" | "story" | "carousel" | "image" | "video" | "text";
+}
+
+export interface InstagramContent {
+  caption: string;
+  media: Array<PostMedia>;
+  videoThumbnail?: PostMedia;
+  imageUserTags: string[];
+  collaboratorTags: string[];
+  locationTag: string;
+  postType: "reel" | "story" | "carousel" | "image";
+}
+
+export interface YouTubeContent {
+  title?: string;
+  description: string;
+  media: Array<PostMediaFile>;
+  videoThumbnail?: PostMediaFile;
+  privacyStatus: "public" | "unlisted" | "private";
+}
+
+export interface LinkedInContent {
+  text: string;
+  media: Array<PostMediaFile>;
+  title?: string;
+  videoThumbnail?: PostMediaFile;
+}
+
+export type ThreadsContent = Array<{
+  media: Array<PostMedia>;
+  text: string;
+}>;
+
+export type BlueskyContent = Array<{
+  media: Array<PostMediaFile>;
+  text: string;
+}>;
+
+export interface PinterestContent {
+  description: string;
+  media: Array<PostMediaFile | PostMedia>;
+  title?: string;
+  videoThumbnail?: PostMedia;
+  board?: PinterestBoard | null;
+  link?: string;
+  altText?: string;
+}
+export interface TikTokContent {
+  description: string;
+  media: Array<PostMediaFile>;
+  title?: string;
+}
