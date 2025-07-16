@@ -31,7 +31,9 @@ export const getMediaFromNotionFiles = (
               mediaArr.splice(
                 index,
                 0,
-                Object.assign(media, {caption: altTextArr?.[index]?.trim() || ""})
+                Object.assign<Media, Partial<Media>>(media, {
+                  description: altTextArr?.[index]?.trim() || "",
+                })
               );
             }
             return media;
@@ -47,7 +49,7 @@ export function getMediaTransformations(
   file: Media,
   processedMedia?: PostRecord["processed_media"]
 ): MediaTransformation[] {
-  if (!processedMedia) return null;
+  if (!processedMedia) return [];
   const optzed = _.find(processedMedia, {
     ref_id: file.refId,
   });

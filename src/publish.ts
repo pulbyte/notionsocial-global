@@ -10,9 +10,9 @@ import {
   PostRecord,
   MediaTransformation,
   MediaType,
-  SocialPlatformTypes,
 } from "./types";
-import {callFunctionsSequentiallyBreak, dog} from "./utils";
+import {callFunctionsSequentiallyBreak} from "./utils";
+import {
   getMediaTransformations,
   getMediaFromNotionFiles,
   getMediaFile,

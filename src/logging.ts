@@ -4,12 +4,38 @@ import {formatBytesIntoReadable} from "./text";
 
 export function dog(...args: any[]) {
   if (dev && args?.length > 0) {
-    args.forEach(prettyLog);
+    console.log(...args.map((arg) => prettyLog(arg, {returnInstead: true})));
   }
 }
 
 // Local implementation of safeStringify with angle bracket formatting for buffers
 export function safeStringify(obj) {
+  // Handle direct Buffer objects
+  if (Buffer.isBuffer(obj)) {
+    const formattedSize = formatBytesIntoReadable(obj.length);
+    return JSON.stringify(`<Buffer: ${obj.length} Bytes (${formattedSize})>`);
+  }
+
+  // Handle direct TypedArrays
+  if (
+    obj instanceof Uint8Array ||
+    obj instanceof Int8Array ||
+    obj instanceof Uint16Array ||
+    obj instanceof Int16Array ||
+    obj instanceof Uint32Array ||
+    obj instanceof Int32Array ||
+    obj instanceof Float32Array ||
+    obj instanceof Float64Array ||
+    (obj && obj.buffer && obj.buffer instanceof ArrayBuffer)
+  ) {
+    const typeName = obj.constructor ? obj.constructor.name : "TypedArray";
+    const elementsPreview =
+      obj.length > 5 ? Array.from(obj.slice(0, 5)).join(", ") : Array.from(obj).join(", ");
+
+    const moreElements = obj.length > 5 ? ` ... ${obj.length - 5} more elements` : "";
+    return JSON.stringify(`<${typeName}: ${elementsPreview}${moreElements}>`);
+  }
+
   function preProcess(value, path = "") {
     if (value === null || value === undefined) {
       return value;
@@ -173,7 +199,17 @@ ${spaces}${chalk.white("}")}`;
 }
 
 // Pretty log function
-export function prettyLog(obj: any): void {
+/**
+ * Pretty log function with option to return the formatted value instead of logging.
+ * @param obj - The object to pretty print.
+ * @param options - Optional settings.
+ *   - log (default: true): If true, logs to console. If false, returns the formatted string.
+ * @returns The formatted string if options.log is false, otherwise void.
+ */
+export function prettyLog(obj: any, options?: {returnInstead?: boolean}): string | void {
+  const shouldReturn = options?.returnInstead === true;
+
+  // Handle primitives
   if (
     obj === null ||
     obj === undefined ||
@@ -182,6 +218,47 @@ export function prettyLog(obj: any): void {
     typeof obj === "boolean"
   ) {
     const colorized = formatWithColors(obj);
+    if (shouldReturn) {
+      return colorized;
+    }
+    console.log(colorized);
+    return;
+  }
+
+  // Handle Buffer objects directly
+  if (Buffer.isBuffer(obj)) {
+    const formattedSize = formatBytesIntoReadable(obj.length);
+    const bufferStr = `<Buffer: ${obj.length} Bytes (${formattedSize})>`;
+    const colorized = formatWithColors(bufferStr);
+    if (shouldReturn) {
+      return colorized;
+    }
+    console.log(colorized);
+    return;
+  }
+
+  // Handle TypedArrays directly
+  if (
+    obj instanceof Uint8Array ||
+    obj instanceof Int8Array ||
+    obj instanceof Uint16Array ||
+    obj instanceof Int16Array ||
+    obj instanceof Uint32Array ||
+    obj instanceof Int32Array ||
+    obj instanceof Float32Array ||
+    obj instanceof Float64Array ||
+    (obj && obj.buffer && obj.buffer instanceof ArrayBuffer)
+  ) {
+    const typeName = obj.constructor ? obj.constructor.name : "TypedArray";
+    const elementsPreview =
+      obj.length > 5 ? Array.from(obj.slice(0, 5)).join(", ") : Array.from(obj).join(", ");
+
+    const moreElements = obj.length > 5 ? ` ... ${obj.length - 5} more elements` : "";
+    const arrayStr = `<${typeName}: ${elementsPreview}${moreElements}>`;
+    const colorized = formatWithColors(arrayStr);
+    if (shouldReturn) {
+      return colorized;
+    }
     console.log(colorized);
     return;
   }
@@ -191,8 +268,16 @@ export function prettyLog(obj: any): void {
   try {
     const parsed = JSON.parse(safeStr);
     const colorized = formatWithColors(parsed);
+    if (shouldReturn) {
+      return colorized;
+    }
     console.log(colorized);
+    return;
   } catch (err) {
+    if (shouldReturn) {
+      return safeStr;
+    }
     console.log(safeStr);
+    return;
   }
 }

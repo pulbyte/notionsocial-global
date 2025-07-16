@@ -2,7 +2,7 @@ import {Readable} from "stream";
 import axios from "axios";
 import {maxMediaSize} from "./env";
 import {formatBytesIntoReadable} from "./text";
-export function bufferToStream(binary) {
+export function bufferToStream(binary: Buffer) {
   const readableInstanceStream = new Readable({
     read() {
       this.push(binary);
@@ -12,7 +12,7 @@ export function bufferToStream(binary) {
   return readableInstanceStream;
 }
 
-export async function downloadFromUrl(url, name?: string) {
+export async function downloadFromUrl(url: string, name?: string) {
   if (!url || typeof url !== "string") {
     throw new Error("Invalid File URL provided");
   }

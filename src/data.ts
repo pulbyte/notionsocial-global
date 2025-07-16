@@ -85,7 +85,10 @@ export function getUserWorkspaceNdbs(authorUid, workspaceId) {
 export function getCloudBucketFile(bucket, fileName) {
   return storage.bucket(bucket).file(fileName);
 }
-export function getSmAccDoc(smAccId, authorUid): Promise<FirestoreDoc<SocialAccountData>> {
+export function getSmAccDoc(
+  smAccId: string,
+  authorUid: string
+): Promise<FirestoreDoc<SocialAccountData>> {
   return new Promise(async (res, rej) => {
     const query = db
       .collection(`sm_accs`)

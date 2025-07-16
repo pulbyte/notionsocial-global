@@ -1,8 +1,8 @@
 import {format as formatAxiosError} from "@redtea/format-axios-error";
 import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
-import {SocialPlatformTypes} from "./types";
 import TwitterText from "twitter-text";
 import {isAxiosError} from "axios";
+import {SocialPlatformType} from "@pulbyte/social-stack-lib";
 const {parseTweet} = TwitterText;
 export function dashifyNotionId(input: string) {
   if (typeof input !== "string") {
@@ -65,7 +65,7 @@ export function getNotionBlockId(pagelink: string) {
   const pathArr = pagelink.split("/")[3].split("-");
   return pathArr[pathArr.length - 1];
 }
-export function getSmShortName(platform: SocialPlatformTypes) {
+export function getSmShortName(platform: SocialPlatformType) {
   switch (platform) {
     case "facebook":
       return "FB";
@@ -90,7 +90,7 @@ export function getSmShortName(platform: SocialPlatformTypes) {
   }
 }
 export const getSmAccTag = (
-  platform: SocialPlatformTypes,
+  platform: SocialPlatformType,
   username: string,
   accType?: "page" | "group"
 ) => {
