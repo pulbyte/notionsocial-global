@@ -3,7 +3,6 @@ import {
   ArrayElement,
   NotionFiles,
   Media,
-  SocialPlatformTypes,
   MediaFile,
   TransformedMedia,
   MediaType,
@@ -21,6 +20,7 @@ import {
   alterDescriptLink,
   isDescriptLink,
 } from "./url";
+import {SocialPlatformType} from "@pulbyte/social-stack-lib";
 
 export function getMediaRef(url: string) {
   if (!url || typeof url != "string") return null;
@@ -44,13 +44,22 @@ export function packMedia(
   contentType: string,
   refId: string,
   size?: number,
-  caption?: string
+  description?: string
 ): Media {
-  return {mimeType, url, name, refId, size, type, contentType, ...(caption ? {caption} : {})};
+  return {
+    mimeType,
+    url,
+    name,
+    refId,
+    size,
+    type,
+    contentType,
+    ...(description ? {description} : {}),
+  };
 }
 export function filterPublishMedia(
   media: Media[],
-  smAccPlatforms: SocialPlatformTypes[],
+  smAccPlatforms: SocialPlatformType[],
   mediaType?: Media["type"]
 ) {
   if (!media || !Array.isArray(media)) return [];
@@ -105,15 +114,16 @@ export function getMediaTypeFromContentType(ct: string) {
   }
 }
 
-export const binaryUploadSocialPlatforms: SocialPlatformTypes[] = [
+export const binaryUploadSocialPlatforms: SocialPlatformType[] = [
   "x",
+  // Leave Twitter for backward compatibility
   "twitter",
   "linkedin",
   "youtube",
   "tiktok",
   "bluesky",
 ];
-export const urlUploadSocialPlatforms: SocialPlatformTypes[] = [
+export const urlUploadSocialPlatforms: SocialPlatformType[] = [
   "facebook",
   "instagram",
   "pinterest",
@@ -144,87 +154,87 @@ export function getNotionMediaName(str: string, mimeType?: string) {
   return str;
 }
 
-export function getMediaFromNotionFile(
+export async function getMediaFromNotionFile(
   file: ArrayElement<NotionFiles>
 ): Promise<Media | null> {
-  return new Promise((resolve) => {
-    const extUrl = file?.["external"]?.["url"] as string;
-    const gDriveMedia = alterGDriveLink(extUrl);
+  const extUrl = file?.["external"]?.["url"] as string;
+  const gDriveMedia = alterGDriveLink(extUrl);
 
-    const notionUrl = file?.["file"]?.url;
-    const url = notionUrl || gDriveMedia?.url || extUrl;
-    const isBase64 = isBase64String(url);
-    if (!url || isBase64) return resolve(null);
+  const notionUrl = file?.["file"]?.url;
+  const url = notionUrl || gDriveMedia?.url || extUrl;
+  const isBase64 = isBase64String(url);
+  if (!url || isBase64) return null;
+  const mediaRef = getMediaRef(url);
+
+  try {
     const urlData = new URL(url);
-    const mediaRef = getMediaRef(url);
+
     // ? Notion files
     if (notionUrl) {
       const _pathSplit = urlData.pathname.split("/");
       const name = file?.name || _pathSplit[_pathSplit.length - 1];
-      const caption = notionRichTextParser(file?.["caption"]);
-      getUrlContentHeaders(notionUrl)
-        .then((headers) => {
-          const packed = packMedia(
-            notionUrl,
-            name,
-            headers.mediaType,
-            headers.mimeType,
-            headers.contentType,
-            mediaRef,
-            headers.contentLength,
-            caption
-          );
-          resolve(packed);
-        })
-        .catch((e) => {
-          console.info("Error while fetching headers of a URL", url, e);
-          resolve(null);
-        });
+      const description = notionRichTextParser(file?.["caption"]);
+      const headers = await getUrlContentHeaders(notionUrl);
+      const packed = packMedia(
+        notionUrl,
+        name,
+        headers.mediaType,
+        headers.mimeType,
+        headers.contentType,
+        mediaRef,
+        headers.contentLength,
+        description
+      );
+      return packed;
     }
     // ? Google Drive Files
     else if (gDriveMedia) {
-      getGdriveContentHeaders(gDriveMedia.downloadUrl)
-        .then((headers) => {
-          const packed = packMedia(
-            gDriveMedia.downloadUrl,
-            headers.name,
-            headers.mediaType,
-            headers.mimeType,
-            headers.contentType,
-            gDriveMedia.name,
-            headers.contentLength
-          );
-          resolve(packed);
-        })
-        .catch((e) => {
-          console.info("Error while fetching headers of Google Drive file", url, e);
-          resolve(null);
-        });
+      const headers = await getGdriveContentHeaders(gDriveMedia.downloadUrl);
+      const packed = packMedia(
+        gDriveMedia.downloadUrl,
+        headers.name,
+        headers.mediaType,
+        headers.mimeType,
+        headers.contentType,
+        gDriveMedia.name,
+        headers.contentLength
+      );
+      return packed;
+    }
+    // ? External URLs (including Descript)
+    else if (extUrl) {
+      let resolvedUrl = extUrl;
+      if (isDescriptLink(extUrl)) {
+        resolvedUrl = await alterDescriptLink(extUrl);
+      }
+      const headers = await getUrlContentHeaders(resolvedUrl);
+      if (headers.contentType && headers.contentLength) {
+        const packed = packMedia(
+          headers.url,
+          headers.name,
+          headers.mediaType,
+          headers.mimeType,
+          headers.contentType,
+          mediaRef, // Using extUrl as mediaRef for external URLs
+          headers.contentLength
+        );
+        return packed;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  } catch (e) {
+    if (notionUrl) {
+      console.info("Error while fetching headers of a URL", url, e);
+    } else if (gDriveMedia) {
+      console.info("Error while fetching headers of Google Drive file", url, e);
     } else if (extUrl) {
-      (isDescriptLink(extUrl) ? alterDescriptLink(extUrl) : Promise.resolve(extUrl))
-        .then((url) => getUrlContentHeaders(url))
-        .then((headers) => {
-          if (headers.contentType && headers.contentLength) {
-            const packed = packMedia(
-              headers.url,
-              headers.name,
-              headers.mediaType,
-              headers.mimeType,
-              headers.contentType,
-              mediaRef, // Using extUrl as mediaRef for external URLs
-              headers.contentLength
-            );
-            resolve(packed);
-          } else {
-            resolve(null);
-          }
-        })
-        .catch((e) => {
-          console.info("Error while fetching external URL", extUrl, e);
-          resolve(null);
-        });
-    } else return resolve(null);
-  });
+      console.info("Error while fetching external URL", extUrl, e);
+    }
+    return null;
+  }
 }
 
 // ! TODO:- Add extUrl and gdriveUrl support here
@@ -238,9 +248,9 @@ export function getNotionFileInfo(file) {
 
   const name = file?.name || imgName.split("/").pop();
   const mediaRef = getMediaRef(notionUrl);
-  const caption = notionRichTextParser(file?.["caption"]);
+  const description = notionRichTextParser(file?.["caption"]);
 
-  return {notionUrl, name, mediaRef, caption};
+  return {notionUrl, name, mediaRef, description};
 }
 
 export function getStaticMediaFromNotionFile(file: ArrayElement<NotionFiles>): Media | null {
@@ -248,7 +258,7 @@ export function getStaticMediaFromNotionFile(file: ArrayElement<NotionFiles>): M
 
   if (!fileInfo) return null;
 
-  const {notionUrl, name, mediaRef, caption} = fileInfo;
+  const {notionUrl, name, mediaRef, description} = fileInfo;
 
   // Get mime type from file extension
   const mimeType = name.split(".").pop().toLowerCase();
@@ -262,7 +272,7 @@ export function getStaticMediaFromNotionFile(file: ArrayElement<NotionFiles>): M
     contentType,
     mediaRef,
     undefined,
-    caption
+    description
   );
 }
 export function getStaticMediaFromNotionBlock(block): Media | null {
@@ -275,7 +285,7 @@ export function getStaticMediaFromNotionBlock(block): Media | null {
 
 export function makeMediaPostReady<T extends "file" | "media">(
   media: MediaType,
-  platform?: SocialPlatformTypes
+  platform?: SocialPlatformType
 ): T extends "file" ? PostMediaFile : PostMedia {
   // Helper function to extract the transformation based on platform
   const getTransformation = (transformations: TransformedMedia["transformations"]) => {
@@ -299,8 +309,8 @@ export function makeMediaPostReady<T extends "file" | "media">(
   const m: PostMediaFile = {
     // ? CONSTANT
     name: media.name,
-    id: media.refId,
-    caption: media.caption,
+    _id: media.refId,
+    description: media.description,
 
     // ? CAN BE CHANGED DURING PROCESSING
     mimeType: media.mimeType,
