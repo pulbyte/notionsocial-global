@@ -42,7 +42,7 @@
     "test": "jest",
     "test:text": "jest tests/text.test.ts",
     "test:media": "jest tests/media.test.ts",
-    "ig": "npm i @pulbyte/social-stack-lib",
+    "ig": "npm i @pulbyte/social-stack-lib@latest",
     "il": "npm i \"./../../Social Stack/library (js)\""
   },
   "author": "",
@@ -53,7 +53,7 @@
     "@google-cloud/storage": "^7.11.2",
     "@notion-stuff/blocks-markdown-parser": "^6.0.0",
     "@notionhq/client": "^2.2.15",
-    "@pulbyte/social-stack-lib": "^1.2.0",
+    "@pulbyte/social-stack-lib": "^1.2.0-alpha",
     "@redtea/format-axios-error": "^2.1.1",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.7",
