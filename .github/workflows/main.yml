@@ -18,12 +18,16 @@ jobs:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
           scope: '@pulbyte'
-      - name: List environment variables
-        run: printenv
+      - name: List specific environment variables
+        run: |
+          echo "NODE_AUTH_TOKEN: $NODE_AUTH_TOKEN"
+          echo "NPM_TOKEN: $NPM_TOKEN"
+        continue-on-error: true
       - name: Log .npmrc file
-        run: cat ~/.npmrc
+        run: cat $NPM_CONFIG_USERCONFIG
+        continue-on-error: true
       - run: npm install
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
