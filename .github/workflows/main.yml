@@ -22,12 +22,14 @@ jobs:
         run: |
           echo "NODE_AUTH_TOKEN is set: $(if [ -n "$NODE_AUTH_TOKEN" ]; then echo 'YES'; else echo 'NO'; fi)"
         continue-on-error: true
-      # - name: Create .npmrc file
-      #   run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-      #   continue-on-error: true
+      - name: Create .npmrc file  
+        run: |
+          echo "@pulbyte:registry=https://npm.pkg.github.com/" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+      - name: Display .npmrc content
+        run: cat ~/.npmrc
+        continue-on-error: true
       - run: npm install
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_RC: "@pulbyte:registry=https://npm.pkg.github.com/\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}"
-      - run: npm publish
