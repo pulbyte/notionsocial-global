@@ -175,7 +175,7 @@ export function chunkParagraphs(paragraphs: Paragraph[], maxTextLength: number):
 }
 
 export const LinkedInPostExtractRegex =
-  /(https:\/\/(www\.)?linkedin\.com\/embed\/feed\/update\/(urn:li:(share|ugcPost):\d+))/;
+  /(https:\/\/(www\.)?linkedin\.com\/embed\/feed\/update\/(urn:li:(share|ugcPost):\d+)(\?[^\s]*)?)/;
 
 export function removeFirstLinkedInPostUrlFromText(text: string): string {
   return text.replace(LinkedInPostExtractRegex, "");
@@ -201,7 +201,9 @@ export function parseTextForLinkedInPost(text: string): BaseLinkedInPost {
       if (trimmedText.startsWith(url)) {
         replyToPostId = postId;
         // Remove the URL and any following newline character
-        text = text.replace(new RegExp(`${url}\\s*\\n?`), "").trim();
+        text = text
+          .replace(new RegExp(`${url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\n?`), "")
+          .trim();
       } else {
         quotePostId = postId;
         text = removeFirstLinkedInPostUrlFromText(text).trim();
