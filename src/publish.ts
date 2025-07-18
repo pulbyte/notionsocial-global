@@ -197,6 +197,7 @@ export function processMedia(
   function getMediaFetcher(media: Media) {
     // Check cache first
     if (media.refId && processedMediaCache.has(media.refId)) {
+      dog("Media hit from cache -->", media.refId);
       return () => Promise.resolve(processedMediaCache.get(media.refId)!);
     }
 

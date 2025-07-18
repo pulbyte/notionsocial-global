@@ -10,7 +10,7 @@ import {
   PostMedia,
 } from "./types";
 import * as mime from "@alshdavid/mime-types";
-
+import {dog} from "./logging";
 import {notionRichTextParser, trimAndRemoveWhitespace} from "./text";
 import {
   getUrlContentHeaders,
@@ -39,7 +39,7 @@ export function getMediaRef(url: string) {
 export function packMedia(
   url: string,
   name: string,
-  type: "image" | "video" | "doc",
+  type: Media["type"],
   mimeType: string,
   contentType: string,
   refId: string,
@@ -90,20 +90,24 @@ export function filterPublishMedia(
   } else _ = _.slice(0, 35);
   return _;
 }
-export function getContentTypeFromMimeType(mt) {
-  return mime.lookup(mt)?.[0] || null;
+export function getContentTypeFromMimeType(mt: string): string | null {
+  if (!mt) return null;
+  const ct = mime.lookup(mt)?.[0];
+  return ct || (mt === "video" ? "video/mp4" : mt === "image" ? "image/jpeg" : null);
 }
-export function getMimeTypeFromContentType(ct) {
-  return mime.extension(ct)?.[0] || null;
+export function getMimeTypeFromContentType(ct: string): string | null {
+  if (!ct) return null;
+  const mt = mime.extension(ct)?.[0];
+  return mt || (ct === "video" ? "mp4" : ct === "image" ? "jpeg" : null);
 }
-export function getMediaTypeFromMimeType(mt) {
+export function getMediaTypeFromMimeType(mt: string): Media["type"] | null {
   if (!mt) return null;
   if (imageMimeTypes.includes(mt)) return "image";
   else if (videoMimeTypes.includes(mt)) return "video";
   else if (docMimeTypes.includes(mt)) return "doc";
   else return null;
 }
-export function getMediaTypeFromContentType(ct: string) {
+export function getMediaTypeFromContentType(ct: string): Media["type"] | null {
   if (!ct) return null;
   if (ct?.includes("image")) return "image";
   else if (ct?.includes("video")) return "video";
@@ -203,11 +207,14 @@ export async function getMediaFromNotionFile(
     }
     // ? External URLs (including Descript)
     else if (extUrl) {
+      dog("Fetching headers of an external URL", extUrl);
       let resolvedUrl = extUrl;
       if (isDescriptLink(extUrl)) {
         resolvedUrl = await alterDescriptLink(extUrl);
+        dog("The external media is a descript url", resolvedUrl);
       }
       const headers = await getUrlContentHeaders(resolvedUrl);
+      dog("Got the headers of the external URL", headers);
       if (headers.contentType && headers.contentLength) {
         const packed = packMedia(
           headers.url,
@@ -226,13 +233,7 @@ export async function getMediaFromNotionFile(
       return null;
     }
   } catch (e) {
-    if (notionUrl) {
-      console.info("Error while fetching headers of a URL", url, e);
-    } else if (gDriveMedia) {
-      console.info("Error while fetching headers of Google Drive file", url, e);
-    } else if (extUrl) {
-      console.info("Error while fetching external URL", extUrl, e);
-    }
+    console.info("Error while fetching headers of a URL", url, e);
     return null;
   }
 }

@@ -1,5 +1,6 @@
 import axios from "axios";
 import {
+  getContentTypeFromMimeType,
   getMediaTypeFromContentType,
   getMediaTypeFromMimeType,
   getMimeTypeFromContentType,
@@ -137,9 +138,20 @@ export function getGdriveContentHeaders(url): Promise<{
         res.data.destroy();
 
         const headers = res.headers;
-        const contentType = headers["content-type"];
+        let contentType = headers["content-type"];
         const contentLength = Number(headers["content-length"]);
         const contentDisposition = headers["content-disposition"];
+
+        // Handle simplified content types like "video" or "image"
+        if (["video", "image"].includes(contentType?.toLowerCase())) {
+          const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
+          if (contentTypeFromExt) {
+            console.warn(
+              `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
+            );
+            contentType = contentTypeFromExt;
+          }
+        }
 
         const mimeType = getMimeTypeFromContentType(contentType);
         const mediaType =
@@ -203,10 +215,22 @@ export function getUrlContentHeaders(url: string): Promise<{
         res.data.destroy();
 
         const headers = res.headers;
-        const contentType = headers["content-type"] || headers["Content-Type"];
+        let contentType = headers["content-type"] || headers["Content-Type"];
         const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
         const contentDisposition =
           headers["content-disposition"] || headers["Content-Disposition"];
+
+        // Handle simplified content types like "video" or "image"
+        if (["video", "image"].includes(contentType?.toLowerCase())) {
+          const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
+          if (contentTypeFromExt) {
+            console.warn(
+              `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
+            );
+            contentType = contentTypeFromExt;
+          }
+        }
+
         const mimeType = getMimeTypeFromContentType(contentType);
         const mediaType =
           getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
