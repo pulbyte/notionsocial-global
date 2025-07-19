@@ -83,7 +83,21 @@ describe("makeMediaPostReady", () => {
     };
 
     const result = makeMediaPostReady<"file">(input);
-    expect(result).toEqual(Object.assign(input, {transformation: null}));
+    expect(result).toEqual({
+      name: "test.jpg",
+      _id: "test-ref",
+      description: undefined,
+      mimeType: "image/jpeg",
+      contentType: "image/jpeg",
+      type: "image",
+      metadata: {
+        size: 1000,
+        height: 0,
+        width: 0,
+      },
+      url: "https://example.com/test.jpg",
+      buffer: Buffer.from("test"),
+    });
   });
 
   it("should handle MediaRecord with transformations", () => {
@@ -115,25 +129,22 @@ describe("makeMediaPostReady", () => {
     const result = makeMediaPostReady<"media">(input);
     expect(result).toEqual({
       name: "test.pdf",
-      refId: "test-ref",
+      _id: "test-ref",
+      description: undefined,
       mimeType: "png",
       contentType: "image/png",
       type: "image",
-      size: 500,
-      url: "https://example.com/test-optimized.jpg",
-      transformation: {
-        url: "https://example.com/test-optimized.jpg",
-        metadata: {
-          contentType: "image/png",
-          size: 500,
-          height: 100,
-          width: 100,
-          //@ts-ignore
-          method: "ffmpeg",
-          orientation: "original",
-          compression: "lossy",
-        },
+      metadata: {
+        contentType: "image/png",
+        size: 500,
+        height: 100,
+        width: 100,
+        method: "ffmpeg",
+        orientation: "original",
+        compression: "lossy",
       },
+      url: "https://example.com/test-optimized.jpg",
+      buffer: undefined,
     });
   });
 
@@ -152,13 +163,18 @@ describe("makeMediaPostReady", () => {
     const result = makeMediaPostReady<"media">(input);
     expect(result).toEqual({
       name: "test.jpg",
-      refId: "test-ref",
+      _id: "test-ref",
+      description: undefined,
       mimeType: "image/jpeg",
       contentType: "image/jpeg",
       type: "image",
-      size: 1000,
+      metadata: {
+        size: 1000,
+        height: 0,
+        width: 0,
+      },
       url: "https://example.com/test.jpg",
-      transformation: null,
+      buffer: undefined,
     });
   });
 });

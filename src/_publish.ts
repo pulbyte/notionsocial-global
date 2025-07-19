@@ -20,14 +20,62 @@ import {
 } from "./_media";
 import {PublishError} from "./PublishError";
 import _ from "lodash";
-import {getReadableTimeByTimeZone} from "time";
-import {dev} from "env";
+import {getReadableTimeByTimeZone} from "./time";
+import {dev} from "./env";
 import {
   containsAny,
   detectSocialPlatforms,
   SocialPlatformType,
 } from "@pulbyte/social-stack-lib";
 import {dog} from "./logging";
+
+export function extractPlatformCaptions(
+  properties: Record<string, any>,
+  captionPropName?: string
+): Partial<Record<Exclude<SocialPlatformType, "twitter">, string>> {
+  const platformCaptions: Partial<Record<Exclude<SocialPlatformType, "twitter">, string>> = {};
+
+  // Process platform-specific captions
+  const captionKeywords = [
+    "caption",
+    "content",
+    "message",
+    captionPropName,
+  ].filter(Boolean);
+
+  Object.keys(properties).forEach((propName) => {
+    const property = properties[propName];
+
+    // Check if property name contains caption-related keywords
+    if (containsAny(propName, captionKeywords)) {
+      // Detect which platforms this property is for
+      const detectedPlatforms = detectSocialPlatforms(propName);
+
+      if (detectedPlatforms.length > 0) {
+        // Get the text content from the property
+        let propText = "";
+        if (property?.type === "rich_text") {
+          propText = notionRichTextParser(property?.["rich_text"]);
+        } else if (property?.type === "formula") {
+          propText = property?.["formula"]?.["string"] || "";
+        }
+
+        // Store the text for each detected platform
+        detectedPlatforms.forEach((platform) => {
+          if (propText) {
+            platformCaptions[platform] = propText;
+            dog(
+              `✓ Detected ${platform} caption from property "${propName}":`,
+              propText.substring(0, 50) + "..."
+            );
+          }
+        });
+      }
+    }
+  });
+
+  return platformCaptions;
+}
 
 export function getNotionPageConfig(
   notionPage: NotionPage,
@@ -133,43 +181,8 @@ export function getNotionPageConfig(
   };
   __.archived = notionPage["archived"];
 
-  // Process platform-specific captions
-  const captionKeywords = [
-    "caption",
-    "content",
-    "message",
-    notionDatabaseData.props["caption"],
-  ];
-  Object.keys(properties).forEach((propName) => {
-    const property = properties[propName];
-
-    // Check if property name contains caption-related keywords
-    if (containsAny(propName, captionKeywords)) {
-      // Detect which platforms this property is for
-      const detectedPlatforms = detectSocialPlatforms(propName);
-
-      if (detectedPlatforms.length > 0) {
-        // Get the text content from the property
-        let propText = "";
-        if (property?.type === "rich_text") {
-          propText = notionRichTextParser(property?.["rich_text"]);
-        } else if (property?.type === "formula") {
-          propText = property?.["formula"]?.["string"] || "";
-        }
-
-        // Store the text for each detected platform
-        detectedPlatforms.forEach((platform) => {
-          if (propText) {
-            __.platformCaptions[platform] = propText;
-            dog(
-              `✓ Detected ${platform} caption from property "${propName}":`,
-              propText.substring(0, 50) + "..."
-            );
-          }
-        });
-      }
-    }
-  });
+  // Extract platform-specific captions using the new function
+  __.platformCaptions = extractPlatformCaptions(properties, notionDatabaseData.props["caption"]);
 
   const {
     commentProp,

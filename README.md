@@ -80,9 +80,38 @@ The system recognizes these platform variations:
 ### Implementation Details
 
 1. **Content Extraction**: `getNotionPageContent()` extracts raw content from Notion
-2. **Platform Processing**: `processContentForSocialPlatforms()` handles platform-specific text
-3. **Publishing**: Each platform receives appropriate content structure during publishing
-4. **Fallback**: Uses general caption/content if no platform-specific content exists
+2. **Platform Caption Detection**: `extractPlatformCaptions()` automatically detects and extracts platform-specific captions from Notion properties
+3. **Platform Processing**: `processContentForSocialPlatforms()` handles platform-specific text
+4. **Publishing**: Each platform receives appropriate content structure during publishing
+5. **Fallback**: Uses general caption/content if no platform-specific content exists
+
+### Platform Caption Extraction
+
+The `extractPlatformCaptions()` function automatically scans Notion page properties to find platform-specific captions:
+
+```typescript
+import { extractPlatformCaptions } from '@pulbyte/notionsocial-global';
+
+// Extract platform captions from Notion properties
+const platformCaptions = extractPlatformCaptions(notionPageProperties, customCaptionPropName);
+
+// Result example:
+// {
+//   instagram: "Instagram-specific caption",
+//   facebook: "Facebook-specific message", 
+//   linkedin: "LinkedIn professional content"
+// }
+```
+
+**Supported Property Types:**
+- `rich_text`: Standard Notion text properties
+- `formula`: Notion formula properties that return strings
+
+**Detection Logic:**
+1. Scans all properties for caption-related keywords: "caption", "content", "message"
+2. Detects platform names within property names using `detectSocialPlatforms()`
+3. Extracts text content from supported property types
+4. Returns a map of platform names to their specific captions
 
 ### Content Processing Flow
 

@@ -227,14 +227,17 @@ export function replaceLineBreaksWithEmptySpaces(inputString: string) {
 export function checkTextExceedsTweetCharLimit(text: string) {
   return parseTweet(text).weightedLength > 280;
 }
-export function linkedinUrn(pid: string, accType: "page" | "group") {
+export function linkedinUrn(pid: string, accType?: "page" | "group") {
   return accType == "page" ? `urn:li:organization:${pid}` : `urn:li:person:${pid}`;
 }
 
 export function logAxiosError(error, message = "Facebook graph api error") {
   if (isAxiosError(error)) {
     const formattedError = formatAxiosError(error);
-    console.error(`${message ? "🛑 " + message + "\n" : ""}`, formattedError);
+    console.error(
+      `${message ? "🛑 " + message + "\n" : ""}`,
+      JSON.stringify(formattedError, null, 2)
+    );
   } else if (error) {
     console.error(`${message ? "🛑 " + message + "\n" : ""}`, error);
   }
