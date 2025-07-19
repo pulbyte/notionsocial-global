@@ -88,7 +88,7 @@ export function alterGDriveLink(inputURL) {
   }
 }
 
-export function getGdriveContentHeaders(url): Promise<{
+export async function getGdriveContentHeaders(url: string): Promise<{
   contentType: string;
   contentLength: number;
   name: string;
@@ -96,70 +96,62 @@ export function getGdriveContentHeaders(url): Promise<{
   mediaType?: "image" | "video" | "doc";
 }> {
   let _url: URL;
-  let id;
+  let id: string;
   try {
     _url = new URL(url);
     id = _url.searchParams.get("id");
   } catch (error) {
-    return Promise.reject(new Error("Invalid URL"));
+    throw new Error("Invalid URL");
   }
   if (!url || !id) {
-    return Promise.reject(new Error("Not a valid Google Drive url"));
+    throw new Error("Not a valid Google Drive url");
   }
 
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await axiosWithRetry({
-        method: "GET",
-        url: url,
-        timeout: 30000,
-        responseType: "stream",
-        maxRedirects: 5,
-        headers: getBrowserHeaders(),
-        validateStatus: function (status) {
-          return status >= 200 && status < 300; // default
-        },
-      });
-
-      // Immediately abort the request after receiving headers
-      res.data.destroy();
-
-      const headers = res.headers;
-      let contentType = headers["content-type"];
-      const contentLength = Number(headers["content-length"]);
-      const contentDisposition = headers["content-disposition"];
-
-      // Handle simplified content types like "video" or "image"
-      if (["video", "image"].includes(contentType?.toLowerCase())) {
-        const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
-        if (contentTypeFromExt) {
-          console.warn(
-            `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
-          );
-          contentType = contentTypeFromExt;
-        }
-      }
-
-      const mimeType = getMimeTypeFromContentType(contentType);
-      const mediaType =
-        getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
-
-      const err = !headers || !contentType || !mediaType;
-
-      if (err) {
-        reject(new Error("Media file does not exist or is restricted."));
-        return;
-      }
-
-      const name = getFileNameFromContentDisposition(contentDisposition);
-      resolve({contentType, contentLength, name: id || name, mimeType, mediaType});
-    } catch (error) {
-      logAxiosError(error, `Error fetching headers for ${url}:`);
-      reject(error);
-    }
+  const res = await axiosWithRetry({
+    method: "GET",
+    url: url,
+    timeout: 30000,
+    responseType: "stream",
+    maxRedirects: 5,
+    headers: getBrowserHeaders(),
+    validateStatus: function (status) {
+      return status >= 200 && status < 300; // default
+    },
   });
+
+  // Immediately abort the request after receiving headers
+  res.data.destroy();
+
+  const headers = res.headers;
+  let contentType = headers["content-type"];
+  const contentLength = Number(headers["content-length"]);
+  const contentDisposition = headers["content-disposition"];
+
+  // Handle simplified content types like "video" or "image"
+  if (["video", "image"].includes(contentType?.toLowerCase())) {
+    const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
+    if (contentTypeFromExt) {
+      console.warn(
+        `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
+      );
+      contentType = contentTypeFromExt;
+    }
+  }
+
+  const mimeType = getMimeTypeFromContentType(contentType);
+  const mediaType =
+    getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
+
+  const err = !headers || !contentType || !mediaType;
+
+  if (err) {
+    throw new Error("Media file does not exist or is restricted.");
+  }
+
+  const name = getFileNameFromContentDisposition(contentDisposition);
+  return {contentType, contentLength, name: id || name, mimeType, mediaType};
 }
-export function getUrlContentHeaders(url: string): Promise<{
+export async function getUrlContentHeaders(url: string): Promise<{
   contentType: string;
   contentLength: number;
   mimeType?: string;
@@ -168,64 +160,57 @@ export function getUrlContentHeaders(url: string): Promise<{
   url: string;
 }> {
   if (!url) {
-    return Promise.reject(new Error(`Not a valid url ${url}`));
+    throw new Error(`Not a valid url ${url}`);
   }
-  return new Promise(async (resolve, reject) => {
-    try {
-      const res = await axiosWithRetry({
-        method: "GET",
-        url: url,
-        timeout: 30000,
-        responseType: "stream",
-        maxRedirects: 5,
-        headers: getBrowserHeaders(),
-        validateStatus: function (status) {
-          return status >= 200 && status < 300; // default
-        },
-      });
 
-      // Immediately abort the request after receiving headers
-      res.data.destroy();
-
-      const headers = res.headers;
-      let contentType = headers["content-type"] || headers["Content-Type"];
-      const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
-      const contentDisposition =
-        headers["content-disposition"] || headers["Content-Disposition"];
-
-      // Handle simplified content types like "video" or "image"
-      if (["video", "image"].includes(contentType?.toLowerCase())) {
-        const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
-        if (contentTypeFromExt) {
-          console.warn(
-            `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
-          );
-          contentType = contentTypeFromExt;
-        }
-      }
-
-      const mimeType = getMimeTypeFromContentType(contentType);
-      const mediaType =
-        getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
-
-      let name = getFileNameFromContentDisposition(contentDisposition);
-      if (!name) {
-        const urlObj = new URL(url);
-        name = urlObj.pathname.split("/").pop() || "unknown";
-      }
-
-      const err = !headers || !contentType || !mediaType;
-
-      if (err) {
-        reject(new Error(`Cannot get media type for ${contentType}`));
-        return;
-      }
-      resolve({contentType, contentLength, mimeType, mediaType, name, url});
-    } catch (error) {
-      logAxiosError(error, `Error fetching headers for ${url}:`);
-      reject(error);
-    }
+  const res = await axiosWithRetry({
+    method: "GET",
+    url: url,
+    timeout: 30000,
+    responseType: "stream",
+    maxRedirects: 5,
+    headers: getBrowserHeaders(),
+    validateStatus: function (status) {
+      return status >= 200 && status < 300; // default
+    },
   });
+
+  // Immediately abort the request after receiving headers
+  res.data.destroy();
+
+  const headers = res.headers;
+  let contentType = headers["content-type"] || headers["Content-Type"];
+  const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
+  const contentDisposition = headers["content-disposition"] || headers["Content-Disposition"];
+
+  // Handle simplified content types like "video" or "image"
+  if (["video", "image"].includes(contentType?.toLowerCase())) {
+    const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
+    if (contentTypeFromExt) {
+      console.warn(
+        `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
+      );
+      contentType = contentTypeFromExt;
+    }
+  }
+
+  const mimeType = getMimeTypeFromContentType(contentType);
+  const mediaType =
+    getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
+
+  let name = getFileNameFromContentDisposition(contentDisposition);
+  if (!name) {
+    const urlObj = new URL(url);
+    name = urlObj.pathname.split("/").pop() || "unknown";
+  }
+
+  const err = !headers || !contentType || !mediaType;
+
+  if (err) {
+    throw new Error(`Cannot get media type for ${contentType}`);
+  }
+
+  return {contentType, contentLength, mimeType, mediaType, name, url};
 }
 export function convertToHttps(url: string) {
   if (!url || typeof url !== "string") return url;

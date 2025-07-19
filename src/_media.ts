@@ -11,7 +11,7 @@ import {
 } from "./types";
 import * as mime from "@alshdavid/mime-types";
 import {dog} from "./logging";
-import {notionRichTextParser, trimAndRemoveWhitespace} from "./text";
+import {logAxiosError, notionRichTextParser, trimAndRemoveWhitespace} from "./text";
 import {
   getUrlContentHeaders,
   getGdriveContentHeaders,
@@ -233,7 +233,7 @@ export async function getMediaFromNotionFile(
       return null;
     }
   } catch (e) {
-    console.info("Error while fetching headers of a URL", url, e);
+    logAxiosError(e, `Error fetching headers for ${url}:`);
     return null;
   }
 }
