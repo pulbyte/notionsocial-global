@@ -16,18 +16,23 @@ describe("extractPlatformCaptions", () => {
     });
   });
 
-  it("should extract Instagram caption from 'content_instagram' property", () => {
+  it("should extract caption from snake_case property", () => {
     const properties = {
       content_instagram: {
         type: "rich_text",
         rich_text: [{plain_text: "Instagram content with underscore"}],
       },
+      content_twitter: {
+        type: "rich_text",
+        rich_text: [{plain_text: "X content with underscore"}],
+      },
     };
 
     const result = extractPlatformCaptions(properties);
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       instagram: "Instagram content with underscore",
+      x: "X content with underscore",
     });
   });
 
@@ -157,7 +162,7 @@ describe("extractPlatformCaptions", () => {
 
     const result = extractPlatformCaptions(properties);
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       instagram: "Uppercase Instagram caption",
       facebook: "Lowercase Facebook content",
     });

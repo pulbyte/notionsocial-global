@@ -69,7 +69,7 @@ export async function processRichTextContentMedia(
         paragraph.media = await processMedia(
           paragraph.media,
           config.filesToDownload,
-          config._postRecord.processed_media
+          config._postRecord?.processed_media
         );
       }
     }
