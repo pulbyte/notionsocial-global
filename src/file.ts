@@ -1,7 +1,8 @@
 import {Readable} from "stream";
-import axios from "axios";
 import {maxMediaSize} from "./env";
-import {formatBytesIntoReadable} from "./text";
+import {formatBytesIntoReadable, logAxiosError} from "./text";
+import {axiosWithRetry, getBrowserHeaders} from "./http";
+
 export function bufferToStream(binary: Buffer) {
   const readableInstanceStream = new Readable({
     read() {
@@ -19,16 +20,13 @@ export async function downloadFromUrl(url: string, name?: string) {
 
   const start = Date.now();
   try {
-    const response = await axios({
+    const response = await axiosWithRetry({
       method: "get",
       url: url,
       responseType: "arraybuffer",
       timeout: 15 * 60 * 1000, // 15 minutes
       maxContentLength: maxMediaSize.bytes, // 100 MB max file size
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      },
+      headers: getBrowserHeaders(),
     });
 
     const buffer = Buffer.from(response.data);
@@ -49,7 +47,7 @@ export async function downloadFromUrl(url: string, name?: string) {
       contentType: response.headers["content-type"],
     };
   } catch (error) {
-    console.log("Error while downloading file", error);
+    logAxiosError(error, "Error downloading");
     throw error;
   }
 }

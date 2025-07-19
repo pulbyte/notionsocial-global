@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   getContentTypeFromMimeType,
   getMediaTypeFromContentType,
@@ -6,6 +5,8 @@ import {
   getMimeTypeFromContentType,
 } from "./_media";
 import urlMetadata from "url-metadata";
+import {logAxiosError} from "./text";
+import {axiosWithRetry, getBrowserHeaders} from "./http";
 
 export function extractTweetIdFromUrl(url) {
   if (!url) return null;
@@ -106,70 +107,56 @@ export function getGdriveContentHeaders(url): Promise<{
     return Promise.reject(new Error("Not a valid Google Drive url"));
   }
 
-  return new Promise((resolve, reject) => {
-    return axios
-      .get(url, {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await axiosWithRetry({
         method: "GET",
+        url: url,
         timeout: 30000,
         responseType: "stream",
         maxRedirects: 5,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-          "Accept-Language": "en-US,en;q=0.9",
-          "Accept-Encoding": "gzip, deflate, br",
-          DNT: "1",
-          Connection: "keep-alive",
-          "Upgrade-Insecure-Requests": "1",
-          "Sec-Fetch-Dest": "document",
-          "Sec-Fetch-Mode": "navigate",
-          "Sec-Fetch-Site": "none",
-          "Sec-Fetch-User": "?1",
-          "Cache-Control": "max-age=0",
-        },
+        headers: getBrowserHeaders(),
         validateStatus: function (status) {
           return status >= 200 && status < 300; // default
         },
-      })
-      .then((res) => {
-        // Immediately abort the request after receiving headers
-        res.data.destroy();
-
-        const headers = res.headers;
-        let contentType = headers["content-type"];
-        const contentLength = Number(headers["content-length"]);
-        const contentDisposition = headers["content-disposition"];
-
-        // Handle simplified content types like "video" or "image"
-        if (["video", "image"].includes(contentType?.toLowerCase())) {
-          const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
-          if (contentTypeFromExt) {
-            console.warn(
-              `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
-            );
-            contentType = contentTypeFromExt;
-          }
-        }
-
-        const mimeType = getMimeTypeFromContentType(contentType);
-        const mediaType =
-          getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
-
-        const err = !headers || !contentType || !mediaType;
-
-        if (err) {
-          reject(new Error("Media file does not exist or is restricted."));
-        }
-
-        const name = getFileNameFromContentDisposition(contentDisposition);
-        resolve({contentType, contentLength, name: id || name, mimeType, mediaType});
-      })
-      .catch((error) => {
-        console.error(`Error while fetching headers for ${url}:`, error);
-        reject(error);
       });
+
+      // Immediately abort the request after receiving headers
+      res.data.destroy();
+
+      const headers = res.headers;
+      let contentType = headers["content-type"];
+      const contentLength = Number(headers["content-length"]);
+      const contentDisposition = headers["content-disposition"];
+
+      // Handle simplified content types like "video" or "image"
+      if (["video", "image"].includes(contentType?.toLowerCase())) {
+        const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
+        if (contentTypeFromExt) {
+          console.warn(
+            `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
+          );
+          contentType = contentTypeFromExt;
+        }
+      }
+
+      const mimeType = getMimeTypeFromContentType(contentType);
+      const mediaType =
+        getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
+
+      const err = !headers || !contentType || !mediaType;
+
+      if (err) {
+        reject(new Error("Media file does not exist or is restricted."));
+        return;
+      }
+
+      const name = getFileNameFromContentDisposition(contentDisposition);
+      resolve({contentType, contentLength, name: id || name, mimeType, mediaType});
+    } catch (error) {
+      logAxiosError(error, `Error fetching headers for ${url}:`);
+      reject(error);
+    }
   });
 }
 export function getUrlContentHeaders(url: string): Promise<{
@@ -183,75 +170,61 @@ export function getUrlContentHeaders(url: string): Promise<{
   if (!url) {
     return Promise.reject(new Error(`Not a valid url ${url}`));
   }
-  return new Promise((resolve, reject) => {
-    return axios
-      .get(url, {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await axiosWithRetry({
         method: "GET",
+        url: url,
         timeout: 30000,
         responseType: "stream",
         maxRedirects: 5,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-          "Accept-Language": "en-US,en;q=0.9",
-          "Accept-Encoding": "gzip, deflate, br",
-          DNT: "1",
-          Connection: "keep-alive",
-          "Upgrade-Insecure-Requests": "1",
-          "Sec-Fetch-Dest": "document",
-          "Sec-Fetch-Mode": "navigate",
-          "Sec-Fetch-Site": "none",
-          "Sec-Fetch-User": "?1",
-          "Cache-Control": "max-age=0",
-        },
+        headers: getBrowserHeaders(),
         validateStatus: function (status) {
           return status >= 200 && status < 300; // default
         },
-      })
-      .then((res) => {
-        // Immediately abort the request after receiving headers
-        res.data.destroy();
-
-        const headers = res.headers;
-        let contentType = headers["content-type"] || headers["Content-Type"];
-        const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
-        const contentDisposition =
-          headers["content-disposition"] || headers["Content-Disposition"];
-
-        // Handle simplified content types like "video" or "image"
-        if (["video", "image"].includes(contentType?.toLowerCase())) {
-          const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
-          if (contentTypeFromExt) {
-            console.warn(
-              `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
-            );
-            contentType = contentTypeFromExt;
-          }
-        }
-
-        const mimeType = getMimeTypeFromContentType(contentType);
-        const mediaType =
-          getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
-
-        let name = getFileNameFromContentDisposition(contentDisposition);
-        if (!name) {
-          const urlObj = new URL(url);
-          name = urlObj.pathname.split("/").pop() || "unknown";
-        }
-
-        const err = !headers || !contentType || !mediaType;
-
-        if (err) {
-          reject(new Error(`Cannot get media type for ${contentType}`));
-        }
-        resolve({contentType, contentLength, mimeType, mediaType, name, url});
-      })
-      .catch((error) => {
-        console.error(`Error while fetching headers for ${url}:`, error);
-        reject(error);
       });
+
+      // Immediately abort the request after receiving headers
+      res.data.destroy();
+
+      const headers = res.headers;
+      let contentType = headers["content-type"] || headers["Content-Type"];
+      const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
+      const contentDisposition =
+        headers["content-disposition"] || headers["Content-Disposition"];
+
+      // Handle simplified content types like "video" or "image"
+      if (["video", "image"].includes(contentType?.toLowerCase())) {
+        const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
+        if (contentTypeFromExt) {
+          console.warn(
+            `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
+          );
+          contentType = contentTypeFromExt;
+        }
+      }
+
+      const mimeType = getMimeTypeFromContentType(contentType);
+      const mediaType =
+        getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
+
+      let name = getFileNameFromContentDisposition(contentDisposition);
+      if (!name) {
+        const urlObj = new URL(url);
+        name = urlObj.pathname.split("/").pop() || "unknown";
+      }
+
+      const err = !headers || !contentType || !mediaType;
+
+      if (err) {
+        reject(new Error(`Cannot get media type for ${contentType}`));
+        return;
+      }
+      resolve({contentType, contentLength, mimeType, mediaType, name, url});
+    } catch (error) {
+      logAxiosError(error, `Error fetching headers for ${url}:`);
+      reject(error);
+    }
   });
 }
 export function convertToHttps(url: string) {

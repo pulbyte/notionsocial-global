@@ -16,3 +16,4 @@ export * from "./utils";
 export * from "./logging";
 export * from "./PublishError";
 export * from "./time";
+export * from "./http";

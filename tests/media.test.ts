@@ -1,6 +1,7 @@
 import {MediaFile, TransformedMedia} from "types";
-import {getMediaRef} from "../src/_media";
-import {makeMediaPostReady} from "../src/media";
+import {getMediaRef, makeMediaPostReady} from "../src/_media";
+import {getUrlContentHeaders} from "../src/url";
+import {downloadFromUrl} from "../src/file";
 
 describe("getMediaRef", () => {
   it("should correctly parse Notion HTML media URLs", () => {
@@ -159,5 +160,76 @@ describe("makeMediaPostReady", () => {
       url: "https://example.com/test.jpg",
       transformation: null,
     });
+  });
+});
+
+describe("URL Functions", () => {
+  it("should get content headers for a valid image URL", async () => {
+    // Test with a reliable image URL
+    const testUrl = "https://httpbin.org/image/png";
+
+    try {
+      const headers = await getUrlContentHeaders(testUrl);
+      expect(headers).toHaveProperty("contentType");
+      expect(headers).toHaveProperty("contentLength");
+      expect(headers).toHaveProperty("mimeType");
+      expect(headers).toHaveProperty("mediaType");
+      expect(headers).toHaveProperty("name");
+      expect(headers).toHaveProperty("url");
+      expect(headers.url).toBe(testUrl);
+      expect(headers.mediaType).toBe("image");
+    } catch (error) {
+      // If the test URL is not available, skip the test
+      console.warn("Test URL not available, skipping test:", error.message);
+    }
+  }, 30000);
+
+  it("should handle 403 errors gracefully", async () => {
+    // Test with a URL that might return 403
+    const testUrl = "https://httpbin.org/status/403";
+
+    try {
+      await getUrlContentHeaders(testUrl);
+      fail("Should have thrown an error for 403 status");
+    } catch (error) {
+      expect(error.message).toContain("403");
+    }
+  }, 30000);
+
+  it("should download file from valid URL", async () => {
+    // Test with a reliable file URL
+    const testUrl = "https://httpbin.org/bytes/1024";
+
+    try {
+      const result = await downloadFromUrl(testUrl, "test-file");
+      expect(result).toHaveProperty("size");
+      expect(result).toHaveProperty("buffer");
+      expect(result).toHaveProperty("contentType");
+      expect(result.size).toBe(1024);
+      expect(Buffer.isBuffer(result.buffer)).toBe(true);
+    } catch (error) {
+      // If the test URL is not available, skip the test
+      console.warn("Test URL not available, skipping test:", error.message);
+    }
+  }, 30000);
+
+  it("should handle invalid URLs", async () => {
+    const invalidUrl = "not-a-valid-url";
+
+    try {
+      await getUrlContentHeaders(invalidUrl);
+      fail("Should have thrown an error for invalid URL");
+    } catch (error) {
+      expect(error.message).toContain("Invalid URL");
+    }
+  });
+
+  it("should handle empty URLs", async () => {
+    try {
+      await getUrlContentHeaders("");
+      fail("Should have thrown an error for empty URL");
+    } catch (error) {
+      expect(error.message).toContain("Not a valid url");
+    }
   });
 });

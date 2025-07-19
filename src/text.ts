@@ -234,14 +234,12 @@ export function linkedinUrn(pid: string, accType: "page" | "group") {
 export function logAxiosError(error, message = "Facebook graph api error") {
   if (isAxiosError(error)) {
     const formattedError = formatAxiosError(error);
-    console.log(
-      `${message ? "🛑 " + message + "\n" : ""}`,
-      JSON.stringify(formattedError, null, 2)
-    );
+    console.error(`${message ? "🛑 " + message + "\n" : ""}`, formattedError);
   } else if (error) {
-    console.log(`${message ? "🛑 " + message + "\n" : ""}`, error);
+    console.error(`${message ? "🛑 " + message + "\n" : ""}`, error);
   }
 }
+
 export function removeHyphens(inputString: string) {
   if (!inputString) return "";
   return inputString.replace(/-/g, "");
