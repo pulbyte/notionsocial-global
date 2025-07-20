@@ -19,6 +19,8 @@ import {
   alterGDriveLink,
   alterDescriptLink,
   isDescriptLink,
+  alterGiphyLink,
+  isGiphyLink,
 } from "./url";
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
 
@@ -205,13 +207,16 @@ export async function getMediaFromNotionFile(
       );
       return packed;
     }
-    // ? External URLs (including Descript)
+    // ? External URLs (including Descript and Giphy)
     else if (extUrl) {
       dog("Fetching headers of an external URL", extUrl);
       let resolvedUrl = extUrl;
       if (isDescriptLink(extUrl)) {
         resolvedUrl = await alterDescriptLink(extUrl);
         dog("The external media is a descript url", resolvedUrl);
+      } else if (isGiphyLink(extUrl)) {
+        resolvedUrl = alterGiphyLink(extUrl);
+        dog("The external media is a giphy url", resolvedUrl);
       }
       const headers = await getUrlContentHeaders(resolvedUrl);
       dog("Got the headers of the external URL", headers);

@@ -72,6 +72,7 @@ export type MediaCompression = "lossy" | "lossless";
 export type MediaTransformationMethod =
   | "gcp-transcoder"
   | "ffmpeg"
+  | "gif"
   | "shortpixel.com"
   | "media.io"
   | "sharp"

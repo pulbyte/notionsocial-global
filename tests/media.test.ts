@@ -1,6 +1,6 @@
 import {MediaFile, TransformedMedia} from "types";
 import {getMediaRef, makeMediaPostReady} from "../src/_media";
-import {getUrlContentHeaders} from "../src/url";
+import {getUrlContentHeaders, isGiphyLink, alterGiphyLink} from "../src/url";
 import {downloadFromUrl} from "../src/file";
 
 describe("getMediaRef", () => {
@@ -247,5 +247,81 @@ describe("URL Functions", () => {
     } catch (error) {
       expect(error.message).toContain("Not a valid url");
     }
+  });
+});
+
+describe("Giphy URL Functions", () => {
+  describe("isGiphyLink", () => {
+    it("should identify Giphy media page URLs", () => {
+      const giphyMediaUrl = "https://giphy.com/gifs/bio-attachment-link-C1UbsNbI8hyXmvDFo0";
+      expect(isGiphyLink(giphyMediaUrl)).toBe(true);
+    });
+
+    it("should identify Giphy gif sharable page URLs", () => {
+      const giphyGifUrl =
+        "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExa3RrNnE3Mzk5MmpzemI2Y2lvaWdsamdneXVyYWRlYjBlY3U4eXplMCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WzWiUYLQMMikw/giphy.gif";
+      expect(isGiphyLink(giphyGifUrl)).toBe(true);
+    });
+
+    it("should identify Giphy hosted binary file URLs", () => {
+      const giphySimpleUrl = "https://i.giphy.com/J6SPGKJRZgHLkw9XAt.webp";
+      expect(isGiphyLink(giphySimpleUrl)).toBe(true);
+    });
+
+    it("should return false for non-Giphy URLs", () => {
+      const nonGiphyUrl = "https://example.com/image.gif";
+      expect(isGiphyLink(nonGiphyUrl)).toBe(false);
+    });
+
+    it("should return false for empty or null URLs", () => {
+      expect(isGiphyLink("")).toBe(false);
+      expect(isGiphyLink(null as any)).toBe(false);
+    });
+  });
+
+  describe("alterGiphyLink", () => {
+    it("should convert Giphy media page URL to direct GIF URL", () => {
+      const giphyMediaUrl = "https://giphy.com/gifs/bio-attachment-link-C1UbsNbI8hyXmvDFo0";
+      const expected = "https://i.giphy.com/C1UbsNbI8hyXmvDFo0.gif";
+      expect(alterGiphyLink(giphyMediaUrl)).toBe(expected);
+    });
+
+    it("should convert Giphy gif sharable page URLs to hosted binary file GIF URL", () => {
+      const giphyGifUrl =
+        "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExcG9uYWN3dTJ1N2c2Z2tobTNkOGEyMDliNWI0a3VuZGwwNmM5NmljNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/C1UbsNbI8hyXmvDFo0/giphy.gif";
+      const expected = "https://i.giphy.com/C1UbsNbI8hyXmvDFo0.gif";
+      expect(alterGiphyLink(giphyGifUrl)).toBe(expected);
+    });
+
+    it("should keep Giphy hosted binary file URL as it is", () => {
+      // .gif
+      const giphySimpleUrlDotGif = "https://i.giphy.com/C1UbsNbI8hyXmvDFo0.gif";
+      const expectedDotGif = "https://i.giphy.com/C1UbsNbI8hyXmvDFo0.gif";
+
+      // .webp https://i.giphy.com/lXiRm5H49zYmHr3i0.webp
+      const giphySimpleUrlDotWebp = "https://i.giphy.com/lXiRm5H49zYmHr3i0.webp";
+      const expectedDotWebp = "https://i.giphy.com/lXiRm5H49zYmHr3i0.gif";
+
+      expect(alterGiphyLink(giphySimpleUrlDotGif)).toBe(expectedDotGif);
+      expect(alterGiphyLink(giphySimpleUrlDotWebp)).toBe(expectedDotWebp);
+    });
+
+    it("should return null for non-Giphy URLs", () => {
+      const nonGiphyUrl = "https://example.com/image.gif";
+      expect(alterGiphyLink(nonGiphyUrl)).toBe(null);
+    });
+
+    it("should return null for empty or null URLs", () => {
+      expect(alterGiphyLink("")).toBe(null);
+      expect(alterGiphyLink(null as any)).toBe(null);
+    });
+
+    it("should handle URLs with different Giphy ID formats", () => {
+      const giphyUrl1 = "https://giphy.com/gifs/category-name-ABC123def";
+      const giphyUrl2 = "https://media1.giphy.com/media/XYZ789ghi/giphy.gif";
+
+      expect(alterGiphyLink(giphyUrl1)).toBe("https://i.giphy.com/ABC123def.gif");
+      expect(alterGiphyLink(giphyUrl2)).toBe("https://i.giphy.com/XYZ789ghi.gif");
+    });
   });
 });

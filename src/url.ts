@@ -63,6 +63,54 @@ export async function alterDescriptLink(inputURL: string) {
   }
 }
 
+export function isGiphyLink(inputURL: string): boolean {
+  if (!inputURL) return false;
+  const giphyRegex = /^https:\/\/(?:media\d*\.|i\.)?giphy\.com\//;
+  return giphyRegex.test(inputURL);
+}
+
+export function alterGiphyLink(inputURL: string): string | null {
+  if (!inputURL) return null;
+
+  try {
+    // If it's already a direct i.giphy.com URL, convert .webp to .gif if needed
+    if (inputURL.startsWith("https://i.giphy.com/")) {
+      return inputURL.replace(/\.webp$/, ".gif");
+    }
+
+    // Extract the Giphy ID from various Giphy URL formats
+    // Handle complex media URLs with query parameters first (more specific)
+    let giphyIdMatch = inputURL.match(/giphy\.com\/media\/[^\/]+\/([a-zA-Z0-9]+)(?:\/|$)/);
+
+    if (!giphyIdMatch) {
+      // Handle simple media URLs (only when there's no additional path)
+      giphyIdMatch = inputURL.match(/giphy\.com\/media\/([a-zA-Z0-9]+)(?:\/|$)/);
+    }
+
+    if (!giphyIdMatch) {
+      // Handle gifs URLs - the ID is the last part after the last hyphen
+      const gifsMatch = inputURL.match(/giphy\.com\/gifs\/[^\/]+$/);
+      if (gifsMatch) {
+        const lastPart = gifsMatch[0].split("/").pop();
+        const idMatch = lastPart.match(/([a-zA-Z0-9]+)$/);
+        if (idMatch) {
+          giphyIdMatch = [null, idMatch[1]];
+        }
+      }
+    }
+
+    if (giphyIdMatch && giphyIdMatch[1]) {
+      const giphyId = giphyIdMatch[1];
+      return `https://i.giphy.com/${giphyId}.gif`;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error processing Giphy URL:", error);
+    return null;
+  }
+}
+
 export function alterGDriveLink(inputURL) {
   if (!inputURL) return null;
   // Regular expression to match Google Drive file URL
