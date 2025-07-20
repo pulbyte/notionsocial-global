@@ -13,7 +13,7 @@ import {
 export function getRichTextFromText(string: string, limit = 63206): RichTextContent {
   const text: string = string.substring(0, limit);
   return {
-    text,
+    text: text.trimEnd(),
     paragraphs: [{text, media: []}],
     hasMediaInParagraphs: false,
   };
@@ -23,7 +23,7 @@ export function convertSectionsToParagraphs(
   mediaArray: Media[][]
 ): Paragraph[] {
   return textArray.map((text, index) => ({
-    text,
+    text: text?.trimEnd(),
     media: mediaArray[index] || [],
   }));
 }
