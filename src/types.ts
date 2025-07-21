@@ -521,6 +521,7 @@ export interface PlatformContent {
   pinterest: PinterestContent;
   threads: ThreadsContent;
   bluesky: BlueskyContent;
+  gmb: GmbContent;
 }
 
 export interface PlatformError {
@@ -817,4 +818,14 @@ export interface TikTokContent {
   description: string;
   media: Array<PostMediaFile>;
   title?: string;
+}
+
+export interface GmbContent {
+  summary: string;
+  media: Array<PostMediaFile>;
+  title?: string;
+  callToAction?: {
+    actionType: "BOOK" | "ORDER" | "SHOP" | "LEARN_MORE" | "SIGN_UP" | "CALL";
+    url?: string;
+  };
 }

@@ -14,6 +14,7 @@ import {
   PinterestBoard,
   Paragraph,
   Media,
+  GmbContent,
 } from "./types";
 import {replaceLineBreaksWithEmptySpaces, hasText, sanitizePinterestBoardName} from "./text";
 import {chunkParagraphs, getXContentFromParagraphs} from "./_content";
@@ -458,6 +459,58 @@ export function getXContent(
   const posts = getXContentFromParagraphs(processedParagraphs, allowLongPosts ? 25000 : 280);
 
   return posts;
+}
+
+/**
+ * Convert NotionPageContent to Google My Business-specific content format
+ */
+export function getGmbContent(
+  pageContent: NotionPageContent,
+  config: NotionPagePostConfig
+): GmbContent {
+  // Use platform-specific caption if available, otherwise use general text
+  const summary = config.captionText || config.titleText || "Check out our latest update!";
+
+  // Limit summary to 1500 characters (GMB limit)
+  const truncatedSummary =
+    summary.length > 1500 ? summary.substring(0, 1497) + "..." : summary;
+
+  // Process media for GMB platform
+  const processedMedia = processMediaForPlatform<"file">(pageContent.media, "gmb");
+
+  const content: GmbContent = {
+    summary: truncatedSummary,
+    media: processedMedia,
+  };
+
+  // Add title if available
+  if (config.titleText && config.titleText !== config.captionText) {
+    content.title = config.titleText;
+  }
+
+  // Add call to action if available
+  if (config.ctaButton && config.ctaLink) {
+    content.callToAction = {
+      actionType: getGmbActionType(config.ctaButton),
+      url: config.ctaLink,
+    };
+  }
+
+  return content;
+}
+
+function getGmbActionType(
+  ctaButton: string
+): "BOOK" | "ORDER" | "SHOP" | "LEARN_MORE" | "SIGN_UP" | "CALL" {
+  const button = ctaButton.toLowerCase();
+
+  if (button.includes("book") || button.includes("reserve")) return "BOOK";
+  if (button.includes("order") || button.includes("buy")) return "ORDER";
+  if (button.includes("shop") || button.includes("store")) return "SHOP";
+  if (button.includes("sign") || button.includes("register")) return "SIGN_UP";
+  if (button.includes("call") || button.includes("phone")) return "CALL";
+
+  return "LEARN_MORE";
 }
 
 /**

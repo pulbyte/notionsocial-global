@@ -16,6 +16,7 @@ export const supportedPlatforms: SocialPlatformType[] = [
   "youtube",
   "pinterest",
   "threads",
+  "gmb",
 ];
 export const imageMimeTypes = ["png", "jpg", "jpeg", "webp", "gif"];
 export const videoMimeTypes = [
@@ -74,6 +75,10 @@ export const platformMimeTypeSupported = {
   bluesky: {
     image: ["jpg", "jpeg", "png", "gif", "webp"],
     video: ["mp4"],
+  },
+  gmb: {
+    image: ["jpg", "jpeg", "png", "gif", "webp"],
+    video: ["mp4", "mov", "avi"],
   },
 };
 

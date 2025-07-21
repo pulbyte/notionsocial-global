@@ -100,6 +100,8 @@ export const getSocialPlatformImage = (platform: SocialPlatformType, imageUrl?: 
       return "https://res.cloudinary.com/pul/image/upload/v1746516776/icons/threads.svg";
     case "bluesky":
       return "https://res.cloudinary.com/pul/image/upload/v1746517720/icons/bluesky-glyph.svg";
+    case "gmb":
+      return "https://res.cloudinary.com/pul/image/upload/v1753071719/icons/gmb.svg";
     default:
       return "https://cdn.dribbble.com/users/1787323/screenshots/16418683/media/b698712269a006ae2b97c8cb787a6c14.png?compress=1&resize=1200x900&vertical=top";
   }
