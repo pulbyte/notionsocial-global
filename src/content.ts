@@ -15,6 +15,7 @@ import {arrayToAsyncIterator, callFunctionsSequentially} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
 import {hasText} from "./text";
 import {processMedia} from "./publish";
+import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "./env";
 
 export async function getNotionPageRichTextContent(
   config: NotionPagePostConfig
@@ -91,6 +92,7 @@ export async function getContentFromNotionBlocksAsync(
     : blocksArray;
   const blocks: NotionBlock[] = [];
   let parsedBlocks: ParsedNotionBlock[] = [];
+
   let listIndex = 0;
   let limitLeft = Number(charLimit) || 10000;
   let batch: NotionBlock[] = [];
@@ -101,8 +103,13 @@ export async function getContentFromNotionBlocksAsync(
     index: number
   ) {
     const nextBlock = index < _batch.length - 1 ? _batch[index + 1] : null;
-    // Recursively process children if they exist
-    if (currentBlock.has_children && getChildrenIterator) {
+    // Recursively process children if they exist and are supported
+    if (
+      currentBlock.has_children &&
+      getChildrenIterator &&
+      hasBlockType(currentBlock) &&
+      SUPPORTED_NOTION_CONTENT_BLOCKS.includes(currentBlock.type)
+    ) {
       try {
         const iterator = Array.isArray(currentBlock.children)
           ? arrayToAsyncIterator(currentBlock.children)
@@ -150,7 +157,15 @@ export async function getContentFromNotionBlocksAsync(
     });
   }
 
+  function hasBlockType(block: any): block is {type: string} {
+    return typeof block === "object" && block !== null && typeof block.type === "string";
+  }
+
   for await (const block of iterator) {
+    // Only process supported block types
+    if (!hasBlockType(block) || !SUPPORTED_NOTION_CONTENT_BLOCKS.includes(block.type)) {
+      continue;
+    }
     if (!limitLeft) {
       console.log(`Character limit of ${charLimit} for parsing blocks exhausted.`);
       break;
