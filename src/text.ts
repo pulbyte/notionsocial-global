@@ -1,8 +1,9 @@
 import {format as formatAxiosError} from "@redtea/format-axios-error";
 import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
 import TwitterText from "twitter-text";
-import {isAxiosError} from "axios";
+import {AxiosError, isAxiosError} from "axios";
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
+import {safeStringify} from "./logging";
 const {parseTweet} = TwitterText;
 export function dashifyNotionId(input: string) {
   if (typeof input !== "string") {
@@ -231,15 +232,12 @@ export function linkedinUrn(pid: string, accType?: "page" | "group") {
   return accType == "page" ? `urn:li:organization:${pid}` : `urn:li:person:${pid}`;
 }
 
-export function logAxiosError(error, message = "Facebook graph api error") {
+export function logAxiosError(error: AxiosError | any, message?: string) {
   if (isAxiosError(error)) {
     const formattedError = formatAxiosError(error);
-    console.error(
-      `${message ? "🛑 " + message + "\n" : ""}`,
-      JSON.stringify(formattedError, null, 2)
-    );
+    console.log(`${message ? "🛑 " + message + "\n" : ""}`, safeStringify(formattedError));
   } else if (error) {
-    console.error(`${message ? "🛑 " + message + "\n" : ""}`, error);
+    console.log(`${message ? "🛑 " + message + "\n" : ""}`, safeStringify(error));
   }
 }
 
