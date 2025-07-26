@@ -1,4 +1,4 @@
-import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "env";
+import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "./env";
 import {
   extractIframeUrl,
   hasText,
@@ -6,6 +6,7 @@ import {
   numberToLetter,
   trimString,
   removeUnsupportedUnicodeChars,
+  trimAndRemoveWhitespace,
 } from "./text";
 import {NotionBlocksMarkdownParser} from "@notion-stuff/blocks-markdown-parser";
 import {markdownToTxt} from "markdown-to-txt";
@@ -13,7 +14,8 @@ const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
   emptyParagraphToNonBreakingSpace: false,
 });
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
-import {FormattingOptions, NotionBlock, NotionBlockType, ParsedNotionBlock} from "types";
+import {FormattingOptions, NotionBlock, NotionBlockType, ParsedNotionBlock} from "./types";
+import {dog} from "./logging";
 
 function mkdwn(block: NotionBlock) {
   try {
@@ -36,6 +38,7 @@ export function parseNotionBlockToText(
   parentBlock?: NotionBlock
 ): [ParsedNotionBlock, number, number] {
   let markdown = mkdwn(block);
+
   const type = block.type as NotionBlockType;
   const hasChildren = block.has_children;
   const hasChildrenBlocks = block.children?.length > 0;
@@ -132,6 +135,7 @@ export function parseNotionBlockToText(
     (isStacked ? nextBlock?.type != block.type : true)
   )
     text = text + "\n";
+
   return __(text);
 }
 function getBulletListPrefix(nestIndex: number, isNested: boolean) {
@@ -170,7 +174,25 @@ function getParagraphText(block) {
   return richText;
 }
 
+function stripHtmlTags(text: string): string {
+  if (!text || typeof text !== "string") return text;
+
+  // Remove HTML tags, especially those with notion-color attributes
+  // This regex matches opening and closing HTML tags
+  return text
+    .replace(/<[^>]*>/g, "") // Remove all HTML tags
+    .replace(/&nbsp;/g, " ") // Replace HTML entities
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
 export function formatMarkdown(text) {
+  // Remove HTML tags with notion-color attributes and other HTML artifacts
+  text = stripHtmlTags(text);
+
   // Transform markdown URLs
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
     return linkText;

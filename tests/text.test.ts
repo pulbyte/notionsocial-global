@@ -1,5 +1,6 @@
 import {replaceLineBreaksWithEmptySpaces} from "../src/text";
 import {processInstagramTags} from "../src/text";
+import {formatMarkdown} from "../src/parser";
 
 describe("replaceLineBreaksWithEmptySpaces", () => {
   it("should handle ending line with a line break in a paragraph", () => {
@@ -107,5 +108,44 @@ describe("processInstagramTags", () => {
     expect(processInstagramTags([])).toEqual([]);
     expect(processInstagramTags(null as any)).toEqual([]);
     expect(processInstagramTags(undefined as any)).toEqual([]);
+  });
+});
+
+describe("formatMarkdown", () => {
+  it("should strip HTML tags with notion-color attributes", () => {
+    const input = "<span notion-color='gray'>You can use this space to draft or write your caption. Once you have the final version of your caption, paste it into the </span><span notion-color='gray'>_Caption_</span><span notion-color='gray'> field so that it can be visible (and searchable) in your </span><span notion-color='gray'>_Captions tab in the _</span><span notion-color='gray'>_Content Planning_</span><span notion-color='gray'>_ _</span>";
+    const result = formatMarkdown(input);
+    console.log("Input HTML:", input);
+    console.log("Actual:", result);
+    
+    // Should strip all HTML tags
+    expect(result).not.toContain("<span");
+    expect(result).not.toContain("</span>");
+    expect(result).not.toContain("notion-color");
+    
+    // Should contain the core text content
+    expect(result).toContain("You can use this space to draft or write your caption");
+    expect(result).toContain("field so that it can be visible");
+  });
+
+  it("should handle mixed HTML tags and markdown", () => {
+    const input = "<span notion-color='blue'>**Bold text**</span> and <em>italic text</em>";
+    const result = formatMarkdown(input);
+    
+    // Should strip all HTML tags
+    expect(result).not.toContain("<span");
+    expect(result).not.toContain("</span>");
+    expect(result).not.toContain("<em>");
+    expect(result).not.toContain("notion-color");
+    
+    // Should contain the text content (though may be formatted)
+    expect(result).toContain("text");
+    expect(result).toContain("and");
+  });
+
+  it("should handle HTML entities", () => {
+    const input = "Test &amp; more &lt;text&gt; &quot;quotes&quot;";
+    const result = formatMarkdown(input);
+    expect(result).toBe('Test & more <text> "quotes"');
   });
 });
