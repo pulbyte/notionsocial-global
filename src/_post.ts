@@ -148,7 +148,9 @@ function processParagraphsMedia<T extends "file" | "media">(
  */
 export function determineFacebookPostType(
   media?: Array<
-    Pick<Media, "type" | "mimeType"> & {metadata: Pick<PostMediaFile["metadata"], "duration">}
+    Pick<Media, "type" | "mimeType"> & {
+      metadata?: Partial<Pick<PostMediaFile["metadata"], "duration">>;
+    }
   >,
   config?: NotionPagePostConfig
 ): FacebookContent["postType"] {
