@@ -381,6 +381,7 @@ export interface NotionDatabaseClient {
 
 export interface ProcessedMediaRecord {
   ref_id: string;
+  processed_at: number;
   transformations: Array<MediaTransformation>;
 }
 export interface PostRecord {
@@ -763,7 +764,7 @@ export type XContent = Array<
 >;
 export interface FacebookContent {
   text: string;
-  media: PostMedia[];
+  media: PostMediaFile[];
   videoThumbnail?: PostMediaFile;
   ctaButton?: string;
   ctaLink?: string;
