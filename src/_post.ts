@@ -15,6 +15,7 @@ import {
   Paragraph,
   Media,
   GmbContent,
+  PostMediaFile,
 } from "./types";
 import {replaceLineBreaksWithEmptySpaces, hasText, sanitizePinterestBoardName} from "./text";
 import {chunkParagraphs, getXContentFromParagraphs} from "./_content";
@@ -146,7 +147,9 @@ function processParagraphsMedia<T extends "file" | "media">(
  * @returns The Facebook post type (story, reel, video, carousel, image, text)
  */
 export function determineFacebookPostType(
-  media?: Array<Pick<Media, "type" | "mimeType">>,
+  media?: Array<
+    Pick<Media, "type" | "mimeType"> & {metadata: Pick<PostMediaFile["metadata"], "duration">}
+  >,
   config?: NotionPagePostConfig
 ): FacebookContent["postType"] {
   if (!media || media.length === 0) return "text";
@@ -184,6 +187,17 @@ export function determineFacebookPostType(
 
   if (hasVideos) {
     if (toUploadReel) {
+      // Check if any video has duration over 90 seconds
+      const hasLongVideo = videos.some((video) => {
+        const metadata = "metadata" in video ? video.metadata : undefined;
+        return metadata?.duration && metadata.duration > 90;
+      });
+
+      // If any video is over 90 seconds, post as regular video instead of reel
+      if (hasLongVideo) {
+        return "video";
+      }
+
       return "reel";
     }
     return "video";
@@ -215,7 +229,7 @@ export function getFacebookContent(
   const thumbnail = processThumbnail<"file">(rawThumbnail, "facebook");
 
   // Process media for Facebook platform and remove thumbnail if present
-  const processedMedia = processMediaForPlatform<"media">(
+  const processedMedia = processMediaForPlatform<"file">(
     pageContent.media,
     "facebook",
     rawThumbnail
