@@ -124,3 +124,28 @@ export const SmAccTagFormats = [
   "{{ client.username }} : {{ sm_acc.username }}",
   "{{ sm_acc.username }} ({{ client.username }})",
 ];
+
+/**
+ * Returns true if the current JS environment is Node.js (not a browser or Next.js),
+ * false otherwise.
+ */
+export function isNodeEnvironment() {
+  // In Node.js, `process` is defined and has a `versions.node` property.
+  const hasNodeProcess =
+    typeof process !== "undefined" &&
+    typeof process.versions === "object" &&
+    typeof process.versions.node === "string";
+
+  // In browsers (and browser-based frameworks like Next.js on the client),
+  // `window` is defined.
+  const hasWindowGlobal = typeof window !== "undefined";
+
+  // True only when it's Node.js (process exists) and not a browser (window absent).
+  return hasNodeProcess && !hasWindowGlobal;
+}
+
+export function isCloudflareWorkersEnvironment() {
+  !isNodeEnvironment() &&
+    typeof navigator !== "undefined" &&
+    navigator.userAgent === "Cloudflare-Workers";
+}

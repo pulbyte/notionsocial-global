@@ -1,14 +1,18 @@
 import * as crypto from "crypto";
+import {isNodeEnvironment} from "env";
 import {SecureAuthToken} from "types";
 
 const algorithm = "aes-256-cbc";
 export const encKeyVersion = process.env.ENCRPT_KEY_VERSION;
 
-if (!encKeyVersion) {
-  throw new Error("ENCRPT_KEY_VERSION is not set as env variable");
-}
-if (!process.env[`ENCRYPTION_KEY_V${encKeyVersion}`]) {
-  throw new Error(`ENCRYPTION_KEY_V${encKeyVersion} is not set as env variable`);
+// Only check environment variables in Node.js runtime (not during browser runtime)
+if (isNodeEnvironment()) {
+  if (!encKeyVersion) {
+    throw new Error("ENCRPT_KEY_VERSION is not set as env variable");
+  }
+  if (!process.env[`ENCRYPTION_KEY_V${encKeyVersion}`]) {
+    throw new Error(`ENCRYPTION_KEY_V${encKeyVersion} is not set as env variable`);
+  }
 }
 
 function getEncryptionKey(keyVersion: string) {

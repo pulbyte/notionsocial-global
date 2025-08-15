@@ -357,6 +357,20 @@ export interface SocialAccountData {
   role_state?: string;
   li_user_id?: string;
   fb_user_id?: string;
+  gmb_user_id?: string;
+  gmb_location_data?: {
+    address?: {
+      locality?: string;
+      administrativeArea?: string;
+      countryCode?: string;
+      postalCode?: string;
+      regionCode?: string;
+      streetAddress?: string;
+    };
+    phone?: string;
+    website?: string;
+    full_location_name?: string;
+  };
   boards?: PinterestBoard[];
   privacy_options?: string;
   video_duration_limit?: number;
@@ -407,6 +421,7 @@ export interface PostRecord {
   notion_page_title?: string;
   caption_spoiler?: string;
   publish_at?: number;
+  publish_started_at?: number;
   scheduled_at: number;
   completed: boolean;
   last_processed_at?: number;
@@ -416,6 +431,12 @@ export interface PostRecord {
   success_platforms?: string[];
   status?: "success" | "error" | "partial_error" | "publishing" | "processing" | "processed";
   processed_media?: ProcessedMediaRecord[];
+  schedule_time_history?: {
+    timestamp: number; // When this schedule change occurred (epochms)
+    old_time?: number; // Previous scheduled time (epochms), undefined for initial schedule
+    new_time?: number; // New scheduled time (epochms), null for immediate publish
+    action: "schedule" | "re-schedule" | "un-schedule";
+  }[];
 }
 
 export type STRIPE_SUB_STATUS =

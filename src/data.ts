@@ -11,7 +11,7 @@ import {dashifyNotionId, removeHyphens} from "./text";
 import {FirestoreDoc, NotionDatabase, PostRecord, SocialAccountData, UserData} from "./types";
 import {Storage} from "@google-cloud/storage";
 import {dog} from "./logging";
-import {decryptSecureToken} from "./crypto";
+
 const storage = new Storage();
 
 export function getPostRecord(
@@ -128,26 +128,4 @@ export async function getSmAccByPlatformId(
     data: doc.data() as SocialAccountData,
     ref: doc.ref,
   };
-}
-
-export function getSmAccAuthData(
-  smAccData: Pick<SocialAccountData, "platform" | "secure_auth_token" | "auth" | "fb_auth">
-) {
-  const {platform, secure_auth_token, auth, fb_auth} = smAccData;
-  let data = {
-    secure: secure_auth_token,
-    token: secure_auth_token
-      ? decryptSecureToken(secure_auth_token)?.token
-      : auth?.access_token,
-    secret: null,
-    refreshToken: auth?.refresh_token,
-  };
-  if (platform == "instagram" && fb_auth) {
-    data.token = fb_auth?.access_token;
-  }
-  if (["x", "twitter"].includes(platform)) {
-    data.token = auth?.oauth_token;
-    data.secret = auth?.oauth_token_secret;
-  }
-  return data;
 }
