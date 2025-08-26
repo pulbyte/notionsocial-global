@@ -99,8 +99,10 @@ export function getContentTypeFromMimeType(mt: string): string | null {
 }
 export function getMimeTypeFromContentType(ct: string): string | null {
   if (!ct) return null;
-  const mt = mime.extension(ct)?.[0];
-  return mt || (ct === "video" ? "mp4" : ct === "image" ? "jpeg" : null);
+  // Remove codec parameters (e.g., "video/mp4;codecs=avc1" -> "video/mp4")
+  const cleanContentType = ct.split(";")[0].trim();
+  const mt = mime.extension(cleanContentType)?.[0];
+  return mt || (cleanContentType === "video" ? "mp4" : cleanContentType === "image" ? "jpeg" : null);
 }
 export function getMediaTypeFromMimeType(mt: string): Media["type"] | null {
   if (!mt) return null;
@@ -111,11 +113,13 @@ export function getMediaTypeFromMimeType(mt: string): Media["type"] | null {
 }
 export function getMediaTypeFromContentType(ct: string): Media["type"] | null {
   if (!ct) return null;
-  if (ct?.includes("image")) return "image";
-  else if (ct?.includes("video")) return "video";
-  else if (ct?.includes("application")) return "doc";
+  // Remove codec parameters (e.g., "video/mp4;codecs=avc1" -> "video/mp4")
+  const cleanContentType = ct.split(";")[0].trim();
+  if (cleanContentType?.includes("image")) return "image";
+  else if (cleanContentType?.includes("video")) return "video";
+  else if (cleanContentType?.includes("application")) return "doc";
   else {
-    const mt = getMimeTypeFromContentType(ct);
+    const mt = getMimeTypeFromContentType(cleanContentType);
     return getMediaTypeFromMimeType(mt);
   }
 }
