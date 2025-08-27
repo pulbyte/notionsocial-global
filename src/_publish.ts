@@ -36,12 +36,7 @@ export function extractPlatformCaptions(
   const platformCaptions: Partial<Record<Exclude<SocialPlatformType, "twitter">, string>> = {};
 
   // Process platform-specific captions
-  const captionKeywords = [
-    "caption",
-    "content",
-    "message",
-    captionPropName,
-  ].filter(Boolean);
+  const captionKeywords = ["caption", "content", "message", captionPropName].filter(Boolean);
 
   Object.keys(properties).forEach((propName) => {
     const property = properties[propName];
@@ -182,7 +177,10 @@ export function getNotionPageConfig(
   __.archived = notionPage["archived"];
 
   // Extract platform-specific captions using the new function
-  __.platformCaptions = extractPlatformCaptions(properties, notionDatabaseData.props["caption"]);
+  __.platformCaptions = extractPlatformCaptions(
+    properties,
+    notionDatabaseData.props["caption"]
+  );
 
   const {
     commentProp,
@@ -280,7 +278,6 @@ export function getNotionPageConfig(
 
   const smAccs = getSelectedSocialAccounts(smAccsProp, notionDatabaseData, postRecord);
   __.smAccs = smAccs;
-
   __.smAccsPlatforms = _.uniq(smAccs.map((acc) => acc.platform));
 
   // ? Post Rules

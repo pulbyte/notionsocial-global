@@ -5,7 +5,6 @@ import {
   getMimeTypeFromContentType,
 } from "./_media";
 import urlMetadata from "url-metadata";
-import {logAxiosError} from "./text";
 import {axiosWithRetry, getBrowserHeaders} from "./http";
 
 export function extractTweetIdFromUrl(url) {

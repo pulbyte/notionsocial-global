@@ -14,4 +14,12 @@
   },
   "compileOnSave": true,
   "include": ["src", "tests"],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/**",
+    "dist",
+    "build",
+    "**/dist/**",
+    "**/build/**"
+  ]
 }

@@ -7,3 +7,5 @@ export * from "./notion";
 export * from "./data";
 export * from "./error";
 export * from "./crypto";
+export * from "./types";
+export * from "./images";
