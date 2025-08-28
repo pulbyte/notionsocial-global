@@ -1,11 +1,33 @@
 import "dotenv/config";
-import {applicationDefault, initializeApp} from "firebase-admin/app";
-const app = initializeApp({
-  credential: applicationDefault(),
-});
+import {applicationDefault, initializeApp, getApps, getApp} from "firebase-admin/app";
 import {getFirestore, Firestore} from "firebase-admin/firestore";
-export let db: Firestore = getFirestore(app);
-db.settings({ignoreUndefinedProperties: true});
+
+let db: Firestore;
+
+function initializeFirebaseApp() {
+  // Check if Firebase app already exists
+  const existingApps = getApps();
+  const app = existingApps.length > 0 ? getApp() : initializeApp({
+    credential: applicationDefault(),
+  });
+  
+  if (!db) {
+    db = getFirestore(app);
+    db.settings({ignoreUndefinedProperties: true});
+  }
+  
+  return db;
+}
+
+// Lazy initialization - only initialize when needed
+function getDb(): Firestore {
+  if (!db) {
+    return initializeFirebaseApp();
+  }
+  return db;
+}
+
+export { getDb };
 
 import {dashifyNotionId, removeHyphens} from "./text";
 import {FirestoreDoc, NotionDatabase, PostRecord, SocialAccountData, UserData} from "./types";
@@ -21,7 +43,7 @@ export function getPostRecord(
   taskName?: string
 ): Promise<FirestoreDoc<PostRecord> | null> {
   if (!pageId) return;
-  const col = db.collection("posts");
+  const col = getDb().collection("posts");
 
   let query = col.where("notion_page_id", "==", dashifyNotionId(pageId));
   if (pushId) query = col.where("push_id", "==", pushId);
@@ -38,7 +60,7 @@ export function getPostRecord(
 }
 export function getNdbDoc(id): Promise<FirestoreDoc<NotionDatabase> | null> {
   if (!id) return Promise.resolve(null);
-  const col = db.collection("notion_dbs");
+  const col = getDb().collection("notion_dbs");
 
   let query = col.where("link_id", "==", removeHyphens(id));
 
@@ -50,7 +72,7 @@ export function getNdbDoc(id): Promise<FirestoreDoc<NotionDatabase> | null> {
   });
 }
 export function getUserPostCount(authorUid) {
-  return db
+  return getDb()
     .collection("posts")
     .where("author_uid", "==", authorUid)
     .where("scheduled_at", ">=", Date.now() - 30 * 60 * 60 * 24 * 1000)
@@ -63,7 +85,7 @@ export function getUserPostCount(authorUid) {
 export function getUserDoc(id): Promise<FirestoreDoc<UserData>> {
   return new Promise((resolve, reject) => {
     if (!id) reject("No user id provided");
-    const ref = db.doc(`/users/${id}`);
+    const ref = getDb().doc(`/users/${id}`);
 
     ref.get().then((doc) => {
       if (doc?.exists) resolve({data: doc.data() as UserData, ref: doc.ref});
@@ -72,11 +94,11 @@ export function getUserDoc(id): Promise<FirestoreDoc<UserData>> {
   });
 }
 export function getUserNdbs(authorUid) {
-  const query = db.collection("notion_dbs").where("author_uid", "==", authorUid);
+  const query = getDb().collection("notion_dbs").where("author_uid", "==", authorUid);
   return query.get().then((s) => s.docs?.filter((s) => s.exists) || []);
 }
 export function getUserWorkspaceNdbs(authorUid, workspaceId) {
-  const query = db
+  const query = getDb()
     .collection("notion_dbs")
     .where("author_uid", "==", authorUid)
     .where("workspace_id", "==", workspaceId);
@@ -90,7 +112,7 @@ export function getSmAccDoc(
   authorUid: string
 ): Promise<FirestoreDoc<SocialAccountData>> {
   return new Promise(async (res, rej) => {
-    const query = db
+    const query = getDb()
       .collection(`sm_accs`)
       .where("platform_uid", "==", smAccId)
       .where("author_uid", "==", authorUid);
@@ -108,7 +130,7 @@ export async function getSmAccByPlatformId(
   authorUid?: string
 ): Promise<FirestoreDoc<SocialAccountData> | null> {
   if (!id) return null;
-  let query = db.collection("sm_accs").where("platform_uid", "==", id);
+  let query = getDb().collection("sm_accs").where("platform_uid", "==", id);
 
   if (authorUid) {
     query = query.where("author_uid", "==", authorUid);
