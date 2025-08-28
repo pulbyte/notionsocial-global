@@ -5,13 +5,12 @@ export function getSmAccAuthData(
   smAccData: Pick<SocialAccountData, "platform" | "secure_auth_token" | "auth" | "fb_auth">
 ) {
   const {platform, secure_auth_token, auth, fb_auth} = smAccData;
+  const decrypted = secure_auth_token ? decryptSecureToken(secure_auth_token) : null;
   let data = {
     secure: secure_auth_token,
-    token: secure_auth_token
-      ? decryptSecureToken(secure_auth_token)?.token
-      : auth?.access_token,
-    secret: null,
-    refreshToken: auth?.refresh_token,
+    token: decrypted?.token || auth?.access_token,
+    secret: decrypted?.secret,
+    refreshToken: decrypted?.refresh?.token || auth?.refresh_token,
   };
   if (platform == "instagram" && fb_auth) {
     data.token = fb_auth?.access_token;
