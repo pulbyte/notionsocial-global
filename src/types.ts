@@ -18,6 +18,7 @@ import {
   BlockObjectResponse,
   PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
+import {mybusinessbusinessinformation_v1, mybusinessaccountmanagement_v1} from "googleapis";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
 import {SmAccTagFormats} from "env";
@@ -357,19 +358,22 @@ export interface SocialAccountData {
   role_state?: string;
   li_user_id?: string;
   fb_user_id?: string;
-  gmb_user_id?: string;
-  gmb_location_data?: {
-    address?: {
-      locality?: string;
-      administrativeArea?: string;
-      countryCode?: string;
-      postalCode?: string;
-      regionCode?: string;
-      streetAddress?: string;
+  gmb_data?: {
+    location: {
+      id: string;
+      address: string;
+      maps_url: string;
+      place_id: string;
+      resource_name: string;
+      locality: string;
     };
-    phone?: string;
-    website?: string;
-    full_location_name?: string;
+    account: {
+      resource_name: string;
+      id: string;
+      name: string;
+      type: mybusinessaccountmanagement_v1.Schema$Account["type"];
+      role: mybusinessaccountmanagement_v1.Schema$Account["role"];
+    };
   };
   boards?: PinterestBoard[];
   privacy_options?: string;
