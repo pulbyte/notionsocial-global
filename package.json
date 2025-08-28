@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "3.1.6",
+  "version": "4.0.0",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -47,26 +47,18 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "dependencies": {
     "@alshdavid/mime-types": "^2.2.3",
-    "@babel/core": "^7.12.0",
     "@google-cloud/storage": "^7.11.2",
     "@notion-stuff/blocks-markdown-parser": "^6.0.0",
     "@notionhq/client": "^2.2.15",
     "@pulbyte/social-stack-lib": "^1.2.3",
     "@redtea/format-axios-error": "^2.1.1",
-    "@types/jest": "^29.5.14",
-    "@types/lodash": "^4.17.7",
-    "@types/mime-types": "^2.1.4",
-    "@types/node": "^20.10.4",
-    "@types/twitter-text": "^3.1.10",
     "axios": "^1.7.2",
     "date-fns-tz": "^3.2.0",
-    "dotenv": "^16.4.5",
     "firebase-admin": "^12.2.0",
     "gif-frames": "^1.0.1",
     "googleapis": "^156.0.0",
-    "jest": "^29.7.0",
     "lodash": "^4.17.21",
     "markdown-to-txt": "^2.0.1",
     "notion-types": "^6.16.0",
@@ -74,11 +66,21 @@
     "poll-until-promise": "^4.2.0",
     "sharp": "^0.34.3",
     "string-to-unicode-variant": "^1.0.9",
+    "twitter-text": "^3.1.0",
+    "url-metadata": "^5.0.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.0",
+    "@types/jest": "^29.5.14",
+    "@types/lodash": "^4.17.7",
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^20.10.4",
+    "@types/twitter-text": "^3.1.10",
+    "dotenv": "^16.4.5",
+    "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.1",
     "tsup": "^8.1.0",
-    "twitter-text": "^3.1.0",
-    "typescript": "^5.5.2",
-    "url-metadata": "^5.0.5"
+    "typescript": "^5.5.2"
   }
 }

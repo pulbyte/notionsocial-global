@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(npm rebuild:*)",
+      "Bash(npm update:*)",
+      "Bash(sudo npm update:*)",
+      "Bash(rm:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(sudo chown:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }
