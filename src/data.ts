@@ -1,34 +1,4 @@
-import "dotenv/config";
-import {applicationDefault, initializeApp, getApps, getApp} from "firebase-admin/app";
-import {getFirestore, Firestore} from "firebase-admin/firestore";
-
-let db: Firestore;
-
-function initializeFirebaseApp() {
-  // Check if Firebase app already exists
-  const existingApps = getApps();
-  const app = existingApps.length > 0 ? getApp() : initializeApp({
-    credential: applicationDefault(),
-  });
-  
-  if (!db) {
-    db = getFirestore(app);
-    db.settings({ignoreUndefinedProperties: true});
-  }
-  
-  return db;
-}
-
-// Lazy initialization - only initialize when needed
-function getDb(): Firestore {
-  if (!db) {
-    return initializeFirebaseApp();
-  }
-  return db;
-}
-
-export { getDb };
-
+import {getDb} from "./firestore";
 import {dashifyNotionId, removeHyphens} from "./text";
 import {FirestoreDoc, NotionDatabase, PostRecord, SocialAccountData, UserData} from "./types";
 import {Storage} from "@google-cloud/storage";
