@@ -12,13 +12,13 @@ import {
   RichTextPropertyItemObjectResponse,
   SelectPropertyItemObjectResponse,
   StatusPropertyItemObjectResponse,
-  TextRichTextItemResponse,
+  RichTextItemResponseCommon,
   TitlePropertyItemObjectResponse,
   UrlPropertyItemObjectResponse,
   BlockObjectResponse,
   PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
-import {mybusinessbusinessinformation_v1, mybusinessaccountmanagement_v1} from "googleapis";
+import {mybusinessaccountmanagement_v1} from "googleapis";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
 import {SmAccTagFormats} from "env";
@@ -621,7 +621,7 @@ export type NotionFormulaProperty = Extract<
 export type NotionMultiSelectProperty = Extract<NotionProperty, {type: "multi_select"}>;
 export type NotionDateProperty = Extract<NotionProperty, {type: "date"}>;
 export type NotionFilesProperty = Extract<NotionProperty, {type: "files"}>;
-export type NotionColor = TextRichTextItemResponse["annotations"]["color"];
+export type NotionColor = RichTextItemResponseCommon["annotations"]["color"];
 export type NotionProperty =
   | NumberedListItemBlockObjectResponse
   | UrlPropertyItemObjectResponse
@@ -745,6 +745,14 @@ export interface SecureAuthToken {
   scopes?: string[]; // Permissions granted
   expires_at?: number; // Unix timestamp for expiration
   issued_at?: number; // When the token was created
+  source?: {
+    provider: {
+      name: string;
+    }; // Auth provider (google, facebook, internal, etc.)
+    client: {
+      id: string; // Unique identifier for the requesting client/app
+    };
+  };
   encryption?: {
     // For encrypted tokens
     algorithm?: "aes-256-cbc";

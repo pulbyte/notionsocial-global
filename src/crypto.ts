@@ -77,9 +77,11 @@ export function encryptAuthToken(
     secret?: string;
     refresh?: string;
     type: SecureAuthToken["type"];
+    source?: SecureAuthToken["source"];
   }
 ): SecureAuthToken {
-  const {tokenExpiresAt, refreshExpiresAt, scopes, secret, refresh, type} = options || {};
+  const {tokenExpiresAt, refreshExpiresAt, scopes, secret, refresh, type, source} =
+    options || {};
   const enc = encrypt(token, encKeyVersion);
   // Use the same IV and key version for all related encryptions
   const encSecret = secret ? encrypt(secret, enc.keyVersion, enc.iv).encryptedText : undefined;
@@ -99,6 +101,7 @@ export function encryptAuthToken(
     scopes,
     expires_at: tokenExpiresAt,
     issued_at: Date.now(),
+    source,
     encryption: {
       iv: enc.iv,
       key_version: enc.keyVersion,

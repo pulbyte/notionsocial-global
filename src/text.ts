@@ -101,7 +101,10 @@ export const getSmAccTag = (
     includeGroup ? "-GROUP" : ""
   }@${username}`;
 };
-export function notionRichTextParser(richTextArray: RichTextItemResponse[], trim?: boolean) {
+export function notionRichTextParser(
+  richTextArray: Array<RichTextItemResponse>,
+  trim?: boolean
+) {
   if (!richTextArray || !Array.isArray(richTextArray)) return "";
   return richTextArray
     .map((item) => {
