@@ -15,7 +15,7 @@ const FREE_DESC = "1 Social account, 1 Notion database, 10 posts.";
 const BASIC_DESC =
   "3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.";
 const PREMIUM_DESC =
-  "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.";
+  "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories, Bluesky, Google My Business & more.";
 
 export type BillingPeriod = "monthly" | "yearly";
 export type PricePlanLabel = "free" | "basic" | "premium";
@@ -27,7 +27,10 @@ type Platform =
   | "pinterest"
   | "linkedin-page"
   | "tiktok"
-  | "youtube";
+  | "youtube"
+  | "bluesky"
+  | "threads"
+  | "gmb";
 type SpecialPost = "reel" | "story" | "document" | "thread";
 interface Features {
   smAccLimit: number;
@@ -167,7 +170,15 @@ const BASIC_PRICES: PriceVariants = {
       smAccLimit: 3,
       notionDbLimit: 1,
       monthlyPosts: -1,
-      platforms: ["facebook-page", "instagram", "linkedin-profile", "twitter", "pinterest"],
+      platforms: [
+        "facebook-page",
+        "instagram",
+        "linkedin-profile",
+        "twitter",
+        "pinterest",
+        "threads",
+        "bluesky",
+      ],
       dailyTwitterPosts: -1,
       publishActions: true,
       postMetrics: true,
@@ -237,6 +248,9 @@ const PREMIUM_PRICES: PriceVariants = {
         "linkedin-page",
         "tiktok",
         "youtube",
+        "bluesky",
+        "threads",
+        "gmb",
       ],
       dailyTwitterPosts: -1,
       publishActions: true,
@@ -245,7 +259,7 @@ const PREMIUM_PRICES: PriceVariants = {
       imageSizeLimit: 30,
       videoSizeLimit: 80,
     },
-    desc: "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.",
+    desc: "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories, Bluesky, Google My Business & more.",
   },
 };
 
