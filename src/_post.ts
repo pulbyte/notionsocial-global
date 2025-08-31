@@ -27,8 +27,13 @@ import {chunkParagraphs, getXContentFromParagraphs} from "./_content";
 import {platformMimeTypeSupported} from "env";
 import {getRichTextFromText} from "./_richtext";
 import {makeMediaPostReady} from "./_media";
-import {extractUrlFromString} from "./url";
-import {SocialPlatformType} from "@pulbyte/social-stack-lib";
+import {extractUrlFromString} from "./_url";
+import {
+  GMB_POST_CTA_ACTION_TYPES,
+  GmbPostCtaActionType,
+  SocialPlatformType,
+} from "@pulbyte/social-stack-lib";
+import {GmbPostTopicType} from "@pulbyte/social-stack-lib";
 
 /**
  * Helper function to select the appropriate video thumbnail based on configuration and available media
@@ -490,7 +495,7 @@ export function getGmbContent(
   config: NotionPagePostConfig
 ): GmbContent {
   // Use platform-specific caption if available, otherwise use general text
-  const summary = config.captionText || config.titleText || "Check out our latest update!";
+  const summary = config.platformCaptions?.gmb || pageContent.richText?.text || "";
 
   // Limit summary to 1500 characters (GMB limit)
   const truncatedSummary =
@@ -502,35 +507,31 @@ export function getGmbContent(
   const content: GmbContent = {
     summary: truncatedSummary,
     media: processedMedia,
+    title: pageContent.title,
+    topicType: "STANDARD" as GmbPostTopicType,
   };
-
-  // Add title if available
-  if (config.titleText && config.titleText !== config.captionText) {
-    content.title = config.titleText;
-  }
 
   // Add call to action if available
   if (config.ctaButton && config.ctaLink) {
     content.callToAction = {
-      actionType: getGmbActionType(config.ctaButton),
+      actionType: getValidGmbCtaActionType(config.ctaButton),
       url: config.ctaLink,
     };
   }
 
+  // Add topic type if available
+  // if (config.topicType) {
+  //   content.topicType = config.topicType;
+  // }
+
   return content;
 }
 
-function getGmbActionType(
-  ctaButton: string
-): "BOOK" | "ORDER" | "SHOP" | "LEARN_MORE" | "SIGN_UP" | "CALL" {
-  const button = ctaButton.toLowerCase();
-
-  if (button.includes("book") || button.includes("reserve")) return "BOOK";
-  if (button.includes("order") || button.includes("buy")) return "ORDER";
-  if (button.includes("shop") || button.includes("store")) return "SHOP";
-  if (button.includes("sign") || button.includes("register")) return "SIGN_UP";
-  if (button.includes("call") || button.includes("phone")) return "CALL";
-
+export function getValidGmbCtaActionType(ctaButton: string): GmbPostCtaActionType {
+  const button = toScreamingSnakeCase(ctaButton);
+  if (GMB_POST_CTA_ACTION_TYPES.includes(button)) {
+    return button;
+  }
   return "LEARN_MORE";
 }
 

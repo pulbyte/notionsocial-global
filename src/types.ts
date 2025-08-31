@@ -22,7 +22,11 @@ import {mybusinessbusinessinformation_v1, mybusinessaccountmanagement_v1} from "
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
 import {SmAccTagFormats} from "env";
-import {SocialPlatformType} from "@pulbyte/social-stack-lib";
+import {
+  GmbPostCtaActionType,
+  GmbPostTopicType,
+  SocialPlatformType,
+} from "@pulbyte/social-stack-lib";
 // Notion File, Which is extracted from Notion
 export interface Media {
   name: string;
@@ -212,6 +216,7 @@ export interface PostOptionsSchema {
   video_thumbnail_offset_prop?: string;
   cta_button_prop?: string;
   cta_link_prop?: string;
+  gmb_post_type_prop?: string;
 }
 export interface PublicApiRecord {
   created_at: number;
@@ -659,6 +664,9 @@ export interface NotionPagePropertiesForPost {
   videoThumbnailProp?: NotionFilesProperty;
   ctaButtonProp?: NotionTextProperty | NotionSelectProperty;
   ctaLinkProp?: UrlPropertyItemObjectResponse;
+  postConfigProps?: {
+    gmbTopicType: NotionSelectProperty;
+  };
 }
 export interface NotionPagePostConfig {
   _pageId: string;
@@ -696,6 +704,9 @@ export interface NotionPagePostConfig {
   rules: NotionRules;
   isPostReadyToSchedule: boolean;
   formattingOptions: FormattingOptions;
+  postOptions?: {
+    gmbTopicType: GmbPostTopicType;
+  };
 }
 export interface NotionCodedTextPayload {
   text: string;
@@ -851,7 +862,8 @@ export interface GmbContent {
   media: Array<PostMediaFile>;
   title?: string;
   callToAction?: {
-    actionType: "BOOK" | "ORDER" | "SHOP" | "LEARN_MORE" | "SIGN_UP" | "CALL";
+    actionType: GmbPostCtaActionType;
     url?: string;
   };
+  topicType?: GmbPostTopicType;
 }

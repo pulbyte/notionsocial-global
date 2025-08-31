@@ -25,6 +25,7 @@ import {dev} from "./env";
 import {
   containsAny,
   detectSocialPlatforms,
+  GmbPostTopicType,
   SocialPlatformType,
 } from "@pulbyte/social-stack-lib";
 import {dog} from "./logging";
@@ -98,6 +99,9 @@ export function getNotionPageConfig(
     videoThumbnailProp: null,
     ctaButtonProp: null,
     ctaLinkProp: null,
+    postConfigProps: {
+      gmbTopicType: null,
+    },
   };
 
   const titlePropName = Object.keys(properties).find(
@@ -137,6 +141,10 @@ export function getNotionPageConfig(
 
   _props.ctaLinkProp = properties[notionDatabaseData.options?.cta_link_prop];
 
+  _props.postConfigProps = {
+    gmbTopicType: properties[notionDatabaseData.options?.gmb_post_type_prop],
+  };
+
   let __: NotionPagePostConfig = {
     _pageId: notionPage.id,
     _props,
@@ -166,6 +174,9 @@ export function getNotionPageConfig(
     youtubePrivacyStatus: null,
     ctaButton: "",
     ctaLink: "",
+    postOptions: {
+      gmbTopicType: null,
+    },
     smAccs: [],
     smAccsPlatforms: [],
     rules: {},
@@ -200,6 +211,7 @@ export function getNotionPageConfig(
     videoThumbnailProp,
     ctaButtonProp,
     ctaLinkProp,
+    postConfigProps,
   } = _props;
   __.nsFilter = notionDatabaseData["ns_filter"];
   if (commentProp?.type == "rich_text") {
@@ -275,6 +287,11 @@ export function getNotionPageConfig(
     console.warn(`Invalid CTA Link URL: ${rawCtaLink}`);
     __.ctaLink = "";
   }
+
+  // Process Topic Type property
+  __.postOptions = {
+    gmbTopicType: postConfigProps?.gmbTopicType?.select?.name as GmbPostTopicType,
+  };
 
   const smAccs = getSelectedSocialAccounts(smAccsProp, notionDatabaseData, postRecord);
   __.smAccs = smAccs;
