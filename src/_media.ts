@@ -15,14 +15,14 @@ import {logAxiosError, notionRichTextParser, trimAndRemoveWhitespace} from "./te
 import {
   getUrlContentHeaders,
   getGdriveContentHeaders,
-  isBase64String,
   alterGDriveLink,
-  alterDescriptLink,
   isDescriptLink,
   alterGiphyLink,
   isGiphyLink,
-} from "./url";
+} from "./_url";
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
+import {isBase64String} from "_url";
+import {alterDescriptLink} from "./url";
 
 export function getMediaRef(url: string) {
   if (!url || typeof url != "string") return null;
@@ -102,7 +102,9 @@ export function getMimeTypeFromContentType(ct: string): string | null {
   // Remove codec parameters (e.g., "video/mp4;codecs=avc1" -> "video/mp4")
   const cleanContentType = ct.split(";")[0].trim();
   const mt = mime.extension(cleanContentType)?.[0];
-  return mt || (cleanContentType === "video" ? "mp4" : cleanContentType === "image" ? "jpeg" : null);
+  return (
+    mt || (cleanContentType === "video" ? "mp4" : cleanContentType === "image" ? "jpeg" : null)
+  );
 }
 export function getMediaTypeFromMimeType(mt: string): Media["type"] | null {
   if (!mt) return null;

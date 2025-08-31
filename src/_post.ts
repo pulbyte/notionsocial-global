@@ -17,7 +17,12 @@ import {
   GmbContent,
   PostMediaFile,
 } from "./types";
-import {replaceLineBreaksWithEmptySpaces, hasText, sanitizePinterestBoardName} from "./text";
+import {
+  replaceLineBreaksWithEmptySpaces,
+  hasText,
+  sanitizePinterestBoardName,
+  toScreamingSnakeCase,
+} from "./text";
 import {chunkParagraphs, getXContentFromParagraphs} from "./_content";
 import {platformMimeTypeSupported} from "env";
 import {getRichTextFromText} from "./_richtext";
