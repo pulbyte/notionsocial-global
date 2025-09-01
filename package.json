@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "4.0.3",
+  "version": "4.0.5",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -51,12 +51,11 @@
     "firebase-admin": "^12.2.0"
   },
   "dependencies": {
-    "sharp": "^0.34.3",
     "@alshdavid/mime-types": "^2.2.3",
     "@google-cloud/storage": "^7.11.2",
     "@notion-stuff/blocks-markdown-parser": "^6.0.0",
-    "@notionhq/client": "^2.2.15",
-    "@pulbyte/social-stack-lib": "^1.2.3",
+    "@notionhq/client": "^4.0.2",
+    "@pulbyte/social-stack-lib": "^1.3.2",
     "@redtea/format-axios-error": "^2.1.1",
     "axios": "^1.7.2",
     "date-fns-tz": "^3.2.0",
@@ -67,6 +66,7 @@
     "notion-types": "^6.16.0",
     "object-hash": "^3.0.0",
     "poll-until-promise": "^4.2.0",
+    "sharp": "^0.34.3",
     "string-to-unicode-variant": "^1.0.9",
     "twitter-text": "^3.1.0",
     "url-metadata": "^5.0.5"

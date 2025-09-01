@@ -17,6 +17,16 @@ export default defineConfig([
     dts: true,
     clean: false,
     platform: "browser",
-    external: ["net", "http", "https", "dns", "@pulbyte/social-stack-lib", "firebase-admin", "sharp"],
+    external: [
+      "net",
+      "http",
+      "https",
+      "dns",
+      "url-metadata",
+      "@pulbyte/social-stack-lib",
+      "firebase-admin",
+      "sharp",
+      "@google-cloud/storage",
+    ],
   },
 ]);
