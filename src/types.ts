@@ -491,6 +491,7 @@ export interface User {
   sm_acc_limit_incr?: number;
   sm_acc_limit: number;
   post_limit: number;
+  is_test_user?: boolean;
   notion_db_limit: number;
   notion_db_count: number;
   notion_db_limit_incr?: number;
