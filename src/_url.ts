@@ -3,7 +3,7 @@ import {
   getMediaTypeFromContentType,
   getMediaTypeFromMimeType,
   getMimeTypeFromContentType,
-} from "_media";
+} from "./_media";
 import {getBrowserHeaders, axiosWithRetry} from "./http";
 
 export function isBase64String(str) {

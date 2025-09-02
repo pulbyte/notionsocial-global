@@ -1,4 +1,4 @@
-import {convertToHttps} from "_url";
+import {convertToHttps} from "./_url";
 import urlMetadata from "url-metadata";
 
 async function getDescriptVideoUrl(shareUrl: string) {

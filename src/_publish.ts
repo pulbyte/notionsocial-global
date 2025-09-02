@@ -73,6 +73,24 @@ export function extractPlatformCaptions(
   return platformCaptions;
 }
 
+export function chooseMediaFilesToDownload(
+  smAccPlatforms: SocialPlatformType[]
+): Media["type"][] {
+  const toDownload = isAnyValueInArray(binaryUploadSocialPlatforms, smAccPlatforms);
+  const hasPinterest = smAccPlatforms?.includes("pinterest");
+  const hasFacebook = smAccPlatforms?.includes("facebook");
+
+  let filesToDownload: Media["type"][] = [];
+
+  if (toDownload) filesToDownload = ["video", "image", "doc"];
+  // ? Pinterest needs buffer for videos, But not for images
+  if (hasPinterest) filesToDownload.push("video");
+  // ? Facebook needs buffer for video thumbnail image, But not for other
+  if (hasFacebook) filesToDownload.push("image");
+
+  return _.uniq(filesToDownload);
+}
+
 export function getNotionPageConfig(
   notionPage: NotionPage,
   notionDatabaseData: NotionDatabase,
@@ -306,19 +324,7 @@ export function getNotionPageConfig(
     });
   }
   const smAccPlatforms = smAccs.map((acc) => acc.platform);
-  const toDownload = isAnyValueInArray(binaryUploadSocialPlatforms, smAccPlatforms);
-  const hasPinterest = smAccPlatforms?.includes("pinterest");
-  const hasFacebook = smAccPlatforms?.includes("facebook");
-
-  __.filesToDownload = [];
-
-  if (toDownload) __.filesToDownload = ["video", "image", "doc"];
-  // ? Pinterest needs buffer for videos, But not for images
-  if (hasPinterest) __.filesToDownload.push("video");
-  // ? Facebook needs buffer for video thumbnail image, But not for other
-  if (hasFacebook) __.filesToDownload.push("image");
-
-  __.filesToDownload = _.uniq(__.filesToDownload);
+  __.filesToDownload = chooseMediaFilesToDownload(smAccPlatforms);
 
   const nsText = notionRichTextParser(nsProp?.["rich_text"], true);
 

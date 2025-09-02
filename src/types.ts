@@ -868,7 +868,7 @@ export interface TikTokContent {
 
 export interface GmbContent {
   summary: string;
-  media: Array<PostMediaFile>;
+  media: Array<PostMedia>;
   title?: string;
   callToAction?: {
     actionType: GmbPostCtaActionType;

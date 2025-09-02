@@ -21,7 +21,7 @@ import {
   isGiphyLink,
 } from "./_url";
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
-import {isBase64String} from "_url";
+import {isBase64String} from "./_url";
 import {alterDescriptLink} from "./url";
 
 export function getMediaRef(url: string) {
