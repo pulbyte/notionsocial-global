@@ -497,15 +497,11 @@ export function getGmbContent(
   // Use platform-specific caption if available, otherwise use general text
   const summary = config.platformCaptions?.gmb || pageContent.richText?.text || "";
 
-  // Limit summary to 1500 characters (GMB limit)
-  const truncatedSummary =
-    summary.length > 1500 ? summary.substring(0, 1497) + "..." : summary;
-
   // Process media for GMB platform
-  const processedMedia = processMediaForPlatform<"file">(pageContent.media, "gmb");
+  const processedMedia = processMediaForPlatform<"media">(pageContent.media, "gmb");
 
   const content: GmbContent = {
-    summary: truncatedSummary,
+    summary: summary,
     media: processedMedia,
     title: pageContent.title,
     topicType: "STANDARD" as GmbPostTopicType,

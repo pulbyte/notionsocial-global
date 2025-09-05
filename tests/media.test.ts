@@ -79,7 +79,7 @@ describe("makeMediaPostReady", () => {
       type: "image",
       size: 1000,
       url: "https://example.com/test.jpg",
-      buffer: Buffer.from("test"),
+      buffer: new TextEncoder().encode("test").buffer,
     };
 
     const result = makeMediaPostReady<"file">(input);
@@ -96,7 +96,7 @@ describe("makeMediaPostReady", () => {
         width: 0,
       },
       url: "https://example.com/test.jpg",
-      buffer: Buffer.from("test"),
+      buffer: new TextEncoder().encode("test").buffer,
     });
   });
 

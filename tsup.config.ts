@@ -9,6 +9,9 @@ export default defineConfig([
     format: ["cjs", "esm"],
     platform: "node",
     external: ["@pulbyte/social-stack-lib", "firebase-admin", "sharp"],
+    noExternal: [],
+    treeshake: true,
+    splitting: false,
   },
   {
     entry: ["src/browser.ts"],

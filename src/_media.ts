@@ -238,6 +238,7 @@ export async function getMediaFromNotionFile(
         );
         return packed;
       } else {
+        dog("The external media does not have valid metadata headers", resolvedUrl);
         return null;
       }
     } else {
