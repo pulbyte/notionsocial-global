@@ -11,3 +11,4 @@ export * from "./crypto";
 export * from "./types";
 export * from "./images";
 export * from "./url";
+export * from "./buffer";

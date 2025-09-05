@@ -90,10 +90,18 @@ export async function getTransformedMedia(
       const {src, metadata, compression, method, platforms} = transformation;
 
       switch (src.type) {
+        case "buffer": {
+          if (toDownload) {
+            buffer = src.buffer;
+          }
+          url = ""; // Buffer sources don't have URLs
+          break;
+        }
         case "bucket": {
           const file = getCloudBucketFile(ProcessedMediaBucket, src.path);
           if (toDownload) {
-            [buffer] = await file.download();
+            const [downloadBuffer] = await file.download();
+            buffer = downloadBuffer;
             const [fileMetadata] = await file.getMetadata();
             const newContentType =
               fileMetadata?.contentType ||

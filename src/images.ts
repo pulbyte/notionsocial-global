@@ -1,5 +1,6 @@
 import gifFrames from "gif-frames";
 import sharp from "sharp";
+import {getByteView} from "./buffer";
 
 export interface ImageValidationResult {
   isValid: boolean;
@@ -7,7 +8,9 @@ export interface ImageValidationResult {
   detectedFormat?: string;
 }
 
-export async function validateImageBuffer(buffer: Buffer): Promise<ImageValidationResult> {
+export async function validateImageBuffer(
+  buffer: Buffer
+): Promise<ImageValidationResult> {
   try {
     // Check if buffer exists and has content
     if (!buffer || buffer.length === 0) {
@@ -25,6 +28,9 @@ export async function validateImageBuffer(buffer: Buffer): Promise<ImageValidati
       };
     }
 
+    // Create a view to access bytes
+    const bytes = getByteView(buffer);
+
     // Check for common image file signatures
     const imageFormats = [
       {name: "JPEG", signature: [0xff, 0xd8, 0xff]},
@@ -41,7 +47,7 @@ export async function validateImageBuffer(buffer: Buffer): Promise<ImageValidati
     let hasValidSignature = false;
 
     for (const format of imageFormats) {
-      if (format.signature.every((byte, i) => i < buffer.length && buffer[i] === byte)) {
+      if (format.signature.every((byte, i) => i < bytes.length && bytes[i] === byte)) {
         hasValidSignature = true;
         detectedFormat = format.name;
         break;
@@ -49,9 +55,9 @@ export async function validateImageBuffer(buffer: Buffer): Promise<ImageValidati
     }
 
     // Special check for WebP which has additional validation after RIFF
-    if (detectedFormat === "WEBP" && buffer.length >= 12) {
+    if (detectedFormat === "WEBP" && bytes.length >= 12) {
       const webpSignature = [0x57, 0x45, 0x42, 0x50]; // 'WEBP'
-      const isWebP = webpSignature.every((byte, i) => buffer[8 + i] === byte);
+      const isWebP = webpSignature.every((byte, i) => bytes[8 + i] === byte);
       if (!isWebP) {
         hasValidSignature = false;
         detectedFormat = undefined;
