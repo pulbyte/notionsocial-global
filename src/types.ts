@@ -21,7 +21,7 @@ import {
 import {mybusinessaccountmanagement_v1} from "googleapis";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
-import {SmAccTagFormats} from "env";
+import {SmAccTagFormats} from "./env";
 import {
   GmbPostCtaActionType,
   GmbPostTopicType,

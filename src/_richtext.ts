@@ -8,7 +8,7 @@ import {
   ParsedNotionBlock,
   RichTextContent,
   Paragraph,
-} from "types";
+} from "./types";
 
 export function getRichTextFromText(string: string, limit = 63206): RichTextContent {
   const text: string = string.substring(0, limit);

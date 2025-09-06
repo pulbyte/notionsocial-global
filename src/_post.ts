@@ -24,7 +24,7 @@ import {
   toScreamingSnakeCase,
 } from "./text";
 import {chunkParagraphs, getXContentFromParagraphs} from "./_content";
-import {platformMimeTypeSupported} from "env";
+import {platformMimeTypeSupported} from "./env";
 import {getRichTextFromText} from "./_richtext";
 import {makeMediaPostReady} from "./_media";
 import {extractUrlFromString} from "./_url";
@@ -89,6 +89,21 @@ function processMediaForPlatform<T extends "file" | "media">(
 
   // Filter out the thumbnail from the media array if it exists
   const filteredMedia = thumbnail ? media.filter((m) => m.refId !== thumbnail.refId) : media;
+
+  // 🚨 CRITICAL BUG LOCATION: Race condition vulnerability!
+  // This synchronous processing assumes all media objects have been fully processed
+  // with URLs and buffers already downloaded. However, if async media processing
+  // failed or is still in progress, media objects may have:
+  // - undefined URLs (causing Instagram "Cannot read properties of undefined (reading 'url')")
+  // - missing buffers (causing X "Cannot read properties of undefined (reading 'length')")
+  //
+  // REPRODUCE BUG: Uncomment the lines below to simulate failed media processing:
+  // filteredMedia.forEach(media => {
+  //   if (Math.random() < 0.3) { // 30% chance to simulate processing failure
+  //     (media as any).url = undefined; // Simulates failed URL processing
+  //     (media as any).buffer = undefined; // Simulates failed buffer download
+  //   }
+  // });
 
   // Process media for the specific platform
   return filteredMedia.map((m) => {

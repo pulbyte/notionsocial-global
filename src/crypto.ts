@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
-import {isNodeEnvironment} from "env";
-import {SecureAuthToken} from "types";
+import {isNodeEnvironment} from "./env";
+import {SecureAuthToken} from "./types";
 
 const algorithm = "aes-256-cbc";
 export const encKeyVersion = process.env.ENCRPT_KEY_VERSION;

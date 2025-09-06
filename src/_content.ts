@@ -1,7 +1,7 @@
 import {extractTags, hasText, trimAndRemoveWhitespace} from "./text";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
-import {BaseLinkedInPost, BaseTweet, Paragraph, PostMediaFile, Thread, XContent} from "types";
+import {BaseLinkedInPost, BaseTweet, Paragraph, PostMediaFile, Thread, XContent} from "./types";
 import {extractTweetIdFromUrl} from "./_url";
 
 /**

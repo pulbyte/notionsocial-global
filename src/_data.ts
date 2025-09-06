@@ -1,5 +1,5 @@
 import {decryptSecureToken} from "./crypto";
-import {SocialAccountData} from "types";
+import {SocialAccountData} from "./types";
 
 export function getSmAccAuthData(
   smAccData: Pick<SocialAccountData, "platform" | "secure_auth_token" | "auth" | "fb_auth">

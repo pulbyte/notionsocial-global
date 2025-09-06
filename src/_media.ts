@@ -300,6 +300,20 @@ export function makeMediaPostReady<T extends "file" | "media">(
   media: MediaType,
   platform?: SocialPlatformType
 ): T extends "file" ? PostMediaFile : PostMedia {
+  // 🚨 RACE CONDITION DETECTION POINT:
+  // These defensive checks were added to catch media objects that arrive here
+  // with undefined URLs or missing properties due to failed async processing.
+  // Before these checks, the function would fail later with cryptic errors like:
+  // "Cannot read properties of undefined (reading 'url')" in Instagram uploads
+  // 
+  // REPRODUCE BUG: Comment out these validation checks to see the original errors:
+  if (!media) {
+    throw new Error("Cannot process undefined or null media object");
+  }
+  
+  if (!media.url) {
+    throw new Error(`Media object missing required URL property: ${JSON.stringify(media)}`);
+  }
   // Helper function to extract the transformation based on platform
   const getTransformation = (transformations: TransformedMedia["transformations"]) => {
     // First, try to find a transformation that includes the specified platform

@@ -3,7 +3,7 @@ import {AxiosError} from "axios";
 import {getNotionError} from "./notion";
 import {publishDisruptErrorMessages, PublishError, PublishErrorCode} from "./PublishError";
 import {PostPublishStage} from "./types";
-import {postPublishStages, publishStageIndex} from "publish";
+import {postPublishStages, publishStageIndex} from "./publish";
 import {dog} from "./logging";
 
 export function isNetworkServerError(error: AxiosError | any) {

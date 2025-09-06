@@ -7,6 +7,14 @@
  * Converts Node.js Buffer to ArrayBuffer for web APIs that require it (fetch, Blob)
  */
 export function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
+  if (!buffer) {
+    throw new Error("Cannot convert undefined or null buffer to ArrayBuffer");
+  }
+  
+  if (!Buffer.isBuffer(buffer)) {
+    throw new Error(`Expected Buffer, got ${typeof buffer}`);
+  }
+  
   const underlying = buffer.buffer;
   if (underlying instanceof ArrayBuffer) {
     return underlying.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);

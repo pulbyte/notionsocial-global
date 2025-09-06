@@ -79,6 +79,8 @@ export function chooseMediaFilesToDownload(
   const toDownload = isAnyValueInArray(binaryUploadSocialPlatforms, smAccPlatforms);
   const hasPinterest = smAccPlatforms?.includes("pinterest");
   const hasFacebook = smAccPlatforms?.includes("facebook");
+  const hasX = smAccPlatforms?.includes("x");
+  const hasYouTube = smAccPlatforms?.includes("youtube");
 
   let filesToDownload: Media["type"][] = [];
 
@@ -87,6 +89,10 @@ export function chooseMediaFilesToDownload(
   if (hasPinterest) filesToDownload.push("video");
   // ? Facebook needs buffer for video thumbnail image, But not for other
   if (hasFacebook) filesToDownload.push("image");
+  // ? X/Twitter needs buffers for all media types
+  if (hasX) filesToDownload.push("video", "image");
+  // ? YouTube needs buffers for video and image (thumbnail) uploads
+  if (hasYouTube) filesToDownload.push("video", "image");
 
   return _.uniq(filesToDownload);
 }
