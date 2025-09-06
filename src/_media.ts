@@ -12,6 +12,20 @@ import {
 import * as mime from "@alshdavid/mime-types";
 import {dog} from "./logging";
 import {logAxiosError, notionRichTextParser, trimAndRemoveWhitespace} from "./text";
+
+import {decryptSecureToken} from "./crypto";
+
+// Smart debug logging - only logs when issues are detected
+if (typeof decryptSecureToken !== 'function') {
+  console.error("CRITICAL[MEDIA]: decryptSecureToken is not a function - import failure detected");
+  console.error("  This will cause cascading auth and media processing failures");
+}
+if (!Array.isArray(docMimeTypes) || docMimeTypes.length === 0) {
+  console.error("CRITICAL[MEDIA]: docMimeTypes invalid:", typeof docMimeTypes);
+}
+if (!Array.isArray(imageMimeTypes) || imageMimeTypes.length === 0) {
+  console.error("CRITICAL[MEDIA]: imageMimeTypes invalid:", typeof imageMimeTypes);
+}
 import {
   getUrlContentHeaders,
   getGdriveContentHeaders,
@@ -300,18 +314,14 @@ export function makeMediaPostReady<T extends "file" | "media">(
   media: MediaType,
   platform?: SocialPlatformType
 ): T extends "file" ? PostMediaFile : PostMedia {
-  // 🚨 RACE CONDITION DETECTION POINT:
-  // These defensive checks were added to catch media objects that arrive here
-  // with undefined URLs or missing properties due to failed async processing.
-  // Before these checks, the function would fail later with cryptic errors like:
-  // "Cannot read properties of undefined (reading 'url')" in Instagram uploads
-  // 
-  // REPRODUCE BUG: Comment out these validation checks to see the original errors:
+  // Smart debug logging - only when media issues detected
   if (!media) {
+    console.error(`CRITICAL[MEDIA]: makeMediaPostReady received undefined/null media for platform: ${platform}`);
     throw new Error("Cannot process undefined or null media object");
   }
-  
+
   if (!media.url) {
+    console.error(`CRITICAL[MEDIA]: Media missing URL for platform: ${platform}`, JSON.stringify(media));
     throw new Error(`Media object missing required URL property: ${JSON.stringify(media)}`);
   }
   // Helper function to extract the transformation based on platform
