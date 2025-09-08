@@ -10,6 +10,9 @@ export function dog(...args: any[]) {
 
 // Local implementation of safeStringify with angle bracket formatting for buffers
 export function safeStringify(obj) {
+  // Handle Error objects first (they need special treatment)
+  if (obj instanceof Error) return obj;
+
   // Handle direct Buffer objects
   if (Buffer.isBuffer(obj)) {
     const formattedSize = formatBytesIntoReadable(obj.length);
@@ -44,6 +47,9 @@ export function safeStringify(obj) {
     if (typeof value !== "object") {
       return value;
     }
+
+    // Handle Error objects specially
+    if (value instanceof Error) return value;
 
     const processed = Array.isArray(value) ? [] : {};
     seen.set(value, path);
@@ -264,7 +270,14 @@ export function prettyLog(obj: any, options?: {returnInstead?: boolean}): string
   }
 
   const safeStr = safeStringify(obj);
-
+  const isError = safeStr instanceof Error;
+  if (isError) {
+    if (shouldReturn) {
+      return safeStr.toString();
+    }
+    console.error(safeStr);
+    return;
+  }
   try {
     const parsed = JSON.parse(safeStr);
     const colorized = formatWithColors(parsed);

@@ -236,11 +236,15 @@ export function linkedinUrn(pid: string, accType?: "page" | "group") {
 }
 
 export function logAxiosError(error: AxiosError | any, message?: string) {
+  const prefix = message ? "🛑 " + message + "\n" : "";
+
   if (isAxiosError(error)) {
     const formattedError = formatAxiosError(error);
-    console.log(`${message ? "🛑 " + message + "\n" : ""}`, safeStringify(formattedError));
+    console.error(prefix, safeStringify(formattedError));
   } else if (error) {
-    console.log(`${message ? "🛑 " + message + "\n" : ""}`, safeStringify(error));
+    console.error(prefix, safeStringify(error));
+  } else {
+    console.error(prefix, "Unknown error occurred");
   }
 }
 
