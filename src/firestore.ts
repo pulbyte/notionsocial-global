@@ -1,7 +1,7 @@
 import "dotenv/config";
 import {applicationDefault, initializeApp, getApps, getApp} from "firebase-admin/app";
 import {getAuth as getAuthAdmin, Auth} from "firebase-admin/auth";
-import {getFirestore, Firestore} from "firebase-admin/firestore";
+import {getFirestore, Firestore, FieldValue} from "firebase-admin/firestore";
 import {dog} from "./logging";
 
 let db: Firestore;
@@ -53,4 +53,4 @@ function ensureFirebaseInitialized(): void {
   }
 }
 
-export {getDb, getAuth, ensureFirebaseInitialized};
+export {getDb, getAuth, ensureFirebaseInitialized, FieldValue};
