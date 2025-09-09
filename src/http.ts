@@ -1,5 +1,6 @@
-import axios from "axios";
-
+import axios, {AxiosError, isAxiosError} from "axios";
+import {format as formatAxiosError} from "@redtea/format-axios-error";
+import {safeStringify} from "./logging";
 // Shared browser-like headers to avoid 403 errors
 export const getBrowserHeaders = () => {
   // Rotate User-Agent strings to appear more human-like
@@ -36,6 +37,24 @@ export const getBrowserHeaders = () => {
     "X-Real-IP": "127.0.0.1",
   };
 };
+
+export function logAxiosError(error: AxiosError | any, message?: string) {
+  const prefix = message ? "🛑 " + message + "\n" : "";
+
+  const log = (_: any) => console.error(prefix, _);
+
+  if (isAxiosError(error)) {
+    try {
+      log(safeStringify(formatAxiosError(error)));
+    } catch (e) {
+      log(safeStringify(error));
+    }
+  } else if (error) {
+    log(safeStringify(error));
+  } else {
+    log("Unknown error occurred");
+  }
+}
 
 // Retry mechanism for HTTP requests
 export const axiosWithRetry = async (config, maxRetries = 3, baseDelay = 1000) => {
@@ -83,3 +102,81 @@ export const axiosWithRetry = async (config, maxRetries = 3, baseDelay = 1000) =
 
   throw lastError;
 };
+
+interface RequestConfig {
+  url: string;
+  method: string;
+  headers: HeadersInit;
+  body?: any;
+  [key: string]: any;
+}
+
+export const axiosFetch = async (...args: Parameters<typeof fetch>): Promise<Response> => {
+  const [url, options] = args;
+
+  const requestConfig: RequestConfig = {
+    url: typeof url === "string" || url instanceof URL ? url.toString() : (url as Request).url,
+    method: options?.method || "GET",
+    headers: options?.headers || {},
+    body: options?.body,
+    ...(options || {}),
+  };
+
+  const response = await fetch(...args);
+
+  // If response is not ok, create axios-compatible error with full request config
+  if (!response.ok) {
+    const error = await interceptFetchError(response, requestConfig);
+    throw error;
+  }
+
+  return response;
+};
+
+async function interceptFetchError(
+  response: Response,
+  requestConfig: RequestConfig
+): Promise<axios.AxiosError> {
+  const data = await getResponseData(response);
+
+  // Create a proper axios config object
+  const axiosConfig = {
+    url: requestConfig.url,
+    method: requestConfig.method,
+    headers: requestConfig.headers as any,
+    data: requestConfig.body,
+    params: requestConfig.params,
+    timeout: requestConfig.timeout,
+    baseURL: requestConfig.baseURL,
+  };
+
+  const axiosError = new axios.AxiosError(
+    `Request failed with status code ${response.status}`,
+    response.status >= 400 && response.status < 500 ? "ERR_BAD_REQUEST" : "ERR_BAD_RESPONSE",
+    axiosConfig,
+    null, // request object (not available in fetch context)
+    {
+      status: response.status,
+      statusText: response.statusText,
+      data,
+      headers: Object.fromEntries(response.headers.entries()),
+      config: axiosConfig,
+    }
+  );
+
+  return axiosError;
+}
+
+// Helper to get response data (reused from existing function)
+async function getResponseData(response: Response) {
+  try {
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await response.json();
+    } else {
+      return await response.text();
+    }
+  } catch {
+    return null;
+  }
+}

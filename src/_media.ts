@@ -11,21 +11,8 @@ import {
 } from "./types";
 import * as mime from "@alshdavid/mime-types";
 import {dog} from "./logging";
-import {logAxiosError, notionRichTextParser, trimAndRemoveWhitespace} from "./text";
+import {notionRichTextParser, trimAndRemoveWhitespace} from "./text";
 
-import {decryptSecureToken} from "./crypto";
-
-// Smart debug logging - only logs when issues are detected
-if (typeof decryptSecureToken !== 'function') {
-  console.error("CRITICAL[MEDIA]: decryptSecureToken is not a function - import failure detected");
-  console.error("  This will cause cascading auth and media processing failures");
-}
-if (!Array.isArray(docMimeTypes) || docMimeTypes.length === 0) {
-  console.error("CRITICAL[MEDIA]: docMimeTypes invalid:", typeof docMimeTypes);
-}
-if (!Array.isArray(imageMimeTypes) || imageMimeTypes.length === 0) {
-  console.error("CRITICAL[MEDIA]: imageMimeTypes invalid:", typeof imageMimeTypes);
-}
 import {
   getUrlContentHeaders,
   getGdriveContentHeaders,
@@ -37,6 +24,7 @@ import {
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
 import {isBase64String} from "./_url";
 import {alterDescriptLink} from "./url";
+import {logAxiosError} from "./http";
 
 export function getMediaRef(url: string) {
   if (!url || typeof url != "string") return null;
@@ -316,12 +304,17 @@ export function makeMediaPostReady<T extends "file" | "media">(
 ): T extends "file" ? PostMediaFile : PostMedia {
   // Smart debug logging - only when media issues detected
   if (!media) {
-    console.error(`CRITICAL[MEDIA]: makeMediaPostReady received undefined/null media for platform: ${platform}`);
+    console.error(
+      `CRITICAL[MEDIA]: makeMediaPostReady received undefined/null media for platform: ${platform}`
+    );
     throw new Error("Cannot process undefined or null media object");
   }
 
   if (!media.url) {
-    console.error(`CRITICAL[MEDIA]: Media missing URL for platform: ${platform}`, JSON.stringify(media));
+    console.error(
+      `CRITICAL[MEDIA]: Media missing URL for platform: ${platform}`,
+      JSON.stringify(media)
+    );
     throw new Error(`Media object missing required URL property: ${JSON.stringify(media)}`);
   }
   // Helper function to extract the transformation based on platform

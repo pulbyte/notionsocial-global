@@ -1,7 +1,7 @@
 import {Readable} from "stream";
 import {maxMediaSize} from "./env";
-import {formatBytesIntoReadable, logAxiosError} from "./text";
-import {axiosWithRetry, getBrowserHeaders} from "./http";
+import {formatBytesIntoReadable} from "./text";
+import {axiosWithRetry, getBrowserHeaders, logAxiosError} from "./http";
 
 export function bufferToStream(binary: Buffer) {
   const readableInstanceStream = new Readable({
