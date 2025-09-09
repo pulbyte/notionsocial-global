@@ -244,10 +244,16 @@ export async function retryOnCondition<Res>(
         const retryError = errorDestructor(error);
         if (retryError && retries < maxRetries - 1) {
           // If errorDestructor returns true, retry the promise
-
           retries++;
-          console.log(`Retrying... (Retry ${retries} of ${maxRetries})`);
-          await new Promise((resolve) => setTimeout(resolve, 3000));
+
+          // Exponential backoff: 3s, 6s, 12s, 24s, etc.
+          const backoffDelay = 3 * Math.pow(2, retries - 1) * 1000;
+          console.log(
+            `Retrying... (Retry ${retries} of ${maxRetries}) - waiting ${
+              backoffDelay / 1000
+            }seconds`
+          );
+          await new Promise((resolve) => setTimeout(resolve, backoffDelay));
         } else {
           // If errorDestructor returns false, rethrow the error
           return rej(retryError ? _Error : error);
