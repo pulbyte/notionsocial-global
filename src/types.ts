@@ -752,6 +752,8 @@ export interface SecureAuthToken {
     }; // Auth provider (google, facebook, internal, etc.)
     client: {
       id: string; // Unique identifier for the requesting client/app
+      name?: string;
+      secret?: string; // To be able to store OAuth App details to consume other clients
     };
   };
   encryption?: {

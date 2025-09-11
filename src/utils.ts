@@ -251,7 +251,7 @@ export async function retryOnCondition<Res>(
           console.log(
             `Retrying... (Retry ${retries} of ${maxRetries}) - waiting ${
               backoffDelay / 1000
-            }seconds`
+            } seconds`
           );
           await new Promise((resolve) => setTimeout(resolve, backoffDelay));
         } else {

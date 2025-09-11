@@ -23,6 +23,9 @@ function retry<T>(func) {
   return retryOnCondition<T>(func, isNotionServerError, notionServerErrorMessage);
 }
 export function NotionAPI(accessToken) {
+  // TODO: BREAKING CHANGE - Notion API 2025-09-03
+  // Must update API version to "2025-09-03" and upgrade @notionhq/client to v5.0.0
+  // Add notionVersion: "2025-09-03" to client config
   const notion = new Client({
     auth: accessToken,
     timeoutMs: 30000,
@@ -36,7 +39,8 @@ export function NotionAPI(accessToken) {
       ),
     getPage: (id: string) =>
       retry<GetPageResponse>(() => notion.pages.retrieve({page_id: id})),
-    createPage: (payload) => retry<CreatePageResponse>(() => notion.pages.create(payload)),
+    createPage: (...args: Parameters<typeof notion.pages.create>) =>
+      retry<CreatePageResponse>(() => notion.pages.create(...args)),
     updatePage: (id, properties) =>
       retry<UpdatePageResponse>(() =>
         notion.pages.update({page_id: id, properties, archived: false})
@@ -58,6 +62,9 @@ export function NotionAPI(accessToken) {
         })
       ),
     query: (dbId, query, limit?: number) =>
+      // TODO: BREAKING CHANGE - Notion API 2025-09-03
+      // databases.query() may need data_source_id parameter
+      // Check if querying specific data sources within databases
       retry<SearchResponse>(() =>
         notion.databases.query({
           database_id: dbId,
@@ -66,6 +73,11 @@ export function NotionAPI(accessToken) {
         })
       ),
     createDatabase: (payload: CreateDatabaseParameters) =>
+      // TODO: BREAKING CHANGE - Notion API 2025-09-03
+      // databases.create() now requires 'initial_data_source' wrapper:
+      // OLD: { properties: {...} }
+      // NEW: { initial_data_source: { properties: {...} } }
+      // Must also update API version header to "2025-09-03"
       retry<DatabaseObjectResponse>(() => notion.databases.create(payload)),
     deletePage: (id: string) =>
       retry<UpdatePageResponse>(() => notion.pages.update({page_id: id, archived: true})),
@@ -209,6 +221,8 @@ export async function findNotionInlineDatabases(tkn: string, pageId: string) {
   try {
     const result = await poll.execute(async () => {
       try {
+        // TODO: BREAKING CHANGE - Notion API 2025-09-03
+        // Must add notionVersion: "2025-09-03" to client config
         const notion = new Client({
           auth: tkn,
           timeoutMs: 30000,

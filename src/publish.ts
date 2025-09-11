@@ -146,14 +146,13 @@ export function getMediaFromNotionProperty(
     });
 }
 
-// Cache to store processed media by ref
-const processedMediaCache: Map<string, MediaType> = new Map();
-
 export function processMedia(
   media: Media[],
   typesToDownload?: Array<"video" | "image" | "doc">,
   processedMedia?: PostRecord["processed_media"]
 ) {
+  // Cache to store processed media by ref (scoped to this function call)
+  const processedMediaCache: Map<string, MediaType> = new Map();
   // Media processing functions
   async function fetchMedia(
     media: Media,
@@ -175,7 +174,7 @@ export function processMedia(
         if (media.refId) {
           processedMediaCache.set(media.refId, tMediaFile);
         }
-        console.log("Transformed media -->", tMediaFile);
+        console.log("Transformed media -->", tMediaFile, {toDownload});
         return tMediaFile;
       } catch (error) {
         console.log(
