@@ -156,7 +156,7 @@ export function processParsedNotionBlock(
   const nextOne = parsedBlocks[i + 1];
   const nextOneIsText = nextOne?.type == "text";
   if (isDivider) {
-    if (textBuffer.length && !previewsOneWasDivider) {
+    if ((textBuffer.length || mediaBuffer.length) && !previewsOneWasDivider) {
       textSections.push(textBuffer);
       mediaSections.push([...mediaBuffer]);
       mediaBuffer = [];
