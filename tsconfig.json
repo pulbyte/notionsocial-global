@@ -10,9 +10,24 @@
     "forceConsistentCasingInFileNames": true, /* Ensure that casing is correct in imports. */
     "strict": false, /* Enable all strict type-checking options. */
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    // "incremental": true,
+    "disableSizeLimit": true,
+    "removeComments": true,
+    // "composite": true,
+    "skipLibCheck": true
   },
   "compileOnSave": true,
+  "watchOptions": {
+    "excludeDirectories": [
+      "node_modules",
+      "**/node_modules/**",
+      "dist",
+      "build",
+      "**/dist/**",
+      "**/build/**"
+    ]
+  },
   "include": ["src", "tests"],
   "exclude": [
     "node_modules",

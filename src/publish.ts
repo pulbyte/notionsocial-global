@@ -177,7 +177,7 @@ export function processMedia(
         console.log("Transformed media -->", tMediaFile, {toDownload});
         return tMediaFile;
       } catch (error) {
-        console.log(
+        console.warn(
           "Getting the original media, Due to error in downloading transformed media:",
           error
         );
@@ -222,6 +222,8 @@ export function processMedia(
       throw new Error(
         `${Type} exceeds ${maxMediaSize.MB} MB size limit. Please reduce the file size by compressing or lowering quality, then upload again.`
       );
+    } else {
+      console.warn("Media not optimized -->", media.refId);
     }
     return () => fetchMedia(media, transformations);
   }
