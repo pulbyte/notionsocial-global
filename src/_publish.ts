@@ -120,6 +120,7 @@ export function getNotionPageConfig(
     collaboratorTagsProp: null,
     locationTagsProp: null,
     youtubePrivacyStatusProp: null,
+    youtubeKeywordTagsProp: null,
     videoThumbnailProp: null,
     ctaButtonProp: null,
     ctaValueProp: null,
@@ -157,6 +158,9 @@ export function getNotionPageConfig(
 
   _props.youtubePrivacyStatusProp =
     properties[notionDatabaseData.options?.["youtube_privacy_status_prop"]];
+
+  _props.youtubeKeywordTagsProp =
+    properties[notionDatabaseData.options?.youtube_keyword_tags_prop || "Tags"];
 
   _props.videoThumbnailProp =
     properties[notionDatabaseData.options?.video_thumbnail_image_prop];
@@ -196,6 +200,7 @@ export function getNotionPageConfig(
     collaboratorTags: [],
     locationTag: null,
     youtubePrivacyStatus: null,
+    youtubeKeywordTags: [],
     ctaButton: "",
     ctaValue: "",
     postOptions: {
@@ -232,6 +237,7 @@ export function getNotionPageConfig(
     titleProp,
     nsProp,
     youtubePrivacyStatusProp,
+    youtubeKeywordTagsProp,
     videoThumbnailProp,
     ctaButtonProp,
     ctaValueProp,
@@ -289,6 +295,8 @@ export function getNotionPageConfig(
     : ytPrivacyStatus?.includes("unlisted")
     ? "unlisted"
     : "public";
+
+  __.youtubeKeywordTags = youtubeKeywordTagsProp?.multi_select?.map((prop) => prop.name) || [];
 
   // Process CTA Button property
   if (ctaButtonProp?.type === "rich_text") {

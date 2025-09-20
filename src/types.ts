@@ -212,6 +212,7 @@ export interface PostOptionsSchema {
   collaborator_tags_prop: string;
   location_tag_prop: string;
   youtube_privacy_status_prop: string;
+  youtube_keyword_tags_prop?: string;
   pinterest_board_prop?: string;
   video_thumbnail_image_prop?: string;
   video_thumbnail_offset_prop?: string;
@@ -663,6 +664,7 @@ export interface NotionPagePropertiesForPost {
   collaboratorTagsProp: NotionMultiSelectProperty;
   locationTagsProp: NotionSelectProperty;
   youtubePrivacyStatusProp: NotionSelectProperty;
+  youtubeKeywordTagsProp: NotionMultiSelectProperty;
   videoThumbnailProp?: NotionFilesProperty;
   ctaButtonProp?: NotionTextProperty | NotionSelectProperty;
   ctaValueProp?:
@@ -701,6 +703,7 @@ export interface NotionPagePostConfig {
   collaboratorTags?: string[];
   locationTag?: string;
   youtubePrivacyStatus?: "public" | "unlisted" | "private";
+  youtubeKeywordTags?: string[];
   ctaButton?: string;
   ctaValue?: string;
   smAccs: NotionDatabase["sm_accs"];
@@ -837,6 +840,7 @@ export interface YouTubeContent {
   description: string;
   media: Array<PostMediaFile>;
   videoThumbnail?: PostMediaFile;
+  keywordTags?: string[];
   privacyStatus: "public" | "unlisted" | "private";
 }
 

@@ -34,6 +34,7 @@ import {
   SocialPlatformType,
 } from "@pulbyte/social-stack-lib";
 import {GmbPostTopicType} from "@pulbyte/social-stack-lib";
+import {dog} from "./logging";
 
 /**
  * Helper function to select the appropriate video thumbnail based on configuration and available media
@@ -339,12 +340,15 @@ export function getYouTubeContent(
     rawThumbnail
   );
 
+  const keywordTags = validateYouTubeKeywordTags(config.youtubeKeywordTags);
+
   return {
     title: pageContent.title,
     description,
     media: mediaFiles,
     videoThumbnail: thumbnail,
     privacyStatus: config.youtubePrivacyStatus || "public",
+    keywordTags,
   };
 }
 
@@ -590,4 +594,49 @@ export function determineInstagramPostType(
   if (isCarousel) return "carousel";
 
   return "image";
+}
+/**
+ * Validates YouTube keyword tags according to YouTube API rules:
+ * - Maximum 500 characters total (including commas between items)
+ * - Tags with spaces count as if wrapped in quotes (add 2 chars)
+ * - Commas between tags count toward the limit
+ */
+function validateYouTubeKeywordTags(tags: string[]): string[] {
+  if (!tags || tags.length === 0) return [];
+
+  let totalLength = 0;
+  const validatedTags: string[] = [];
+
+  for (let i = 0; i < tags.length; i++) {
+    const tag = tags[i].trim();
+    if (!tag) continue;
+
+    // Calculate character count for this tag
+    // Tags with spaces are wrapped in quotes by YouTube API
+    let tagLength = tag.includes(" ") ? tag.length + 2 : tag.length;
+
+    // Add comma if not the first tag
+    if (validatedTags.length > 0) {
+      tagLength += 1; // for the comma separator
+    }
+
+    // Check if adding this tag would exceed the 500 character limit
+    if (totalLength + tagLength > 500) {
+      dog(
+        `YouTube keyword tag limit reached. Skipping remaining tags. Total: ${totalLength} chars`
+      );
+      break;
+    }
+
+    validatedTags.push(tag);
+    totalLength += tagLength;
+  }
+
+  if (validatedTags.length < tags.length) {
+    dog(
+      `YouTube keyword tags truncated from ${tags.length} to ${validatedTags.length} tags to stay within 500 character limit`
+    );
+  }
+
+  return validatedTags;
 }
