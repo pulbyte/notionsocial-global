@@ -26,6 +26,7 @@ import {
   GmbPostCtaActionType,
   GmbPostTopicType,
   SocialPlatformType,
+  GmbPostCallToAction,
 } from "@pulbyte/social-stack-lib";
 // Notion File, Which is extracted from Notion
 export interface Media {
@@ -215,7 +216,7 @@ export interface PostOptionsSchema {
   video_thumbnail_image_prop?: string;
   video_thumbnail_offset_prop?: string;
   cta_button_prop?: string;
-  cta_link_prop?: string;
+  cta_value_prop?: string;
   gmb_post_type_prop?: string;
 }
 export interface PublicApiRecord {
@@ -664,7 +665,10 @@ export interface NotionPagePropertiesForPost {
   youtubePrivacyStatusProp: NotionSelectProperty;
   videoThumbnailProp?: NotionFilesProperty;
   ctaButtonProp?: NotionTextProperty | NotionSelectProperty;
-  ctaLinkProp?: UrlPropertyItemObjectResponse;
+  ctaValueProp?:
+    | NotionTextProperty
+    | UrlPropertyItemObjectResponse
+    | PhoneNumberPropertyItemObjectResponse;
   postConfigProps?: {
     gmbTopicType: NotionSelectProperty;
   };
@@ -698,7 +702,7 @@ export interface NotionPagePostConfig {
   locationTag?: string;
   youtubePrivacyStatus?: "public" | "unlisted" | "private";
   ctaButton?: string;
-  ctaLink?: string;
+  ctaValue?: string;
   smAccs: NotionDatabase["sm_accs"];
   smAccsPlatforms: SocialPlatformType[];
   filesToDownload: Array<"image" | "video" | "doc">;
@@ -814,7 +818,7 @@ export interface FacebookContent {
   media: PostMediaFile[];
   videoThumbnail?: PostMediaFile;
   ctaButton?: string;
-  ctaLink?: string;
+  ctaValue?: string;
   postType: "reel" | "story" | "carousel" | "image" | "video" | "text";
 }
 
@@ -872,9 +876,6 @@ export interface GmbContent {
   summary: string;
   media: Array<PostMedia>;
   title?: string;
-  callToAction?: {
-    actionType: GmbPostCtaActionType;
-    url?: string;
-  };
+  callToAction?: GmbPostCallToAction;
   topicType?: GmbPostTopicType;
 }

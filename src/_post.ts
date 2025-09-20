@@ -273,7 +273,7 @@ export function getFacebookContent(
     media: processedMedia,
     videoThumbnail: finalThumbnail,
     ctaButton: config.ctaButton,
-    ctaLink: config.ctaLink,
+    ctaValue: config.ctaValue,
     postType: postType,
   };
 }
@@ -523,11 +523,20 @@ export function getGmbContent(
   };
 
   // Add call to action if available
-  if (config.ctaButton && config.ctaLink) {
-    content.callToAction = {
-      actionType: getValidGmbCtaActionType(config.ctaButton),
-      url: config.ctaLink,
-    };
+  if (config.ctaButton && config.ctaValue) {
+    const actionType = getValidGmbCtaActionType(config.ctaButton);
+
+    // For CALL action type, don't pass the value
+    if (actionType === "CALL") {
+      content.callToAction = {
+        actionType: "CALL",
+      };
+    } else {
+      content.callToAction = {
+        actionType: actionType,
+        url: config.ctaValue,
+      };
+    }
   }
 
   // Add topic type if available

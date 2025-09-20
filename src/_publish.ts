@@ -122,7 +122,7 @@ export function getNotionPageConfig(
     youtubePrivacyStatusProp: null,
     videoThumbnailProp: null,
     ctaButtonProp: null,
-    ctaLinkProp: null,
+    ctaValueProp: null,
     postConfigProps: {
       gmbTopicType: null,
     },
@@ -163,7 +163,7 @@ export function getNotionPageConfig(
 
   _props.ctaButtonProp = properties[notionDatabaseData.options?.cta_button_prop];
 
-  _props.ctaLinkProp = properties[notionDatabaseData.options?.cta_link_prop];
+  _props.ctaValueProp = properties[notionDatabaseData.options?.cta_value_prop];
 
   _props.postConfigProps = {
     gmbTopicType: properties[notionDatabaseData.options?.gmb_post_type_prop],
@@ -197,7 +197,7 @@ export function getNotionPageConfig(
     locationTag: null,
     youtubePrivacyStatus: null,
     ctaButton: "",
-    ctaLink: "",
+    ctaValue: "",
     postOptions: {
       gmbTopicType: null,
     },
@@ -234,7 +234,7 @@ export function getNotionPageConfig(
     youtubePrivacyStatusProp,
     videoThumbnailProp,
     ctaButtonProp,
-    ctaLinkProp,
+    ctaValueProp,
     postConfigProps,
   } = _props;
   __.nsFilter = notionDatabaseData["ns_filter"];
@@ -297,20 +297,17 @@ export function getNotionPageConfig(
     __.ctaButton = ctaButtonProp?.["select"]?.name || "";
   }
 
-  // Process CTA Link property
-  const rawCtaLink = ctaLinkProp?.["url"] || "";
-  try {
-    // Validate and sanitize URL
-    if (rawCtaLink) {
-      const urlObj = new URL(rawCtaLink);
-      __.ctaLink = urlObj.toString();
-    } else {
-      __.ctaLink = "";
-    }
-  } catch (error) {
-    console.warn(`Invalid CTA Link URL: ${rawCtaLink}`);
-    __.ctaLink = "";
+  // Process CTA Value property (general CTA value - URL, phone, etc.)
+  let ctaValue = "";
+  if (ctaValueProp?.type === "rich_text") {
+    ctaValue = notionRichTextParser(ctaValueProp?.["rich_text"], true);
+  } else if (ctaValueProp?.type === "url") {
+    ctaValue = ctaValueProp?.["url"] || "";
+  } else if (ctaValueProp?.type === "phone_number") {
+    ctaValue = ctaValueProp?.["phone_number"] || "";
   }
+
+  __.ctaValue = ctaValue;
 
   // Process Topic Type property
   __.postOptions = {
@@ -420,7 +417,13 @@ function getSelectedSocialAccounts(
   notionDatabaseData: NotionDatabase,
   postRecord?: PostRecord
 ) {
-  const smAccTags: Array<string> = smAccsProp?.multi_select?.map((prop) => prop.name);
+  if (!smAccsProp?.multi_select) {
+    throw PublishError.create("invalid-social-account-property", {
+      message: `The ${notionDatabaseData?.props?.sm_accs} property is missing or not configured as a multi-select property. This property is required to select social accounts for posting. Please ensure the property exists in your Notion database and is set as a multi-select type, or refresh the database connection in Notionsocial.`,
+    });
+  }
+
+  const smAccTags: Array<string> = smAccsProp.multi_select.map((prop) => prop.name);
   const smAccs: NotionDatabase["sm_accs"] = smAccTags
     .map((tag) => {
       return lodash.find(notionDatabaseData["sm_accs"], {tag});

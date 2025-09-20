@@ -18,6 +18,7 @@ export const publishErrorCodes = [
   "post-not-processed",
   "no-social-account-selected",
   "invalid-social-account-selected",
+  "invalid-social-account-property",
 ] as const;
 
 export type PublishErrorCode = (typeof publishErrorCodes)[number];
