@@ -356,8 +356,10 @@ export function numberToRoman(num: number): string {
 export function splitByEmDashes(text) {
   if (!text) return [];
 
-  // Match two or more em dashes (—) or hyphens (-) with optional whitespace
-  const regex = /\s*[—-]{2,}\s*/;
+  // Match patterns:
+  // 1. Two or more consecutive em dashes (—) or hyphens (-) with optional whitespace
+  // 2. Spaced dash patterns like "- - -" (2 or more dashes with spaces between)
+  const regex = /\s*(?:[—-]{2,}|(?:[—-]\s+){1,}[—-])\s*/;
 
   // Split the text and filter out empty strings
   return text
