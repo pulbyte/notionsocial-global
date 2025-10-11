@@ -142,28 +142,93 @@ export function alterGiphyLink(inputURL: string): string | null {
   }
 }
 
+/**
+ * Extracts the file ID from various Google Drive URL formats
+ * Supports:
+ * - https://drive.google.com/file/d/{fileId}/view
+ * - https://drive.google.com/file/d/{fileId}/edit
+ * - https://drive.google.com/open?id={fileId}
+ * - https://drive.google.com/uc?id={fileId}
+ * - https://drive.google.com/uc?export=download&id={fileId}
+ * - https://drive.usercontent.google.com/download?id={fileId}&confirm=xxx
+ * - https://drive.google.com/document/d/{fileId}/edit
+ * - https://docs.google.com/document/d/{fileId}/edit
+ * - https://docs.google.com/spreadsheets/d/{fileId}/edit
+ * - https://docs.google.com/presentation/d/{fileId}/edit
+ * - https://www.googleapis.com/drive/v3/files/{fileId}?alt=media&key={apiKey}
+ *
+ * @param url - The Google Drive URL to parse
+ * @returns The file ID if found, null otherwise
+ */
+export function extractGoogleDriveFileId(url: string): string | null {
+  if (!url || typeof url !== "string") return null;
+
+  // Pattern 1: /file/d/{fileId}/ or /document/d/{fileId}/ or /presentation/d/{fileId}/ or /spreadsheets/d/{fileId}/
+  const pathPattern =
+    /(?:drive|docs)\.google\.com\/(?:file|document|spreadsheets|presentation)\/d\/([a-zA-Z0-9_-]+)/;
+  const pathMatch = url.match(pathPattern);
+  if (pathMatch) return pathMatch[1];
+
+  // Pattern 2: Google Drive API URL - googleapis.com/drive/v3/files/{fileId}
+  const apiPattern = /googleapis\.com\/drive\/v3\/files\/([a-zA-Z0-9_-]+)/;
+  const apiMatch = url.match(apiPattern);
+  if (apiMatch) return apiMatch[1];
+
+  // Pattern 3: ?id={fileId} or &id={fileId} (for open?id=, uc?id=, download?id= formats)
+  const queryPattern = /[?&]id=([a-zA-Z0-9_-]+)/;
+  const queryMatch = url.match(queryPattern);
+  if (queryMatch) return queryMatch[1];
+
+  return null;
+}
+
+/**
+ * Helper function to create Google Drive API URL
+ * Uses the Google Drive API v3 with API key authentication
+ * This bypasses the malware scan warning page for large files
+ */
+export function getGdriveApiUrl(fileId: string): string | null {
+  const apiKey = process.env.GOOGLE_DRIVE_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${apiKey}`;
+}
+
 export function alterGDriveLink(inputURL) {
   if (!inputURL) return null;
-  // Regular expression to match Google Drive file URL
-  const driveRegex = /drive\.google\.com\/(?:file\/d\/|document\/d\/|open\?id=)([^\/\?&]+)/;
 
-  // Check if the input URL matches the Google Drive file URL pattern
-  const match = inputURL.match(driveRegex);
+  // Extract the file ID using the dedicated function
+  const fileId = extractGoogleDriveFileId(inputURL);
 
-  if (match) {
-    // Extract the file ID from the matched URL
-    const fileId = match[1];
+  if (!fileId) {
+    // If the input URL doesn't match any known Google Drive pattern
+    return null;
+  }
 
-    // Construct the altered URL with the file ID
+  // Prioritize API URL when API key is available
+  const apiUrl = getGdriveApiUrl(fileId);
+
+  if (apiUrl) {
+    // Use API URL as primary download method
+    return {
+      name: fileId,
+      url: apiUrl,
+      downloadUrl: apiUrl,
+    };
+  } else {
+    // Fall back to standard URLs when API key is not available
+    console.warn(
+      `GOOGLE_DRIVE_API_KEY not set. Using standard Google Drive URLs which may fail for large files (>25MB). Set the API key to avoid malware scan warnings.`
+    );
     const alteredURL = `https://drive.google.com/uc?export=download&id=${fileId}`;
+    const downloadUrl = `https://drive.usercontent.google.com/download?id=${fileId}&confirm=xxx`;
+
     return {
       name: fileId,
       url: alteredURL,
-      downloadUrl: `https://drive.usercontent.google.com/download?id=${fileId}&confirm=xxx`,
+      downloadUrl: downloadUrl,
     };
-  } else {
-    // If the input URL doesn't match the pattern, return null or handle accordingly
-    return null;
   }
 }
 
@@ -174,16 +239,15 @@ export async function getGdriveContentHeaders(url: string): Promise<{
   mimeType: string;
   mediaType?: "image" | "video" | "doc";
 }> {
-  let _url: URL;
-  let id: string;
-  try {
-    _url = new URL(url);
-    id = _url.searchParams.get("id");
-  } catch (error) {
-    throw new Error("Invalid URL");
+  if (!url) {
+    throw new Error("URL is required");
   }
-  if (!url || !id) {
-    throw new Error("Not a valid Google Drive url");
+
+  // Extract file ID using the dedicated function
+  const id = extractGoogleDriveFileId(url);
+
+  if (!id) {
+    throw new Error("Not a valid Google Drive URL - could not extract file ID");
   }
 
   const res = await axiosWithRetry({

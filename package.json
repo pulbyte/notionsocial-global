@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "4.0.85",
+  "version": "4.0.9",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -41,6 +41,7 @@
     "start": "tsup --watch",
     "test": "jest",
     "test:text": "jest tests/text.test.ts",
+    "test:url": "jest tests/url.test.ts",
     "test:media": "jest tests/media.test.ts",
     "test:chooseMediaFilesToDownload": "jest tests/chooseMediaFilesToDownload.test.ts",
     "ig": "npm i @pulbyte/social-stack-lib@latest",
