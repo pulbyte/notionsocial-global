@@ -519,34 +519,53 @@ export function getGmbContent(
   // Process media for GMB platform
   const processedMedia = processMediaForPlatform<"media">(pageContent.media, "gmb");
 
-  const content: GmbContent = {
-    summary: summary,
-    media: processedMedia,
-    title: pageContent.title,
-    topicType: "STANDARD" as GmbPostTopicType,
-  };
+  // Check if this is a Q&A post based on question text property
+  const questionText = config.postOptions?.gmbQuestionText;
+  const hasQuestion = hasText(questionText);
 
-  // Add call to action if available
-  if (config.ctaButton && config.ctaValue) {
-    const actionType = getValidGmbCtaActionType(config.ctaButton);
-
-    // For CALL action type, don't pass the value
-    if (actionType === "CALL") {
-      content.callToAction = {
-        actionType: "CALL",
-      };
-    } else {
-      content.callToAction = {
-        actionType: actionType,
-        url: config.ctaValue,
-      };
-    }
+  // Determine post type
+  let postType: GmbContent["postType"] = "standard";
+  if (hasQuestion) {
+    postType = "qna";
+  } else {
+    const topicTypeRaw = (config.postOptions?.gmbTopicType || "STANDARD") as string;
+    postType = topicTypeRaw.toLowerCase() as GmbContent["postType"];
   }
 
-  // Add topic type if available
-  // if (config.topicType) {
-  //   content.topicType = config.topicType;
-  // }
+  const content: GmbContent = {
+    postType,
+    summary,
+    media: processedMedia,
+  };
+
+  // Add Q&A fields for Q&A posts
+  if (hasQuestion) {
+    content.qna = {
+      question: questionText,
+      answer: summary,
+    };
+  } else {
+    // Add topic type for non-Q&A posts
+    const topicTypeRaw = (config.postOptions?.gmbTopicType || "STANDARD") as string;
+    content.topicType = topicTypeRaw as GmbPostTopicType;
+
+    // Add call to action if available (not for Q&A posts)
+    if (config.ctaButton && config.ctaValue) {
+      const actionType = getValidGmbCtaActionType(config.ctaButton);
+
+      // For CALL action type, don't pass the value
+      if (actionType === "CALL") {
+        content.callToAction = {
+          actionType: "CALL",
+        };
+      } else {
+        content.callToAction = {
+          actionType: actionType,
+          url: config.ctaValue,
+        };
+      }
+    }
+  }
 
   return content;
 }

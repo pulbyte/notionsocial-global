@@ -219,6 +219,7 @@ export interface PostOptionsSchema {
   cta_button_prop?: string;
   cta_value_prop?: string;
   gmb_post_type_prop?: string;
+  gmb_question_text_prop?: string;
 }
 export interface PublicApiRecord {
   created_at: number;
@@ -673,6 +674,7 @@ export interface NotionPagePropertiesForPost {
     | PhoneNumberPropertyItemObjectResponse;
   postConfigProps?: {
     gmbTopicType: NotionSelectProperty;
+    gmbQuestionText?: NotionTextProperty;
   };
 }
 export interface NotionPagePostConfig {
@@ -714,6 +716,7 @@ export interface NotionPagePostConfig {
   formattingOptions: FormattingOptions;
   postOptions?: {
     gmbTopicType: GmbPostTopicType;
+    gmbQuestionText?: string;
   };
 }
 export interface NotionCodedTextPayload {
@@ -877,9 +880,13 @@ export interface TikTokContent {
 }
 
 export interface GmbContent {
+  postType: "qna" | "standard" | "event" | "offer" | "alert";
   summary: string;
   media: Array<PostMedia>;
-  title?: string;
   callToAction?: GmbPostCallToAction;
   topicType?: GmbPostTopicType;
+  qna?: {
+    question: string;
+    answer: string;
+  };
 }

@@ -126,6 +126,7 @@ export function getNotionPageConfig(
     ctaValueProp: null,
     postConfigProps: {
       gmbTopicType: null,
+      gmbQuestionText: null,
     },
   };
 
@@ -317,9 +318,12 @@ export function getNotionPageConfig(
 
   __.ctaValue = ctaValue;
 
-  // Process Topic Type property
+  // Process GMB post configuration properties
+  const gmbQuestionText = getNotionPropertyText(postConfigProps?.gmbQuestionText, true);
+
   __.postOptions = {
     gmbTopicType: postConfigProps?.gmbTopicType?.select?.name as GmbPostTopicType,
+    gmbQuestionText,
   };
 
   const smAccs = getSelectedSocialAccounts(smAccsProp, notionDatabaseData, postRecord);
