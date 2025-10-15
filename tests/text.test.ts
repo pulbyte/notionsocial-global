@@ -1,5 +1,11 @@
-import {replaceLineBreaksWithEmptySpaces, splitByEmDashes} from "../src/text";
-import {processInstagramTags} from "../src/text";
+import {
+  replaceLineBreaksWithEmptySpaces,
+  splitByEmDashes,
+  processInstagramTags,
+  extractTags,
+  extractPlatformTags,
+  getNotionPropertyText,
+} from "../src/text";
 import {formatMarkdown} from "../src/parser";
 
 describe("replaceLineBreaksWithEmptySpaces", () => {
@@ -313,5 +319,84 @@ describe("splitByEmDashes", () => {
     console.log("Consecutive dashes with newlines result:", result);
     // This SHOULD split because "--" are consecutive dashes
     expect(result).toEqual(["Part 1", "Part 2", "Part 3", "Part 4"]);
+  });
+});
+
+describe("extractTags", () => {
+  const cases: [string | null, string[]][] = [
+    ["@user1, @user2, @user3", ["user1", "user2", "user3"]],
+    ["@john | @jane | @user3", ["john", "jane", "user3"]],
+    ["@a; @b, @c @d", ["a", "b", "c", "d"]],
+    ["No tags here", []],
+    ["", []],
+    [null, []],
+    ["@single", ["single"]],
+    ["text @middle more", ["middle"]],
+    ["@start and @end", ["start", "end"]],
+  ];
+
+  test.each(cases)("extractTags(%p) → %p", (input, expected) => {
+    expect(extractTags(input as string)).toEqual(expected);
+  });
+});
+
+describe("extractPlatformTags", () => {
+  const cases: [string | null, string[]][] = [
+    ["LI@john, X@jane, FB@user.3", ["LI@john", "X@jane", "FB@user.3"]],
+    ["LI-PAGE@john, X@jane, THREADS@user3", ["LI-PAGE@john", "X@jane", "THREADS@user3"]],
+    ["FB@user1 | LI@user_2 ; X@user-3", ["FB@user1", "LI@user_2", "X@user-3"]],
+    ["BSKY@handle, PIN@user", ["BSKY@handle", "PIN@user"]],
+    ["No platform tags here", []],
+    ["", []],
+    [null, []],
+    ["FB@single", ["FB@single"]],
+    ["text LI@middle more", ["LI@middle"]],
+    ["X@start and FB@end + @oaky", ["X@start", "FB@end"]],
+  ];
+
+  test.each(cases)("extractPlatformTags(%p) → %p", (input, expected) => {
+    expect(extractPlatformTags(input as string)).toEqual(expected);
+  });
+});
+
+describe("getNotionPropertyText", () => {
+  const title = [{plain_text: "Title"}];
+  const text = [{plain_text: "Text"}];
+  const trimText = [{plain_text: "  Trim  "}];
+
+  it("should extract from title property", () => {
+    expect(getNotionPropertyText({type: "title", title})).toBe("Title");
+  });
+
+  it("should extract from rich_text property", () => {
+    expect(getNotionPropertyText({type: "rich_text", rich_text: text})).toBe("Text");
+  });
+
+  it("should extract from formula property", () => {
+    expect(getNotionPropertyText({type: "formula", formula: {string: "Formula"}})).toBe(
+      "Formula"
+    );
+  });
+
+  it("should use fallback for title", () => {
+    expect(getNotionPropertyText({title})).toBe("Title");
+  });
+
+  it("should use fallback for rich_text", () => {
+    expect(getNotionPropertyText({rich_text: text})).toBe("Text");
+  });
+
+  it("should use fallback for formula", () => {
+    expect(getNotionPropertyText({formula: {string: "Fallback"}})).toBe("Fallback");
+  });
+
+  it("should trim when requested", () => {
+    expect(getNotionPropertyText({type: "rich_text", rich_text: trimText}, true)).toBe("Trim");
+  });
+
+  it("should handle empty cases", () => {
+    expect(getNotionPropertyText(null)).toBe("");
+    expect(getNotionPropertyText({})).toBe("");
+    expect(getNotionPropertyText({type: "unknown"})).toBe("");
   });
 });

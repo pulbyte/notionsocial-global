@@ -113,6 +113,48 @@ export function notionRichTextParser(
     .join("");
 }
 
+/**
+ * Extract text value from Notion property (supports title, rich_text, and formula types)
+ * @param property - Notion property object that may contain title, rich_text, or formula
+ * @param trim - Whether to trim the resulting text
+ * @returns Extracted text string or empty string
+ */
+export function getNotionPropertyText(property: any, trim?: boolean): string {
+  if (!property) return "";
+
+  // Handle title property type
+  if (property.type === "title" && property.title) {
+    return notionRichTextParser(property.title, trim);
+  }
+
+  // Handle rich_text property type
+  if (property.type === "rich_text" && property.rich_text) {
+    return notionRichTextParser(property.rich_text, trim);
+  }
+
+  // Handle formula property type with string result
+  if (property.type === "formula" && property.formula?.string) {
+    const text = property.formula.string;
+    return trim ? text.trim() : text;
+  }
+
+  // Fallback: try to extract from raw property structure
+  if (property.title) {
+    return notionRichTextParser(property.title, trim);
+  }
+
+  if (property.rich_text) {
+    return notionRichTextParser(property.rich_text, trim);
+  }
+
+  if (property.formula?.string) {
+    const text = property.formula.string;
+    return trim ? text.trim() : text;
+  }
+
+  return "";
+}
+
 export function trimAndRemoveWhitespace(inputString: string): string {
   // Use a regular expression to match and remove whitespace characters
   if (!inputString) inputString = "";
@@ -259,6 +301,34 @@ export function extractTags(inputString: string) {
   } else {
     return [];
   }
+}
+
+/**
+ * Extract complete platform account tags from text/formula property
+ * Supports formats like: "LI@username, X@user2, FB@user3", "LI-PAGE@username"
+ * Returns complete tags with platform prefix: ["LI@username", "X@user2", "FB@user3"]
+ *
+ * Supported formats:
+ * - Simple: "FB@username" -> ["FB@username"]
+ * - With modifiers: "LI-PAGE@username" -> ["LI-PAGE@username"]
+ * - Multiple separators: "FB@user1, LI@user2 | X@user3" -> ["FB@user1", "LI@user2", "X@user3"]
+ * - Usernames with special chars: "X@user-name", "FB@user_123" -> ["X@user-name", "FB@user_123"]
+ */
+export function extractPlatformTags(inputString: string): string[] {
+  if (!inputString || typeof inputString !== "string") return [];
+
+  // Match pattern: optional prefix, optional hyphen and modifier, @, then username
+  // Examples: FB@username, LI-PAGE@username, THREADS@user, X@user-name
+  // Username can contain: letters, numbers, underscore, hyphen, dot
+  const tagPattern = /([A-Z]+(?:-[A-Z]+)?)@([\w.-]+)/g;
+  const matches = inputString.match(tagPattern);
+
+  if (matches) {
+    // Return complete tags with platform prefix
+    return matches.filter(hasText);
+  }
+
+  return [];
 }
 
 export function concatenateTextFromArray(array: any[], propertyName: string) {

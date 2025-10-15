@@ -10,7 +10,14 @@ import {
   UserData,
   NotionDatabase,
 } from "./types";
-import {hasText, notionRichTextParser, processInstagramTags, splitByEmDashes} from "./text";
+import {
+  hasText,
+  notionRichTextParser,
+  processInstagramTags,
+  splitByEmDashes,
+  extractPlatformTags,
+  getNotionPropertyText,
+} from "./text";
 import {isAnyValueInArray} from "./utils";
 import {parseNotionRule} from "./_notion";
 import {
@@ -49,12 +56,7 @@ export function extractPlatformCaptions(
 
       if (detectedPlatforms.length > 0) {
         // Get the text content from the property
-        let propText = "";
-        if (property?.type === "rich_text") {
-          propText = notionRichTextParser(property?.["rich_text"]);
-        } else if (property?.type === "formula") {
-          propText = property?.["formula"]?.["string"] || "";
-        }
+        const propText = getNotionPropertyText(property);
 
         // Store the text for each detected platform
         detectedPlatforms.forEach((platform) => {
@@ -172,6 +174,7 @@ export function getNotionPageConfig(
 
   _props.postConfigProps = {
     gmbTopicType: properties[notionDatabaseData.options?.gmb_post_type_prop],
+    gmbQuestionText: properties[notionDatabaseData.options?.gmb_question_text_prop],
   };
 
   let __: NotionPagePostConfig = {
@@ -245,19 +248,9 @@ export function getNotionPageConfig(
     postConfigProps,
   } = _props;
   __.nsFilter = notionDatabaseData["ns_filter"];
-  if (commentProp?.type == "rich_text") {
-    __.commentText = notionRichTextParser(commentProp?.["rich_text"]);
-  } else if (commentProp?.type == "formula") {
-    __.commentText = commentProp?.["formula"]?.["string"];
-  }
-
-  __.titleText = notionRichTextParser(titleProp?.["title"], true);
-
-  if (captionProp?.type == "rich_text") {
-    __.captionText = notionRichTextParser(captionProp?.["rich_text"]);
-  } else if (captionProp?.type == "formula") {
-    __.captionText = captionProp?.["formula"]?.["string"];
-  }
+  __.commentText = getNotionPropertyText(commentProp);
+  __.titleText = getNotionPropertyText(titleProp, true);
+  __.captionText = getNotionPropertyText(captionProp);
   const time = schTimeProp?.["date"]?.["start"];
   const date = new Date(time);
   if (time) {
@@ -276,7 +269,7 @@ export function getNotionPageConfig(
 
   __.selectedPinterestBoard = pinterestBoardProp?.select;
 
-  const altText = notionRichTextParser(altTextProp?.["rich_text"], true);
+  const altText = getNotionPropertyText(altTextProp, true);
   __.altTextArr = splitByEmDashes(altText);
   __.altText = __.altTextArr[0]?.trim();
 
@@ -300,20 +293,20 @@ export function getNotionPageConfig(
   __.youtubeKeywordTags = youtubeKeywordTagsProp?.multi_select?.map((prop) => prop.name) || [];
 
   // Process CTA Button property
-  if (ctaButtonProp?.type === "rich_text") {
-    __.ctaButton = notionRichTextParser(ctaButtonProp?.["rich_text"], true);
-  } else if (ctaButtonProp?.type === "select") {
+  if (ctaButtonProp?.type === "select") {
     __.ctaButton = ctaButtonProp?.["select"]?.name || "";
+  } else {
+    __.ctaButton = getNotionPropertyText(ctaButtonProp, true);
   }
 
   // Process CTA Value property (general CTA value - URL, phone, etc.)
   let ctaValue = "";
-  if (ctaValueProp?.type === "rich_text") {
-    ctaValue = notionRichTextParser(ctaValueProp?.["rich_text"], true);
-  } else if (ctaValueProp?.type === "url") {
+  if (ctaValueProp?.type === "url") {
     ctaValue = ctaValueProp?.["url"] || "";
   } else if (ctaValueProp?.type === "phone_number") {
     ctaValue = ctaValueProp?.["phone_number"] || "";
+  } else {
+    ctaValue = getNotionPropertyText(ctaValueProp, true);
   }
 
   __.ctaValue = ctaValue;
@@ -341,7 +334,7 @@ export function getNotionPageConfig(
   const smAccPlatforms = smAccs.map((acc) => acc.platform);
   __.filesToDownload = chooseMediaFilesToDownload(smAccPlatforms);
 
-  const nsText = notionRichTextParser(nsProp?.["rich_text"], true);
+  const nsText = getNotionPropertyText(nsProp, true);
 
   // ** Check if post is ready to be scheduled
   const isStatusDone = __.nsFilter == __.status;
@@ -429,13 +422,24 @@ function getSelectedSocialAccounts(
   notionDatabaseData: NotionDatabase,
   postRecord?: PostRecord
 ) {
-  if (!smAccsProp?.multi_select) {
+  // Extract from multi-select property
+  const smAccsMultiSelect: string[] = smAccsProp?.multi_select?.map((prop) => prop.name) || [];
+
+  // Extract from text/formula property as fallback
+  const smAccsText = getNotionPropertyText(smAccsProp);
+  dog("smAccsText", smAccsText);
+  const smAccsFromText = extractPlatformTags(smAccsText);
+  dog("smAccsFromText", smAccsFromText);
+
+  // Combine both sources (multi-select takes priority, text as fallback)
+  const smAccTags: Array<string> =
+    smAccsMultiSelect.length > 0 ? smAccsMultiSelect : smAccsFromText;
+
+  if (!["multi_select", "rich_text", "formula"].includes(smAccsProp?.type)) {
     throw PublishError.create("invalid-social-account-property", {
-      message: `The ${notionDatabaseData?.props?.sm_accs} property is missing or not configured as a multi-select property. This property is required to select social accounts for posting. Please ensure the property exists in your Notion database and is set as a multi-select type, or refresh the database connection in Notionsocial.`,
+      message: `The ${notionDatabaseData?.props?.sm_accs} property is missing or empty. This property is required to select social accounts for posting. Please ensure the property exists in your Notion database and has values selected (multi-select) or specified (text/formula with @ tags), or refresh the database connection in Notionsocial.`,
     });
   }
-
-  const smAccTags: Array<string> = smAccsProp.multi_select.map((prop) => prop.name);
   const smAccs: NotionDatabase["sm_accs"] = smAccTags
     .map((tag) => {
       return lodash.find(notionDatabaseData["sm_accs"], {tag});
