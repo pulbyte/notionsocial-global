@@ -28,6 +28,7 @@ import {
   SocialPlatformType,
   GmbPostCallToAction,
 } from "@pulbyte/social-stack-lib";
+import {Timestamp} from "firebase-admin/firestore";
 // Notion File, Which is extracted from Notion
 export interface Media {
   name: string;
@@ -435,6 +436,7 @@ export interface PostRecord {
   publish_at?: number;
   publish_started_at?: number;
   scheduled_at: number;
+  completed_at?: number;
   completed: boolean;
   last_processed_at?: number;
   push_id?: string;
@@ -462,9 +464,10 @@ export type STRIPE_SUB_STATUS =
   | "paused";
 
 export interface AffiliatePayment {
-  amount: number;
-  date: number;
+  date: Timestamp;
   note: string;
+  commission_rate: number;
+  amount: number;
 }
 
 export interface AffiliateReferral {

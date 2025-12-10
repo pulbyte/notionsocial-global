@@ -108,12 +108,15 @@ export function getMimeTypeFromContentType(ct: string): string | null {
     mt || (cleanContentType === "video" ? "mp4" : cleanContentType === "image" ? "jpeg" : null)
   );
 }
-export function getMediaTypeFromMimeType(mt: string): Media["type"] | null {
+export function getMediaTypeFromMimeType(mt: string, ct?: string): Media["type"] | null {
   if (!mt) return null;
   if (imageMimeTypes.includes(mt)) return "image";
   else if (videoMimeTypes.includes(mt)) return "video";
   else if (docMimeTypes.includes(mt)) return "doc";
-  else return null;
+  else {
+    console.warn(`[MEDIA] Unsupported media file detected - mimeType: ${mt} ${ct}`);
+    return null;
+  }
 }
 export function getMediaTypeFromContentType(ct: string): Media["type"] | null {
   if (!ct) return null;
@@ -124,7 +127,7 @@ export function getMediaTypeFromContentType(ct: string): Media["type"] | null {
   else if (cleanContentType?.includes("application")) return "doc";
   else {
     const mt = getMimeTypeFromContentType(cleanContentType);
-    return getMediaTypeFromMimeType(mt);
+    return getMediaTypeFromMimeType(mt, ct);
   }
 }
 

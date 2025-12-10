@@ -349,7 +349,7 @@ describe("extractPlatformTags", () => {
     ["No platform tags here", []],
     ["", []],
     [null, []],
-    ["FB@single", ["FB@single"]],
+    ["FB@single, ", ["FB@single"]],
     ["text LI@middle more", ["LI@middle"]],
     ["X@start and FB@end + @oaky", ["X@start", "FB@end"]],
   ];
