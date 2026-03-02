@@ -124,6 +124,8 @@ export function decodePublishError(e: PublishFunctionError, stage: PostPublishSt
     message = publishDisruptErrorMessages["notion-database-disconnected"];
   if (isInvalidSocialAccountSelected)
     message = publishDisruptErrorMessages["invalid-social-account-selected"];
+  if (code == "max-retries-exceeded")
+    message = publishDisruptErrorMessages["max-retries-exceeded"];
 
   return {
     isServerError,

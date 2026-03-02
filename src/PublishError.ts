@@ -19,6 +19,7 @@ export const publishErrorCodes = [
   "no-social-account-selected",
   "invalid-social-account-selected",
   "invalid-social-account-property",
+  "max-retries-exceeded",
 ] as const;
 
 export type PublishErrorCode = (typeof publishErrorCodes)[number];
@@ -37,6 +38,8 @@ export const publishDisruptErrorMessages: {[key in PublishErrorCode]?: string} =
   "post-monthy-limit-reached": `🔒 You've reached your monthly limit of ${freeMonthlyPostLimit} posts for free accounts. Upgrade to a paid plan to post unlimited times.`,
   "invalid-social-account-selected":
     "🔴 Please select at least one social account to publish this post. (Make sure the social account is connected to Notionsocial)",
+  "max-retries-exceeded":
+    "🔴 Publishing failed after multiple attempts. Please clear the NotionSocial property and try again.",
 };
 
 type ErrorWithPossibleToJSON = Error & {
