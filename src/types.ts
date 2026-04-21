@@ -332,6 +332,7 @@ export type PinterestBoard = {
 
 export interface SocialAccountData {
   state: "active" | "expired";
+  expired_reason?: "insufficient_page_scope" | string;
   ig_auth_type?: "ig_oauth" | "fb_sdk";
   ig_user_id?: string;
   author_uid: string;
@@ -451,6 +452,9 @@ export interface PostRecord {
     new_time?: number; // New scheduled time (epochms), null for immediate publish
     action: "schedule" | "re-schedule" | "un-schedule";
   }[];
+  // Reason the post was last rejected/skipped during a schedule scan.
+  // Stable enum string used for support triage without round-tripping to Notion.
+  rejection_reason?: string;
 }
 
 export type STRIPE_SUB_STATUS =
