@@ -44,7 +44,7 @@ export async function downloadFromUrl(url: string, name?: string) {
     return {
       size,
       buffer,
-      contentType: response.headers["content-type"],
+      contentType: response.headers["content-type"] as string,
     };
   } catch (error) {
     logAxiosError(error, "Error downloading");

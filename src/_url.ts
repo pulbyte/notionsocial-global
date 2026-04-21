@@ -266,9 +266,9 @@ export async function getGdriveContentHeaders(url: string): Promise<{
   res.data.destroy();
 
   const headers = res.headers;
-  let contentType = headers["content-type"];
+  let contentType = headers["content-type"] as string;
   const contentLength = Number(headers["content-length"]);
-  const contentDisposition = headers["content-disposition"];
+  const contentDisposition = headers["content-disposition"] as string;
 
   // Handle simplified content types like "video" or "image"
   if (["video", "image"].includes(contentType?.toLowerCase())) {
@@ -322,9 +322,10 @@ export async function getUrlContentHeaders(url: string): Promise<{
   res.data.destroy();
 
   const headers = res.headers;
-  let contentType = headers["content-type"] || headers["Content-Type"];
+  let contentType = (headers["content-type"] || headers["Content-Type"]) as string;
   const contentLength = Number(headers["content-length"] || headers["Content-Length"]);
-  const contentDisposition = headers["content-disposition"] || headers["Content-Disposition"];
+  const contentDisposition = (headers["content-disposition"] ||
+    headers["Content-Disposition"]) as string;
 
   // Handle simplified content types like "video" or "image"
   if (["video", "image"].includes(contentType?.toLowerCase())) {
