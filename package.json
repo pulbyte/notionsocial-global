@@ -56,7 +56,7 @@
     "@alshdavid/mime-types": "^2.2.3",
     "@google-cloud/storage": "^7.11.2",
     "@notion-stuff/blocks-markdown-parser": "^6.0.0",
-    "@notionhq/client": "^4.0.2",
+    "@notionhq/client": "^5.0.0",
     "@pulbyte/social-stack-lib": "^1.4.6",
     "@redtea/format-axios-error": "^2.1.1",
     "axios": "^1.7.2",
