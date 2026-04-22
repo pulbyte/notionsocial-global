@@ -22,6 +22,7 @@ export async function getNotionPageRichTextContent(
 ): Promise<RichTextContent> {
   const notion = new Client({
     auth: config._data.access_token,
+    notionVersion: "2025-09-03",
     timeoutMs: 15000,
   });
 
