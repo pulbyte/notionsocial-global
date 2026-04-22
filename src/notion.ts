@@ -266,48 +266,28 @@ export function NotionAPI(accessToken: string, opts?: {store?: DataSourceStore})
         }> = [];
 
         for (const item of raw.results) {
-          // v5 search returns data_source objects. Each has its own `id`,
-          // a plain-string `name`, and `parent.database_id`.
+          // v5 search returns DataSourceObjectResponse items (and PartialDataSourceObjectResponse
+          // for integrations without full access, which we skip because they lack `parent`/`title`).
+          // Each full response carries `title: RichTextItemResponse[]` and a `parent` that either
+          // points to the wrapping database (`{type: "database_id", database_id}`) or another data
+          // source (`{type: "data_source_id", ...}` for externally synced sources). Skip the latter
+          // for our use case (we want database-level dedup).
           const anyItem = item as unknown as {
+            object?: string;
             id: string;
             parent?: {type: string; database_id?: string};
-            name?: string | DatabaseObjectResponse["title"];
+            title?: DatabaseObjectResponse["title"];
           };
-          const dbId = anyItem.parent?.database_id;
+          if (anyItem.object !== "data_source" || !anyItem.parent || !anyItem.title) continue;
+          const dbId =
+            anyItem.parent.type === "database_id" ? anyItem.parent.database_id : undefined;
           if (!dbId || seen.has(dbId)) continue;
           seen.add(dbId);
 
-          // Normalize `name` (which v5 returns as a string on data_source
-          // objects) into a rich-text array so callers expecting a v4-
-          // shaped `title` keep working. If v5 ever returns a rich-text
-          // array here, pass it through untouched.
-          const rawName = anyItem.name;
-          const nameStr: string =
-            typeof rawName === "string"
-              ? rawName
-              : Array.isArray(rawName)
-              ? rawName.map((rt) => (rt as {plain_text?: string}).plain_text ?? "").join("")
-              : "";
-          const title: DatabaseObjectResponse["title"] = Array.isArray(rawName)
-            ? (rawName as DatabaseObjectResponse["title"])
-            : nameStr
-            ? ([
-                {
-                  type: "text",
-                  text: {content: nameStr, link: null},
-                  annotations: {
-                    bold: false,
-                    italic: false,
-                    strikethrough: false,
-                    underline: false,
-                    code: false,
-                    color: "default",
-                  },
-                  plain_text: nameStr,
-                  href: null,
-                },
-              ] as unknown as DatabaseObjectResponse["title"])
-            : [];
+          const title = anyItem.title ?? [];
+          const nameStr = title
+            .map((rt) => (rt as {plain_text?: string}).plain_text ?? "")
+            .join("");
 
           results.push({
             id: dbId,

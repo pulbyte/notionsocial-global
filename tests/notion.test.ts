@@ -160,7 +160,7 @@ describe("NotionAPI.getDatabase", () => {
     expect(ndb.url).toBe("https://notion.so/db_abc");
   });
 
-  it("uses LRU-cached data_source_id on the second call", async () => {
+  it("fetches the container on every call (for fresh title/cover/url)", async () => {
     const dbRetrieve = jest.fn().mockResolvedValue({
       id: "db_abc",
       title: [],
