@@ -1,22 +1,31 @@
 import {Client, NotionClientError} from "@notionhq/client";
 import {
-  UpdateDatabaseResponse,
-  CreatePageResponse,
-  UpdatePageResponse,
-  GetPageResponse,
-  SearchResponse,
-  DatabaseObjectResponse,
-  UpdateDatabaseParameters,
-  CreateDatabaseParameters,
   BlockObjectResponse,
+  CreateDatabaseParameters,
+  CreatePageParameters,
+  CreatePageResponse,
+  DatabaseObjectResponse,
+  GetDataSourceResponse,
+  GetPageResponse,
   ListBlockChildrenResponse,
+  QueryDataSourceParameters,
+  QueryDataSourceResponse,
+  SearchResponse,
+  UpdateDataSourceParameters,
+  UpdateDataSourceResponse,
+  UpdatePageResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {APIErrorCode, ClientErrorCode, isNotionClientError} from "@notionhq/client";
 import {ignorePromiseError, retryOnCondition} from "./utils";
 import {dog} from "./logging";
 import {dev} from "./env";
 import {createCodedRichText} from "./_notion";
-import {NotionCodedTextPayload, NotionPropertyMetadata, DataSourceStore} from "./types";
+import {
+  DataSourceStore,
+  NotionCodedTextPayload,
+  NotionDatabaseSchema,
+  NotionPropertyMetadata,
+} from "./types";
 import {PollUntil} from "poll-until-promise";
 
 // In-process cache for database_id → data_source_id.
@@ -112,63 +121,211 @@ export async function resolveDataSourceId(
 function retry<T>(func) {
   return retryOnCondition<T>(func, isNotionServerError, notionServerErrorMessage);
 }
-export function NotionAPI(accessToken) {
-  // TODO: BREAKING CHANGE - Notion API 2025-09-03
-  // Must update API version to "2025-09-03" and upgrade @notionhq/client to v5.0.0
-  // Add notionVersion: "2025-09-03" to client config
+export function NotionAPI(accessToken: string, opts?: {store?: DataSourceStore}) {
   const notion = new Client({
     auth: accessToken,
+    notionVersion: "2025-09-03",
     timeoutMs: 30000,
   });
+  const store = opts?.store;
+
+  function resolve(databaseId: string) {
+    return resolveDataSourceId(notion, databaseId, store);
+  }
+
   return {
-    getDatabase: (id: string) =>
-      retry<DatabaseObjectResponse>(() => notion.databases.retrieve({database_id: id})),
-    updateDatabase: (id: string, properties: UpdateDatabaseParameters["properties"]) =>
-      retry<UpdateDatabaseResponse>(() =>
-        notion.databases.update({database_id: id, properties})
+    /**
+     * Returns the data source's schema merged with container-level
+     * title/cover/url. Preserves the v4 caller contract even though the
+     * underlying endpoint split into databases + dataSources.
+     */
+    getDatabase: async (id: string): Promise<NotionDatabaseSchema> =>
+      retry<NotionDatabaseSchema>(async () => {
+        const dsId = await resolve(id);
+        const [container, ds] = await Promise.all([
+          notion.databases.retrieve({database_id: id}) as Promise<DatabaseObjectResponse>,
+          notion.dataSources.retrieve({data_source_id: dsId}) as Promise<GetDataSourceResponse>,
+        ]);
+        return {
+          ...ds,
+          title: container.title,
+          cover: container.cover,
+          url: container.url,
+        };
+      }),
+
+    /**
+     * Raw database container fetch. Use only when you genuinely need the
+     * list of data_sources (e.g. multi-source UI). Most code wants
+     * getDatabase() instead.
+     */
+    getDatabaseContainer: (id: string) =>
+      retry<DatabaseObjectResponse>(
+        () =>
+          notion.databases.retrieve({database_id: id}) as Promise<DatabaseObjectResponse>
       ),
+
+    updateDatabase: (id: string, properties: UpdateDataSourceParameters["properties"]) =>
+      retry<UpdateDataSourceResponse>(async () => {
+        const dsId = await resolve(id);
+        return notion.dataSources.update({data_source_id: dsId, properties});
+      }),
+
+    query: (
+      dbId: string,
+      query: Omit<QueryDataSourceParameters, "data_source_id" | "page_size">,
+      limit?: number
+    ) =>
+      retry<QueryDataSourceResponse>(async () => {
+        const dsId = await resolve(dbId);
+        return notion.dataSources.query({
+          data_source_id: dsId,
+          page_size: limit ?? 100,
+          ...query,
+        });
+      }),
+
+    createDatabase: (payload: CreateDatabaseParameters) => {
+      // Wrap v4-style {properties} into v5-style {initial_data_source: {properties}}.
+      const {properties, ...rest} = payload as CreateDatabaseParameters & {
+        properties?: unknown;
+      };
+      const v5Payload = properties
+        ? ({...rest, initial_data_source: {properties}} as CreateDatabaseParameters)
+        : payload;
+      return retry<DatabaseObjectResponse>(
+        () => notion.databases.create(v5Payload) as Promise<DatabaseObjectResponse>
+      );
+    },
+
     getPage: (id: string) =>
       retry<GetPageResponse>(() => notion.pages.retrieve({page_id: id})),
-    createPage: (...args: Parameters<typeof notion.pages.create>) =>
-      retry<CreatePageResponse>(() => notion.pages.create(...args)),
-    updatePage: (id, properties) =>
+
+    createPage: async (args: CreatePageParameters) => {
+      // Parent rewrite: {database_id} → {data_source_id} for data-source-parented pages.
+      const parent = args.parent as {type?: string; database_id?: string} & Record<
+        string,
+        unknown
+      >;
+      let finalArgs = args;
+      if (parent && "database_id" in parent && parent.database_id) {
+        const dsId = await resolve(parent.database_id);
+        finalArgs = {
+          ...args,
+          parent: {type: "data_source_id", data_source_id: dsId},
+        } as CreatePageParameters;
+      }
+      return retry<CreatePageResponse>(() => notion.pages.create(finalArgs));
+    },
+
+    updatePage: (id: string, properties: Record<string, unknown>) =>
       retry<UpdatePageResponse>(() =>
-        notion.pages.update({page_id: id, properties, archived: false})
+        notion.pages.update({
+          page_id: id,
+          properties: properties as never,
+          archived: false,
+        })
       ),
-    search: (query, nextCursor = "", limit?: number) =>
-      retry<SearchResponse>(() =>
-        notion.search({
+
+    /**
+     * Searches data_sources (v5 filter) and returns a v4-compatible
+     * result shape: each result item has id === database_id so existing
+     * frontend consumers and callers that treat results as databases
+     * keep working. Results are deduped by parent database_id (databases
+     * with multiple data sources appear once; we pick data_sources[0]).
+     */
+    search: (query: string, nextCursor: string = "", limit?: number) =>
+      retry<{
+        results: Array<{
+          id: string;
+          data_source_id: string;
+          title: DatabaseObjectResponse["title"];
+          name: string;
+          url: string;
+          object: "database";
+        }>;
+        next_cursor: string | null;
+        has_more: boolean;
+      }>(async () => {
+        const raw = (await notion.search({
           query,
-          filter: {
-            value: "database",
-            property: "object",
-          },
-          sort: {
-            direction: "descending",
-            timestamp: "last_edited_time",
-          },
+          filter: {value: "data_source", property: "object"},
+          sort: {direction: "descending", timestamp: "last_edited_time"},
           page_size: nextCursor ? 100 : limit || 25,
           ...(nextCursor && {start_cursor: nextCursor}),
-        })
-      ),
-    query: (dbId, query, limit?: number) =>
-      // TODO: BREAKING CHANGE - Notion API 2025-09-03
-      // databases.query() may need data_source_id parameter
-      // Check if querying specific data sources within databases
-      retry<SearchResponse>(() =>
-        notion.databases.query({
-          database_id: dbId,
-          page_size: limit || 100,
-          ...query,
-        })
-      ),
-    createDatabase: (payload: CreateDatabaseParameters) =>
-      // TODO: BREAKING CHANGE - Notion API 2025-09-03
-      // databases.create() now requires 'initial_data_source' wrapper:
-      // OLD: { properties: {...} }
-      // NEW: { initial_data_source: { properties: {...} } }
-      // Must also update API version header to "2025-09-03"
-      retry<DatabaseObjectResponse>(() => notion.databases.create(payload)),
+        })) as SearchResponse;
+
+        const seen = new Set<string>();
+        const results: Array<{
+          id: string;
+          data_source_id: string;
+          title: DatabaseObjectResponse["title"];
+          name: string;
+          url: string;
+          object: "database";
+        }> = [];
+
+        for (const item of raw.results) {
+          // v5 search returns data_source objects. Each has its own `id`,
+          // a plain-string `name`, and `parent.database_id`.
+          const anyItem = item as unknown as {
+            id: string;
+            parent?: {type: string; database_id?: string};
+            name?: string | DatabaseObjectResponse["title"];
+          };
+          const dbId = anyItem.parent?.database_id;
+          if (!dbId || seen.has(dbId)) continue;
+          seen.add(dbId);
+
+          // Normalize `name` (which v5 returns as a string on data_source
+          // objects) into a rich-text array so callers expecting a v4-
+          // shaped `title` keep working. If v5 ever returns a rich-text
+          // array here, pass it through untouched.
+          const rawName = anyItem.name;
+          const nameStr: string =
+            typeof rawName === "string"
+              ? rawName
+              : Array.isArray(rawName)
+              ? rawName.map((rt) => (rt as {plain_text?: string}).plain_text ?? "").join("")
+              : "";
+          const title: DatabaseObjectResponse["title"] = Array.isArray(rawName)
+            ? (rawName as DatabaseObjectResponse["title"])
+            : nameStr
+            ? ([
+                {
+                  type: "text",
+                  text: {content: nameStr, link: null},
+                  annotations: {
+                    bold: false,
+                    italic: false,
+                    strikethrough: false,
+                    underline: false,
+                    code: false,
+                    color: "default",
+                  },
+                  plain_text: nameStr,
+                  href: null,
+                },
+              ] as unknown as DatabaseObjectResponse["title"])
+            : [];
+
+          results.push({
+            id: dbId,
+            data_source_id: anyItem.id,
+            title,
+            name: nameStr,
+            url: `https://www.notion.so/${dbId.replace(/-/g, "")}`,
+            object: "database",
+          });
+        }
+
+        return {
+          results,
+          next_cursor: raw.next_cursor,
+          has_more: raw.has_more,
+        };
+      }),
+
     deletePage: (id: string) =>
       retry<UpdatePageResponse>(() => notion.pages.update({page_id: id, archived: true})),
   };
@@ -311,10 +468,9 @@ export async function findNotionInlineDatabases(tkn: string, pageId: string) {
   try {
     const result = await poll.execute(async () => {
       try {
-        // TODO: BREAKING CHANGE - Notion API 2025-09-03
-        // Must add notionVersion: "2025-09-03" to client config
         const notion = new Client({
           auth: tkn,
+          notionVersion: "2025-09-03",
           timeoutMs: 30000,
         });
 

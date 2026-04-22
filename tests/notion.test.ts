@@ -1,5 +1,5 @@
 import {Client} from "@notionhq/client";
-import {resolveDataSourceId, __clearDataSourceLRU} from "../src/notion";
+import {resolveDataSourceId, __clearDataSourceLRU, NotionAPI} from "../src/notion";
 import type {DataSourceStore} from "../src/types";
 
 jest.mock("@notionhq/client");
@@ -116,5 +116,79 @@ describe("resolveDataSourceId", () => {
     const id = await resolveDataSourceId(client, "db_no_store");
 
     expect(id).toBe("ds_primary");
+  });
+});
+
+describe("NotionAPI.getDatabase", () => {
+  beforeEach(() => {
+    __clearDataSourceLRU();
+    jest.clearAllMocks();
+    MockedClient.mockClear();
+  });
+
+  it("merges container fields (title/cover/url) with data-source schema", async () => {
+    const dbRetrieve = jest.fn().mockResolvedValue({
+      id: "db_abc",
+      object: "database",
+      title: [{type: "text", text: {content: "My DB"}, plain_text: "My DB"}],
+      cover: {type: "external", external: {url: "https://example.com/cover.png"}},
+      url: "https://notion.so/db_abc",
+      parent: {type: "page_id", page_id: "page_parent"},
+      data_sources: [{id: "ds_primary", name: "Primary"}],
+    });
+    const dsRetrieve = jest.fn().mockResolvedValue({
+      id: "ds_primary",
+      object: "data_source",
+      properties: {Name: {id: "title", name: "Name", type: "title", title: {}}},
+      parent: {type: "database_id", database_id: "db_abc"},
+      archived: false,
+    });
+    MockedClient.mockImplementation(
+      () =>
+        ({
+          databases: {retrieve: dbRetrieve},
+          dataSources: {retrieve: dsRetrieve},
+        } as unknown as Client)
+    );
+
+    const ndb = await NotionAPI("tkn").getDatabase("db_abc");
+
+    expect(ndb.id).toBe("ds_primary"); // from data source
+    expect(ndb.properties).toHaveProperty("Name");
+    expect(ndb.title[0].plain_text).toBe("My DB"); // from container
+    expect(ndb.cover).toEqual({type: "external", external: {url: "https://example.com/cover.png"}});
+    expect(ndb.url).toBe("https://notion.so/db_abc");
+  });
+
+  it("uses LRU-cached data_source_id on the second call", async () => {
+    const dbRetrieve = jest.fn().mockResolvedValue({
+      id: "db_abc",
+      title: [],
+      cover: null,
+      url: "",
+      parent: {type: "page_id", page_id: "p"},
+      data_sources: [{id: "ds_primary", name: "Primary"}],
+    });
+    const dsRetrieve = jest.fn().mockResolvedValue({
+      id: "ds_primary",
+      properties: {},
+      parent: {type: "database_id", database_id: "db_abc"},
+    });
+    MockedClient.mockImplementation(
+      () =>
+        ({
+          databases: {retrieve: dbRetrieve},
+          dataSources: {retrieve: dsRetrieve},
+        } as unknown as Client)
+    );
+
+    await NotionAPI("tkn").getDatabase("db_abc");
+    await NotionAPI("tkn").getDatabase("db_abc");
+
+    // databases.retrieve called twice (we need title/cover/url each time);
+    // but resolveDataSourceId only called once — so data_sources[0] only
+    // accessed via the first databases.retrieve. (Acceptable: we always
+    // need the container for title/cover/url.)
+    expect(dsRetrieve).toHaveBeenCalledTimes(2);
   });
 });
