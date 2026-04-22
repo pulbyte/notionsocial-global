@@ -1,7 +1,6 @@
 import {Client, NotionClientError} from "@notionhq/client";
 import {
   BlockObjectResponse,
-  CreateDatabaseParameters,
   CreatePageParameters,
   CreatePageResponse,
   DatabaseObjectResponse,
@@ -184,19 +183,6 @@ export function NotionAPI(accessToken: string, opts?: {store?: DataSourceStore})
           ...query,
         });
       }),
-
-    createDatabase: (payload: CreateDatabaseParameters) => {
-      // Wrap v4-style {properties} into v5-style {initial_data_source: {properties}}.
-      const {properties, ...rest} = payload as CreateDatabaseParameters & {
-        properties?: unknown;
-      };
-      const v5Payload = properties
-        ? ({...rest, initial_data_source: {properties}} as CreateDatabaseParameters)
-        : payload;
-      return retry<DatabaseObjectResponse>(
-        () => notion.databases.create(v5Payload) as Promise<DatabaseObjectResponse>
-      );
-    },
 
     getPage: (id: string) =>
       retry<GetPageResponse>(() => notion.pages.retrieve({page_id: id})),

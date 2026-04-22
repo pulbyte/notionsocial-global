@@ -243,30 +243,6 @@ describe("NotionAPI.createPage", () => {
   });
 });
 
-describe("NotionAPI.createDatabase", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    MockedClient.mockClear();
-  });
-
-  it("wraps top-level {properties} into {initial_data_source: {properties}}", async () => {
-    const dbCreate = jest.fn().mockResolvedValue({id: "db_new", object: "database"});
-    MockedClient.mockImplementation(
-      () => ({databases: {create: dbCreate}} as unknown as Client)
-    );
-
-    const parent = {type: "page_id" as const, page_id: "page_parent"};
-    const props = {Name: {type: "title" as const, title: {}}};
-
-    await NotionAPI("tkn").createDatabase({parent, properties: props} as never);
-
-    expect(dbCreate).toHaveBeenCalledWith({
-      parent,
-      initial_data_source: {properties: props},
-    });
-  });
-});
-
 describe("NotionAPI.search", () => {
   beforeEach(() => {
     jest.clearAllMocks();
