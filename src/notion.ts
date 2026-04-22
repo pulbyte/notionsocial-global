@@ -16,8 +16,98 @@ import {ignorePromiseError, retryOnCondition} from "./utils";
 import {dog} from "./logging";
 import {dev} from "./env";
 import {createCodedRichText} from "./_notion";
-import {NotionCodedTextPayload, NotionPropertyMetadata} from "./types";
+import {NotionCodedTextPayload, NotionPropertyMetadata, DataSourceStore} from "./types";
 import {PollUntil} from "poll-until-promise";
+
+// In-process cache for database_id → data_source_id.
+// Workspace-global mapping; token-independent. TTL 15 min, max 1000 entries.
+type CacheEntry = {value: string; expiresAt: number};
+const dataSourceLRU = new Map<string, CacheEntry>();
+const DS_CACHE_TTL_MS = 15 * 60 * 1000;
+const DS_CACHE_MAX = 1000;
+
+function cacheGet(databaseId: string): string | undefined {
+  const entry = dataSourceLRU.get(databaseId);
+  if (!entry) return undefined;
+  if (entry.expiresAt < Date.now()) {
+    dataSourceLRU.delete(databaseId);
+    return undefined;
+  }
+  // Refresh insertion order for LRU eviction
+  dataSourceLRU.delete(databaseId);
+  dataSourceLRU.set(databaseId, entry);
+  return entry.value;
+}
+
+function cacheSet(databaseId: string, dataSourceId: string): void {
+  if (dataSourceLRU.size >= DS_CACHE_MAX) {
+    const oldest = dataSourceLRU.keys().next().value;
+    if (oldest) dataSourceLRU.delete(oldest);
+  }
+  dataSourceLRU.set(databaseId, {
+    value: dataSourceId,
+    expiresAt: Date.now() + DS_CACHE_TTL_MS,
+  });
+}
+
+/** Test-only: clears the in-process data-source cache. Not exported from package root. */
+export function __clearDataSourceLRU(): void {
+  dataSourceLRU.clear();
+}
+
+export async function resolveDataSourceId(
+  notion: Client,
+  databaseId: string,
+  store?: DataSourceStore
+): Promise<string> {
+  const cached = cacheGet(databaseId);
+  if (cached) return cached;
+
+  if (store) {
+    try {
+      const stored = await store.read(databaseId);
+      if (stored) {
+        cacheSet(databaseId, stored);
+        return stored;
+      }
+    } catch (err) {
+      console.warn("data_source_store_read_failed", {databaseId, err: String(err)});
+      // Fall through to API lookup
+    }
+  }
+
+  const container = await notion.databases.retrieve({database_id: databaseId});
+  const dataSources = (container as {data_sources?: Array<{id: string; name: string}>})
+    .data_sources;
+
+  if (!dataSources || dataSources.length === 0) {
+    const err = Object.assign(new Error("Could not find data_source for database"), {
+      code: "object_not_found",
+      status: 404,
+    });
+    throw err;
+  }
+
+  if (dataSources.length > 1) {
+    console.warn("multi_data_source_detected", {
+      databaseId,
+      count: dataSources.length,
+      chosen: dataSources[0].id,
+    });
+  }
+
+  const chosen = dataSources[0].id;
+  cacheSet(databaseId, chosen);
+
+  if (store) {
+    // Fire-and-forget; never block the caller
+    store.write(databaseId, chosen).catch((err) => {
+      console.warn("data_source_store_write_failed", {databaseId, err: String(err)});
+    });
+  }
+
+  return chosen;
+}
 
 function retry<T>(func) {
   return retryOnCondition<T>(func, isNotionServerError, notionServerErrorMessage);
