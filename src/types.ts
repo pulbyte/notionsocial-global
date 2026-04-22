@@ -1,22 +1,24 @@
 import {PricePlanLabel, PRICING_PLAN_ID, PricingPlan} from "./pricing";
 import {
+  BlockObjectResponse,
   CheckboxPropertyItemObjectResponse,
+  DatabaseObjectResponse,
   DatePropertyItemObjectResponse,
   EmailPropertyItemObjectResponse,
   FilesPropertyItemObjectResponse,
+  FormulaPropertyItemObjectResponse,
+  GetDataSourceResponse,
   GetPageResponse,
   MultiSelectPropertyItemObjectResponse,
   NumberedListItemBlockObjectResponse,
+  PageObjectResponse,
   PhoneNumberPropertyItemObjectResponse,
-  FormulaPropertyItemObjectResponse,
+  RichTextItemResponseCommon,
   RichTextPropertyItemObjectResponse,
   SelectPropertyItemObjectResponse,
   StatusPropertyItemObjectResponse,
-  RichTextItemResponseCommon,
   TitlePropertyItemObjectResponse,
   UrlPropertyItemObjectResponse,
-  BlockObjectResponse,
-  PageObjectResponse,
 } from "@notionhq/client/build/src/api-endpoints";
 import {mybusinessaccountmanagement_v1} from "googleapis";
 import {firestore} from "firebase-admin";
@@ -131,6 +133,7 @@ export interface NotionPropertyMetadata {
 }
 export interface NotionDatabase {
   link_id: string;
+  data_source_id?: string;
   workspace_id: string;
   bot_id: string;
   author_uid: string;
@@ -897,3 +900,21 @@ export interface GmbContent {
     answer: string;
   };
 }
+
+/**
+ * Adapter injected into NotionAPI() so it can lazy-persist resolved
+ * data_source_ids without taking a direct Firestore dependency.
+ */
+export type DataSourceStore = {
+  read: (databaseId: string) => Promise<string | undefined>;
+  write: (databaseId: string, dataSourceId: string) => Promise<void>;
+};
+
+/**
+ * The shape returned by NotionAPI(tkn).getDatabase(id) in API version
+ * 2025-09-03. It merges the data source's schema (properties, archived,
+ * parent) with a subset of container-level fields (title, cover, url)
+ * that callers have historically read off the v4 DatabaseObjectResponse.
+ */
+export type NotionDatabaseSchema = GetDataSourceResponse &
+  Pick<DatabaseObjectResponse, "title" | "cover" | "url">;
