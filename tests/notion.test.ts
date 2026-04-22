@@ -192,3 +192,148 @@ describe("NotionAPI.getDatabase", () => {
     expect(dsRetrieve).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("NotionAPI.createPage", () => {
+  beforeEach(() => {
+    __clearDataSourceLRU();
+    jest.clearAllMocks();
+    MockedClient.mockClear();
+  });
+
+  it("rewrites {parent: {database_id}} to {parent: {data_source_id}}", async () => {
+    const dbRetrieve = jest.fn().mockResolvedValue({
+      data_sources: [{id: "ds_primary", name: "Primary"}],
+    });
+    const pagesCreate = jest.fn().mockResolvedValue({id: "page_new", object: "page"});
+    MockedClient.mockImplementation(
+      () =>
+        ({
+          databases: {retrieve: dbRetrieve},
+          pages: {create: pagesCreate},
+        } as unknown as Client)
+    );
+
+    await NotionAPI("tkn").createPage({
+      parent: {type: "database_id", database_id: "db_abc"},
+      properties: {Name: {title: [{text: {content: "Hi"}}]}},
+    } as never);
+
+    expect(pagesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parent: {type: "data_source_id", data_source_id: "ds_primary"},
+        properties: {Name: {title: [{text: {content: "Hi"}}]}},
+      })
+    );
+  });
+
+  it("passes through non-database parents unchanged", async () => {
+    const pagesCreate = jest.fn().mockResolvedValue({id: "page_new"});
+    MockedClient.mockImplementation(
+      () => ({pages: {create: pagesCreate}} as unknown as Client)
+    );
+
+    await NotionAPI("tkn").createPage({
+      parent: {type: "page_id", page_id: "page_parent"},
+      properties: {},
+    } as never);
+
+    expect(pagesCreate).toHaveBeenCalledWith(
+      expect.objectContaining({parent: {type: "page_id", page_id: "page_parent"}})
+    );
+  });
+});
+
+describe("NotionAPI.createDatabase", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    MockedClient.mockClear();
+  });
+
+  it("wraps top-level {properties} into {initial_data_source: {properties}}", async () => {
+    const dbCreate = jest.fn().mockResolvedValue({id: "db_new", object: "database"});
+    MockedClient.mockImplementation(
+      () => ({databases: {create: dbCreate}} as unknown as Client)
+    );
+
+    const parent = {type: "page_id" as const, page_id: "page_parent"};
+    const props = {Name: {type: "title" as const, title: {}}};
+
+    await NotionAPI("tkn").createDatabase({parent, properties: props} as never);
+
+    expect(dbCreate).toHaveBeenCalledWith({
+      parent,
+      initial_data_source: {properties: props},
+    });
+  });
+});
+
+describe("NotionAPI.search", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    MockedClient.mockClear();
+  });
+
+  it("filters on 'data_source' and dedups by parent.database_id", async () => {
+    function makeTitle(text: string) {
+      return [
+        {
+          type: "text",
+          text: {content: text, link: null},
+          annotations: {
+            bold: false,
+            italic: false,
+            strikethrough: false,
+            underline: false,
+            code: false,
+            color: "default",
+          },
+          plain_text: text,
+          href: null,
+        },
+      ];
+    }
+    const search = jest.fn().mockResolvedValue({
+      results: [
+        {
+          object: "data_source",
+          id: "ds_1a",
+          parent: {type: "database_id", database_id: "db_A"},
+          title: makeTitle("Alpha"),
+        },
+        {
+          object: "data_source",
+          id: "ds_1b",
+          parent: {type: "database_id", database_id: "db_A"}, // same db
+          title: makeTitle("Alpha Secondary"),
+        },
+        {
+          object: "data_source",
+          id: "ds_2",
+          parent: {type: "database_id", database_id: "db_B"},
+          title: makeTitle("Bravo"),
+        },
+        // externally-synced data source: parent is data_source_id, should be skipped
+        {
+          object: "data_source",
+          id: "ds_ext",
+          parent: {type: "data_source_id", data_source_id: "ds_other"},
+          title: makeTitle("Skipped"),
+        },
+      ],
+      next_cursor: null,
+      has_more: false,
+    });
+    MockedClient.mockImplementation(() => ({search} as unknown as Client));
+
+    const resp = await NotionAPI("tkn").search("query");
+
+    expect(search).toHaveBeenCalledWith(
+      expect.objectContaining({filter: {value: "data_source", property: "object"}})
+    );
+    expect(resp.results).toHaveLength(2);
+    expect(resp.results.map((r) => r.id)).toEqual(["db_A", "db_B"]);
+    expect(resp.results[0].data_source_id).toBe("ds_1a");
+    expect(resp.results[0].name).toBe("Alpha");
+    expect(resp.results[0].title[0].plain_text).toBe("Alpha");
+  });
+});
