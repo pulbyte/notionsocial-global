@@ -326,7 +326,9 @@ export function getNotionError(err: NotionClientError | any) {
       isTknError: code == APIErrorCode.Unauthorized,
       isVldError: !isPageError && code == APIErrorCode.ValidationError,
       isDltError:
-        (!isPageError || message?.includes("Could not find database")) &&
+        (!isPageError ||
+          message?.includes("Could not find database") ||
+          message?.includes("Could not find data_source")) &&
         code == APIErrorCode.ObjectNotFound,
       code,
       status,
