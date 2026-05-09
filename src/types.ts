@@ -243,6 +243,13 @@ export interface UserData {
   notion_db_limit: number;
   notion_db_count: number;
   notion_db_limit_incr?: number;
+  /**
+   * When true, sm_acc_limit_incr and notion_db_limit_incr are derived from
+   * Stripe subscription items by stripeWebhook → syncAddonIncrements.
+   * When false/missing, those fields remain manually-managed (legacy).
+   * Set true at user creation; backfilled by migration script for existing users.
+   */
+  addon_managed?: boolean;
 
   on_connection?: {
     sm_acc?: {
@@ -508,6 +515,13 @@ export interface User {
   notion_db_limit: number;
   notion_db_count: number;
   notion_db_limit_incr?: number;
+  /**
+   * When true, sm_acc_limit_incr and notion_db_limit_incr are derived from
+   * Stripe subscription items by stripeWebhook → syncAddonIncrements.
+   * When false/missing, those fields remain manually-managed (legacy).
+   * Set true at user creation; backfilled by migration script for existing users.
+   */
+  addon_managed?: boolean;
   affiliate_partner?: boolean;
   customLimits?: boolean;
   affiliate?: Affiliate;
