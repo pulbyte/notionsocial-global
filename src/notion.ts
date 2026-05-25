@@ -63,58 +63,96 @@ export function __clearDataSourceLRU(): void {
   dataSourceLRU.clear();
 }
 
+/**
+ * Resolve `id` to a `data_source_id`.
+ *
+ * `id` may be either:
+ *  - a Notion **database** (container) id — we read its `data_sources[]` and
+ *    return the first entry (warning on multi-source containers), OR
+ *  - a Notion **data_source** id — we accept it verbatim (after a sanity
+ *    `dataSources.retrieve` to confirm existence).
+ *
+ * The dual-input behaviour lets callers connect a *specific* data source in
+ * a multi-source container by passing its `data_source_id` directly, instead
+ * of always being forced onto `data_sources[0]`.
+ */
 export async function resolveDataSourceId(
   notion: Client,
-  databaseId: string,
+  id: string,
   store?: DataSourceStore
 ): Promise<string> {
-  const cached = cacheGet(databaseId);
+  const cached = cacheGet(id);
   if (cached) return cached;
 
   if (store) {
     try {
-      const stored = await store.read(databaseId);
+      const stored = await store.read(id);
       if (stored) {
-        cacheSet(databaseId, stored);
+        cacheSet(id, stored);
         return stored;
       }
     } catch (err) {
-      console.warn("data_source_store_read_failed", {databaseId, err: String(err)});
+      console.warn("data_source_store_read_failed", {id, err: String(err)});
       // Fall through to API lookup
     }
   }
 
-  const container = await notion.databases.retrieve({database_id: databaseId});
-  const dataSources = (container as {data_sources?: Array<{id: string; name: string}>})
-    .data_sources;
+  // Try `id` as a database_id first. If Notion returns object_not_found, fall
+  // back to treating it as a data_source_id (callers may pass either).
+  try {
+    const container = await notion.databases.retrieve({database_id: id});
+    const dataSources = (container as {data_sources?: Array<{id: string; name: string}>})
+      .data_sources;
 
-  if (!dataSources || dataSources.length === 0) {
-    const err = Object.assign(new Error("Could not find data_source for database"), {
-      code: "object_not_found",
-      status: 404,
-    });
-    throw err;
+    if (!dataSources || dataSources.length === 0) {
+      throw Object.assign(new Error("Could not find data_source for database"), {
+        code: "object_not_found",
+        status: 404,
+      });
+    }
+
+    if (dataSources.length > 1) {
+      console.warn("multi_data_source_detected", {
+        databaseId: id,
+        count: dataSources.length,
+        chosen: dataSources[0].id,
+      });
+    }
+
+    const chosen = dataSources[0].id;
+    cacheSet(id, chosen);
+
+    if (store) {
+      store.write(id, chosen).catch((err) => {
+        console.warn("data_source_store_write_failed", {databaseId: id, err: String(err)});
+      });
+    }
+
+    return chosen;
+  } catch (err) {
+    const code = (err as {code?: string})?.code;
+    const status = (err as {status?: number})?.status;
+    const isNotFound = code === "object_not_found" || status === 404;
+    if (!isNotFound) throw err;
+
+    // Fallback: maybe `id` is itself a data_source_id.
+    let ds: unknown;
+    try {
+      ds = await notion.dataSources.retrieve({data_source_id: id});
+    } catch {
+      throw err; // not a data_source either — re-throw the original 404
+    }
+    const dsType = (ds as {object?: string})?.object;
+    if (dsType !== "data_source") throw err;
+
+    cacheSet(id, id);
+    if (store) {
+      store.write(id, id).catch((err2) => {
+        console.warn("data_source_store_write_failed", {id, err: String(err2)});
+      });
+    }
+    return id;
   }
-
-  if (dataSources.length > 1) {
-    console.warn("multi_data_source_detected", {
-      databaseId,
-      count: dataSources.length,
-      chosen: dataSources[0].id,
-    });
-  }
-
-  const chosen = dataSources[0].id;
-  cacheSet(databaseId, chosen);
-
-  if (store) {
-    // Fire-and-forget; never block the caller
-    store.write(databaseId, chosen).catch((err) => {
-      console.warn("data_source_store_write_failed", {databaseId, err: String(err)});
-    });
-  }
-
-  return chosen;
 }
 
 function retry<T>(func) {
@@ -137,10 +175,45 @@ export function NotionAPI(accessToken: string, opts?: {store?: DataSourceStore})
      * Returns the data source's schema merged with container-level
      * title/cover/url. Preserves the v4 caller contract even though the
      * underlying endpoint split into databases + dataSources.
+     *
+     * Accepts either a database_id or a data_source_id. When given a
+     * data_source_id, the container database_id is read off the data
+     * source's `parent.database_id` field.
      */
     getDatabase: async (id: string): Promise<NotionDatabaseSchema> =>
       retry<NotionDatabaseSchema>(async () => {
         const dsId = await resolve(id);
+        // If `id` resolved to itself, the caller passed a data_source_id.
+        // We need to fetch the data source first to learn its parent
+        // database_id (for title/cover/url).
+        if (id === dsId) {
+          const ds = (await notion.dataSources.retrieve({
+            data_source_id: dsId,
+          })) as GetDataSourceResponse & {
+            parent?: {type: string; database_id?: string};
+          };
+          const dbId =
+            ds.parent?.type === "database_id" ? ds.parent.database_id : undefined;
+          if (!dbId) {
+            // Externally-synced data source (parent is itself a data_source).
+            // No container to read title/cover/url from; return what we have.
+            return {
+              ...ds,
+              title: [] as DatabaseObjectResponse["title"],
+              cover: null,
+              url: "",
+            };
+          }
+          const container = (await notion.databases.retrieve({
+            database_id: dbId,
+          })) as DatabaseObjectResponse;
+          return {
+            ...ds,
+            title: container.title,
+            cover: container.cover,
+            url: container.url,
+          };
+        }
         const [container, ds] = await Promise.all([
           notion.databases.retrieve({database_id: id}) as Promise<DatabaseObjectResponse>,
           notion.dataSources.retrieve({data_source_id: dsId}) as Promise<GetDataSourceResponse>,

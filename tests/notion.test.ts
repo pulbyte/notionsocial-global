@@ -6,8 +6,11 @@ jest.mock("@notionhq/client");
 
 const MockedClient = Client as jest.MockedClass<typeof Client>;
 
-function makeClient(retrieve: jest.Mock): Client {
-  const instance = {databases: {retrieve}} as unknown as Client;
+function makeClient(retrieve: jest.Mock, dsRetrieve?: jest.Mock): Client {
+  const instance = {
+    databases: {retrieve},
+    ...(dsRetrieve && {dataSources: {retrieve: dsRetrieve}}),
+  } as unknown as Client;
   return instance;
 }
 
@@ -96,15 +99,81 @@ describe("resolveDataSourceId", () => {
     });
   });
 
-  it("propagates errors from databases.retrieve", async () => {
+  it("propagates errors from databases.retrieve when data_source fallback also fails", async () => {
     const err = Object.assign(new Error("Could not find database"), {
       code: "object_not_found",
       status: 404,
     });
     const retrieve = jest.fn().mockRejectedValue(err);
-    const client = makeClient(retrieve);
+    const dsRetrieve = jest.fn().mockRejectedValue(
+      Object.assign(new Error("Could not find data_source"), {
+        code: "object_not_found",
+        status: 404,
+      })
+    );
+    const client = makeClient(retrieve, dsRetrieve);
 
     await expect(resolveDataSourceId(client, "db_deleted")).rejects.toBe(err);
+  });
+
+  it("propagates non-404 errors from databases.retrieve without trying data_source fallback", async () => {
+    const err = Object.assign(new Error("Unauthorized"), {
+      code: "unauthorized",
+      status: 401,
+    });
+    const retrieve = jest.fn().mockRejectedValue(err);
+    const dsRetrieve = jest.fn();
+    const client = makeClient(retrieve, dsRetrieve);
+
+    await expect(resolveDataSourceId(client, "db_x")).rejects.toBe(err);
+    expect(dsRetrieve).not.toHaveBeenCalled();
+  });
+
+  it("accepts a data_source_id and returns it verbatim when databases.retrieve 404s", async () => {
+    const retrieve = jest.fn().mockRejectedValue(
+      Object.assign(new Error("Could not find database"), {
+        code: "object_not_found",
+        status: 404,
+      })
+    );
+    const dsRetrieve = jest.fn().mockResolvedValue({
+      id: "ds_direct",
+      object: "data_source",
+      parent: {type: "database_id", database_id: "db_parent"},
+      properties: {},
+    });
+    const client = makeClient(retrieve, dsRetrieve);
+    const store = makeStore();
+
+    const id = await resolveDataSourceId(client, "ds_direct", store);
+
+    expect(id).toBe("ds_direct");
+    expect(retrieve).toHaveBeenCalledWith({database_id: "ds_direct"});
+    expect(dsRetrieve).toHaveBeenCalledWith({data_source_id: "ds_direct"});
+    await new Promise((r) => setImmediate(r));
+    expect(store.write).toHaveBeenCalledWith("ds_direct", "ds_direct");
+  });
+
+  it("caches data_source_id input so a second call skips both Notion endpoints", async () => {
+    const retrieve = jest.fn().mockRejectedValue(
+      Object.assign(new Error("Could not find database"), {
+        code: "object_not_found",
+        status: 404,
+      })
+    );
+    const dsRetrieve = jest.fn().mockResolvedValue({
+      id: "ds_direct",
+      object: "data_source",
+      parent: {type: "database_id", database_id: "db_parent"},
+      properties: {},
+    });
+    const client = makeClient(retrieve, dsRetrieve);
+
+    await resolveDataSourceId(client, "ds_direct");
+    await resolveDataSourceId(client, "ds_direct");
+
+    expect(retrieve).toHaveBeenCalledTimes(1);
+    expect(dsRetrieve).toHaveBeenCalledTimes(1);
   });
 
   it("works without a store (scripts/post-process use case)", async () => {
@@ -158,6 +227,81 @@ describe("NotionAPI.getDatabase", () => {
     expect(ndb.title[0].plain_text).toBe("My DB"); // from container
     expect(ndb.cover).toEqual({type: "external", external: {url: "https://example.com/cover.png"}});
     expect(ndb.url).toBe("https://notion.so/db_abc");
+  });
+
+  it("accepts a data_source_id and reads container from its parent.database_id", async () => {
+    const dbRetrieve = jest
+      .fn()
+      // First call: caller passed ds_direct as `id`, databases.retrieve 404s.
+      .mockRejectedValueOnce(
+        Object.assign(new Error("Could not find database"), {
+          code: "object_not_found",
+          status: 404,
+        })
+      )
+      // Second call: getDatabase fetches the parent container.
+      .mockResolvedValueOnce({
+        id: "db_parent",
+        object: "database",
+        title: [{type: "text", text: {content: "Parent"}, plain_text: "Parent"}],
+        cover: null,
+        url: "https://notion.so/db_parent",
+        parent: {type: "page_id", page_id: "p"},
+        data_sources: [{id: "ds_direct", name: "Direct"}],
+      });
+    const dsRetrieve = jest.fn().mockResolvedValue({
+      id: "ds_direct",
+      object: "data_source",
+      parent: {type: "database_id", database_id: "db_parent"},
+      properties: {Name: {id: "title", name: "Name", type: "title", title: {}}},
+      archived: false,
+    });
+    MockedClient.mockImplementation(
+      () =>
+        ({
+          databases: {retrieve: dbRetrieve},
+          dataSources: {retrieve: dsRetrieve},
+        } as unknown as Client)
+    );
+
+    const ndb = await NotionAPI("tkn").getDatabase("ds_direct");
+
+    expect(ndb.id).toBe("ds_direct");
+    expect(ndb.title[0].plain_text).toBe("Parent");
+    expect(ndb.url).toBe("https://notion.so/db_parent");
+    expect(dbRetrieve).toHaveBeenLastCalledWith({database_id: "db_parent"});
+  });
+
+  it("returns a data_source_id-only schema when the data source has no database parent", async () => {
+    const dbRetrieve = jest.fn().mockRejectedValue(
+      Object.assign(new Error("Could not find database"), {
+        code: "object_not_found",
+        status: 404,
+      })
+    );
+    const dsRetrieve = jest.fn().mockResolvedValue({
+      id: "ds_synced",
+      object: "data_source",
+      parent: {type: "data_source_id", data_source_id: "ds_other"},
+      properties: {},
+    });
+    MockedClient.mockImplementation(
+      () =>
+        ({
+          databases: {retrieve: dbRetrieve},
+          dataSources: {retrieve: dsRetrieve},
+        } as unknown as Client)
+    );
+
+    const ndb = await NotionAPI("tkn").getDatabase("ds_synced");
+
+    expect(ndb.id).toBe("ds_synced");
+    expect(ndb.title).toEqual([]);
+    expect(ndb.cover).toBeNull();
+    expect(ndb.url).toBe("");
+    // dbRetrieve was called once (for the initial database_id attempt that
+    // 404'd). It should NOT have been called a second time for a container.
+    expect(dbRetrieve).toHaveBeenCalledTimes(1);
   });
 
   it("fetches the container on every call (for fresh title/cover/url)", async () => {
