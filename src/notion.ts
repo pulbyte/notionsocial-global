@@ -66,15 +66,19 @@ export function __clearDataSourceLRU(): void {
 /**
  * Resolve `id` to a `data_source_id`.
  *
- * `id` may be either:
- *  - a Notion **database** (container) id — we read its `data_sources[]` and
- *    return the first entry (warning on multi-source containers), OR
- *  - a Notion **data_source** id — we accept it verbatim (after a sanity
- *    `dataSources.retrieve` to confirm existence).
+ * Resolution order — data_source first, database second:
+ *  1. `dataSources.retrieve({data_source_id: id})` — if it returns a
+ *     `data_source` object, treat `id` as a data_source_id and return it
+ *     verbatim. This lets callers connect a *specific* data source in a
+ *     multi-source container instead of being silently forced onto
+ *     `data_sources[0]`.
+ *  2. On `object_not_found`, fall back to
+ *     `databases.retrieve({database_id: id})` — treat `id` as the container,
+ *     pick `dataSources[0]`, and warn when multiple sources exist.
  *
- * The dual-input behaviour lets callers connect a *specific* data source in
- * a multi-source container by passing its `data_source_id` directly, instead
- * of always being forced onto `data_sources[0]`.
+ * Cost: data_source_id inputs make 1 API call; database_id inputs make 2
+ * (one 404 + one success). The result is cached, so the extra call is paid
+ * once per process per id.
  */
 export async function resolveDataSourceId(
   notion: Client,
@@ -97,66 +101,80 @@ export async function resolveDataSourceId(
     }
   }
 
-  // Try `id` as a database_id first. If Notion returns object_not_found, fall
-  // back to treating it as a data_source_id (callers may pass either).
+  // Test `id` as a data_source_id first — this lets callers connect a specific
+  // data source directly (e.g. one source out of a multi-source container)
+  // instead of always being forced onto dataSources[0]. Falls back to treating
+  // `id` as a database_id when the data_source lookup 404s.
   try {
-    const container = await notion.databases.retrieve({database_id: id});
-    const dataSources = (container as {data_sources?: Array<{id: string; name: string}>})
-      .data_sources;
-
-    if (!dataSources || dataSources.length === 0) {
-      throw Object.assign(new Error("Could not find data_source for database"), {
-        code: "object_not_found",
-        status: 404,
-      });
+    const ds = await notion.dataSources.retrieve({data_source_id: id});
+    if ((ds as {object?: string})?.object === "data_source") {
+      cacheSet(id, id);
+      if (store) {
+        store.write(id, id).catch((err) => {
+          console.warn("data_source_store_write_failed", {id, err: String(err)});
+        });
+      }
+      return id;
     }
-
-    if (dataSources.length > 1) {
-      console.warn("multi_data_source_detected", {
-        databaseId: id,
-        count: dataSources.length,
-        chosen: dataSources[0].id,
-      });
-    }
-
-    const chosen = dataSources[0].id;
-    cacheSet(id, chosen);
-
-    if (store) {
-      store.write(id, chosen).catch((err) => {
-        console.warn("data_source_store_write_failed", {databaseId: id, err: String(err)});
-      });
-    }
-
-    return chosen;
+    // Fall through if the response shape isn't a data_source (shouldn't happen)
   } catch (err) {
     const code = (err as {code?: string})?.code;
     const status = (err as {status?: number})?.status;
     const isNotFound = code === "object_not_found" || status === 404;
     if (!isNotFound) throw err;
-
-    // Fallback: maybe `id` is itself a data_source_id.
-    let ds: unknown;
-    try {
-      ds = await notion.dataSources.retrieve({data_source_id: id});
-    } catch {
-      throw err; // not a data_source either — re-throw the original 404
-    }
-    const dsType = (ds as {object?: string})?.object;
-    if (dsType !== "data_source") throw err;
-
-    cacheSet(id, id);
-    if (store) {
-      store.write(id, id).catch((err2) => {
-        console.warn("data_source_store_write_failed", {id, err: String(err2)});
-      });
-    }
-    return id;
+    // Otherwise fall through to the database_id path below.
   }
+
+  // Treat `id` as a database_id (container). Pick its dataSources[0], warning
+  // when multi-source so the silent choice is auditable.
+  const container = await notion.databases.retrieve({database_id: id});
+  const dataSources = (container as {data_sources?: Array<{id: string; name: string}>})
+    .data_sources;
+
+  if (!dataSources || dataSources.length === 0) {
+    throw Object.assign(new Error("Could not find data_source for database"), {
+      code: "object_not_found",
+      status: 404,
+    });
+  }
+
+  if (dataSources.length > 1) {
+    console.warn("multi_data_source_detected", {
+      databaseId: id,
+      count: dataSources.length,
+      chosen: dataSources[0].id,
+    });
+  }
+
+  const chosen = dataSources[0].id;
+  cacheSet(id, chosen);
+
+  if (store) {
+    store.write(id, chosen).catch((err) => {
+      console.warn("data_source_store_write_failed", {databaseId: id, err: String(err)});
+    });
+  }
+
+  return chosen;
 }
 
 function retry<T>(func) {
   return retryOnCondition<T>(func, isNotionServerError, notionServerErrorMessage);
+}
+
+/**
+ * Prefer the data source's own title when it has one. Multi-source databases
+ * carry distinct titles per data source ("Q1 Plan", "Q2 Plan", ...) under one
+ * container ("Marketing"); using the container title for every source would
+ * collapse them into a single name. Falls back to the container title only
+ * when the data source title is missing or empty.
+ */
+function pickTitle(
+  dsTitle: DatabaseObjectResponse["title"] | undefined,
+  containerTitle: DatabaseObjectResponse["title"]
+): DatabaseObjectResponse["title"] {
+  if (dsTitle && dsTitle.length > 0) return dsTitle;
+  return containerTitle;
 }
 export function NotionAPI(accessToken: string, opts?: {store?: DataSourceStore}) {
   const notion = new Client({
@@ -185,21 +203,22 @@ export function NotionAPI(accessToken: string, opts?: {store?: DataSourceStore})
         const dsId = await resolve(id);
         // If `id` resolved to itself, the caller passed a data_source_id.
         // We need to fetch the data source first to learn its parent
-        // database_id (for title/cover/url).
+        // database_id (for cover/url).
         if (id === dsId) {
           const ds = (await notion.dataSources.retrieve({
             data_source_id: dsId,
           })) as GetDataSourceResponse & {
             parent?: {type: string; database_id?: string};
+            title?: DatabaseObjectResponse["title"];
           };
           const dbId =
             ds.parent?.type === "database_id" ? ds.parent.database_id : undefined;
           if (!dbId) {
             // Externally-synced data source (parent is itself a data_source).
-            // No container to read title/cover/url from; return what we have.
+            // No container to read cover/url from; return what we have.
             return {
               ...ds,
-              title: [] as DatabaseObjectResponse["title"],
+              title: ds.title ?? ([] as DatabaseObjectResponse["title"]),
               cover: null,
               url: "",
             };
@@ -209,18 +228,25 @@ export function NotionAPI(accessToken: string, opts?: {store?: DataSourceStore})
           })) as DatabaseObjectResponse;
           return {
             ...ds,
-            title: container.title,
+            // Prefer the data source's own title — for multi-source containers
+            // it disambiguates which source the user actually picked. Fall back
+            // to the container title when the data source has none.
+            title: pickTitle(ds.title, container.title),
             cover: container.cover,
             url: container.url,
           };
         }
         const [container, ds] = await Promise.all([
           notion.databases.retrieve({database_id: id}) as Promise<DatabaseObjectResponse>,
-          notion.dataSources.retrieve({data_source_id: dsId}) as Promise<GetDataSourceResponse>,
+          notion.dataSources.retrieve({data_source_id: dsId}) as Promise<GetDataSourceResponse> &
+            Promise<{title?: DatabaseObjectResponse["title"]}>,
         ]);
         return {
           ...ds,
-          title: container.title,
+          title: pickTitle(
+            (ds as {title?: DatabaseObjectResponse["title"]}).title,
+            container.title
+          ),
           cover: container.cover,
           url: container.url,
         };
