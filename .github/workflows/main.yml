@@ -12,28 +12,33 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
           registry-url: https://npm.pkg.github.com/
           scope: '@pulbyte'
       - name: List specific environment variables
         run: |
           echo "NODE_AUTH_TOKEN is set: $(if [ -n "$NODE_AUTH_TOKEN" ]; then echo 'YES'; else echo 'NO'; fi)"
         continue-on-error: true
-      - name: Create .npmrc file  
+      - name: Create .npmrc file
         run: |
           echo "@pulbyte:registry=https://npm.pkg.github.com/" > ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
-      - name: Display .npmrc content
-        run: cat ~/.npmrc
-        continue-on-error: true
       - run: npm install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish
+      - name: Publish (skip if version already published)
+        run: |
+          PKG=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          if npm view "$PKG@$VER" version >/dev/null 2>&1; then
+            echo "$PKG@$VER already exists on the registry — skipping publish."
+          else
+            npm publish
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
