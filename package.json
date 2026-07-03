@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "4.3.3",
+  "version": "4.3.4",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
