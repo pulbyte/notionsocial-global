@@ -32,6 +32,11 @@
       "types": "./dist/browser.d.ts",
       "import": "./dist/browser.mjs",
       "require": "./dist/browser.js"
+    },
+    "./paypal": {
+      "types": "./dist/paypal.d.ts",
+      "import": "./dist/paypal.mjs",
+      "require": "./dist/paypal.js"
     }
   },
   "scripts": {
