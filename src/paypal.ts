@@ -7,7 +7,7 @@ export type PayPalApiEnv = "sandbox" | "live";
 /**
  * PayPal billing-plan ids, created by
  * backend/scripts/src/admin/setup-paypal-plans.ts (run once per environment).
- * Sandbox product: PROD-06X977198U0867206 · Live product: PROD-6C188532WM155205R
+ * Both environments use the custom-id product "notionsocial".
  * Variant 1 = current pricing (basic $15/$144, premium $25/$240 USD);
  * variant 0 = legacy pre-2024 pricing (basic $9/$79, premium $15/$129 USD) —
  * mirrors PRICING_PLANS in ./pricing.ts.
@@ -19,44 +19,44 @@ export const PAYPAL_PLAN_IDS: Record<
   sandbox: {
     0: {
       basic: {
-        monthly: "P-0JB280131P8402545NJZQWSY",
-        yearly: "P-42B604269W338854KNJZQWTA",
+        monthly: "P-7Y329588AK962671XNJZQZYY",
+        yearly: "P-4LE01406GC664872VNJZQZZA",
       },
       premium: {
-        monthly: "P-28242562457049356NJZQWTI",
-        yearly: "P-7VR40234NX001921GNJZQWTY",
+        monthly: "P-8N842914MV5487535NJZQZZI",
+        yearly: "P-793105841C601230CNJZQZZQ",
       },
     },
     1: {
       basic: {
-        monthly: "P-3F6631417M235690RNJZQUMA",
-        yearly: "P-22N71347U65763154NJZQUMQ",
+        monthly: "P-02A22592543775841NJZQZXQ",
+        yearly: "P-44C78603UK982920RNJZQZXY",
       },
       premium: {
-        monthly: "P-0JK089259M097533BNJZQUMY",
-        yearly: "P-57L539444U3739027NJZQUNA",
+        monthly: "P-791135765G2223539NJZQZYA",
+        yearly: "P-3X647860AB1532539NJZQZYQ",
       },
     },
   },
   live: {
     0: {
       basic: {
-        monthly: "P-0EA98326AG747284PNJZQWVA",
-        yearly: "P-5ND96678DK2115521NJZQWVI",
+        monthly: "P-5AF90735LL952670FNJZQZSY",
+        yearly: "P-5RF890921P985323GNJZQZTA",
       },
       premium: {
-        monthly: "P-08K51027UK059051VNJZQWVI",
-        yearly: "P-8SR58330BP966130NNJZQWVQ",
+        monthly: "P-5GU06679EJ705633JNJZQZTA",
+        yearly: "P-69669336P1776374XNJZQZTI",
       },
     },
     1: {
       basic: {
-        monthly: "P-7PC89076KP891112HNJZQUPA",
-        yearly: "P-9LT713455H692541SNJZQUPA",
+        monthly: "P-9X74653088576162GNJZQZSI",
+        yearly: "P-8TT011887G263542MNJZQZSQ",
       },
       premium: {
-        monthly: "P-6EU83786A0727954TNJZQUPI",
-        yearly: "P-2DW95920TY964920LNJZQUPI",
+        monthly: "P-0UT56854N21422213NJZQZSQ",
+        yearly: "P-8C398191HR627462XNJZQZSY",
       },
     },
   },
