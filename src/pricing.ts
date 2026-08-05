@@ -8,8 +8,8 @@ import {STRIPE_SUB_STATUS} from "./types";
  *
  * The value of `PRICE_VARIANT` determines the version of the pricing plan used in the application.
  */
-type PRICE_VARIANT = 0 | 1;
-const PRICE_VARIANT: PRICE_VARIANT = 1;
+export type PRICE_VARIANT = 0 | 1;
+export const PRICE_VARIANT: PRICE_VARIANT = 1;
 export const freeMonthlyPostLimit = 10;
 const FREE_DESC = "1 Social account, 1 Notion database, 10 posts.";
 const BASIC_DESC =

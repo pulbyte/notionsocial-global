@@ -1,4 +1,5 @@
 export * from "./pricing";
+export * from "./paypal";
 export * from "./text";
 export * from "./types";
 export * from "./compact";
