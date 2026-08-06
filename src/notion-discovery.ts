@@ -1,8 +1,7 @@
 import {Client} from "@notionhq/client";
 import {removeHyphens, notionRichTextParser} from "./text";
 import {getNotionError} from "./notion";
-import type {DiscoveryCandidate, DiscoverySource} from "./types";
-import type {DiscoveryResult} from "./types";
+import type {DiscoveryCandidate, DiscoverySource, DiscoveryResult} from "./types";
 
 export type NotionInputParse =
   | {kind: "id"; id: string; fromUrl: boolean; slugText?: string}
@@ -242,7 +241,6 @@ async function searchBranch(notion: Client, text: string): Promise<DiscoveryCand
   })) as {results: Array<Record<string, unknown>>};
 
   const out: DiscoveryCandidate[] = [];
-  const seenDb = new Set<string>();
   for (const item of raw.results) {
     const it = item as {
       object?: string; id: string;
@@ -252,8 +250,6 @@ async function searchBranch(notion: Client, text: string): Promise<DiscoveryCand
     if (it.object !== "data_source" || it.parent?.type !== "database_id" || !it.parent.database_id)
       continue;
     const dbId = removeHyphens(it.parent.database_id);
-    if (seenDb.has(dbId)) continue;
-    seenDb.add(dbId);
     out.push({
       id: dbId,
       data_source_id: it.id,

@@ -299,6 +299,26 @@ describe("discoverNotionDatabases", () => {
     expect(result.candidates[0]).toMatchObject({source: "workspace_search", title: "Secret DB (copy)"});
   });
 
+  it("surfaces sibling data sources from the same container instead of collapsing to one", async () => {
+    // Regression test: searchBranch used to dedupe by container (database_id),
+    // silently dropping every data source after the first for a multi-source
+    // container. A typed-name search must return a distinct candidate per
+    // data source, not one card per container.
+    const client = mockClient({
+      search: jest.fn().mockResolvedValue(
+        searchResponse([
+          {id: "dbmulti", ds: "ds-a", name: "Q1 Plan"},
+          {id: "dbmulti", ds: "ds-b", name: "Q2 Plan"},
+        ])
+      ),
+    });
+    const result = await discoverNotionDatabases("tkn", "Plan", {notionClient: client});
+    expect(result.status).toBe("ok");
+    expect(result.candidates).toHaveLength(2);
+    expect(result.candidates.map((c) => c.data_source_id).sort()).toEqual(["ds-a", "ds-b"]);
+    expect(result.candidates.every((c) => c.id === "dbmulti")).toBe(true);
+  });
+
   it("classifies unauthorized as token_error", async () => {
     const authErr = Object.assign(new Error("API token is invalid."), {
       code: "unauthorized", status: 401,
