@@ -232,3 +232,100 @@ describe("pageBranch", () => {
     await expect(pageBranch(notion, "nope")).rejects.toMatchObject({code: "object_not_found"});
   });
 });
+
+import {discoverNotionDatabases} from "../src/notion-discovery";
+
+function searchResponse(items: Array<{id: string; ds: string; name: string}>) {
+  return {
+    results: items.map((i) => ({
+      object: "data_source",
+      id: i.ds,
+      parent: {type: "database_id", database_id: i.id},
+      title: [{plain_text: i.name}],
+    })),
+    next_cursor: null,
+    has_more: false,
+  };
+}
+
+function mockClient(overrides: Partial<Record<string, unknown>> = {}): Client {
+  return {
+    dataSources: {retrieve: jest.fn().mockRejectedValue(notFoundErr())},
+    databases: {retrieve: jest.fn().mockRejectedValue(notFoundErr())},
+    pages: {retrieve: jest.fn().mockRejectedValue(notFoundErr())},
+    blocks: {children: {list: jest.fn().mockResolvedValue({results: []})}},
+    search: jest.fn().mockResolvedValue(searchResponse([])),
+    ...overrides,
+  } as unknown as Client;
+}
+
+describe("discoverNotionDatabases", () => {
+  it("returns nothing_found immediately for empty input", async () => {
+    const result = await discoverNotionDatabases("tkn", "", {notionClient: mockClient()});
+    expect(result.status).toBe("nothing_found");
+    expect(result.candidates).toEqual([]);
+  });
+
+  it("returns ok with direct candidates for a database id", async () => {
+    const client = mockClient({
+      databases: {retrieve: jest.fn().mockResolvedValue(CONTAINER)},
+    });
+    const result = await discoverNotionDatabases(
+      "tkn", "3f2a8b1c4d5e6f708192a3b4c5d6e7f8", {notionClient: client}
+    );
+    expect(result.status).toBe("ok");
+    expect(result.candidates.map((c) => c.source)).toEqual(["direct", "sibling_source"]);
+  });
+
+  it("classifies unreachable pasted-URL ids with empty search as no_access", async () => {
+    const result = await discoverNotionDatabases(
+      "tkn", "https://notion.so/Secret-DB-3f2a8b1c4d5e6f708192a3b4c5d6e7f8",
+      {notionClient: mockClient()}
+    );
+    expect(result.status).toBe("no_access");
+  });
+
+  it("falls back to workspace search from the URL slug", async () => {
+    const client = mockClient({
+      search: jest.fn().mockResolvedValue(
+        searchResponse([{id: "db-9", ds: "ds-9", name: "Secret DB (copy)"}])
+      ),
+    });
+    const result = await discoverNotionDatabases(
+      "tkn", "https://notion.so/Secret-DB-3f2a8b1c4d5e6f708192a3b4c5d6e7f8",
+      {notionClient: client}
+    );
+    expect(result.status).toBe("ok");
+    expect(result.candidates[0]).toMatchObject({source: "workspace_search", title: "Secret DB (copy)"});
+  });
+
+  it("classifies unauthorized as token_error", async () => {
+    const authErr = Object.assign(new Error("API token is invalid."), {
+      code: "unauthorized", status: 401,
+    });
+    const client = mockClient({
+      dataSources: {retrieve: jest.fn().mockRejectedValue(authErr)},
+      databases: {retrieve: jest.fn().mockRejectedValue(authErr)},
+      pages: {retrieve: jest.fn().mockRejectedValue(authErr)},
+    });
+    const result = await discoverNotionDatabases(
+      "tkn", "3f2a8b1c4d5e6f708192a3b4c5d6e7f8", {notionClient: client}
+    );
+    expect(result.status).toBe("token_error");
+  });
+
+  it("drops branches that exceed the budget instead of failing", async () => {
+    const never = new Promise(() => {});
+    const client = mockClient({
+      pages: {retrieve: jest.fn().mockReturnValue(never)},
+      databases: {retrieve: jest.fn().mockResolvedValue(CONTAINER)},
+    });
+    const result = await discoverNotionDatabases(
+      "tkn", "3f2a8b1c4d5e6f708192a3b4c5d6e7f8",
+      {notionClient: client, budgetMs: 200}
+    );
+    expect(result.status).toBe("ok"); // direct branch still delivered
+    expect(result.branches_completed).toContain("direct");
+    expect(result.branches_completed).not.toContain("page");
+  });
+});

@@ -1,6 +1,8 @@
-import type {Client} from "@notionhq/client";
+import {Client} from "@notionhq/client";
 import {removeHyphens, notionRichTextParser} from "./text";
+import {getNotionError} from "./notion";
 import type {DiscoveryCandidate, DiscoverySource} from "./types";
+import type {DiscoveryResult} from "./types";
 
 export type NotionInputParse =
   | {kind: "id"; id: string; fromUrl: boolean; slugText?: string}
@@ -210,4 +212,128 @@ export async function pageBranch(notion: Client, id: string): Promise<DiscoveryC
     }
   }
   return out;
+}
+
+const DEFAULT_BUDGET_MS = 4000;
+const SEARCH_LIMIT = 5;
+
+function withBudget<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(Object.assign(new Error("discovery_budget_exceeded"), {budget: true})),
+      ms
+    );
+    (timer as {unref?: () => void}).unref?.();
+    p.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); }
+    );
+  });
+}
+
+/** v5 raw search → candidates. Mirrors NotionAPI().search mapping. */
+async function searchBranch(notion: Client, text: string): Promise<DiscoveryCandidate[]> {
+  if (!text) return [];
+  const raw = (await notion.search({
+    query: text,
+    filter: {value: "data_source", property: "object"},
+    sort: {direction: "descending", timestamp: "last_edited_time"},
+    page_size: SEARCH_LIMIT,
+  })) as {results: Array<Record<string, unknown>>};
+
+  const out: DiscoveryCandidate[] = [];
+  const seenDb = new Set<string>();
+  for (const item of raw.results) {
+    const it = item as {
+      object?: string; id: string;
+      parent?: {type?: string; database_id?: string};
+      title?: Array<{plain_text?: string}>;
+    };
+    if (it.object !== "data_source" || it.parent?.type !== "database_id" || !it.parent.database_id)
+      continue;
+    const dbId = removeHyphens(it.parent.database_id);
+    if (seenDb.has(dbId)) continue;
+    seenDb.add(dbId);
+    out.push({
+      id: dbId,
+      data_source_id: it.id,
+      title: (it.title || []).map((t) => t.plain_text ?? "").join("") || "Untitled",
+      icon: null,
+      url: `https://www.notion.so/${dbId}`,
+      breadcrumb: [],
+      source: "workspace_search",
+    });
+  }
+  return out;
+}
+
+export async function discoverNotionDatabases(
+  accessToken: string,
+  rawInput: string,
+  opts?: {budgetMs?: number; notionClient?: Client}
+): Promise<DiscoveryResult> {
+  const start = Date.now();
+  const budgetMs = opts?.budgetMs ?? DEFAULT_BUDGET_MS;
+  const parsed = parseNotionInput(rawInput);
+
+  const base: Omit<DiscoveryResult, "status"> = {
+    input_kind: parsed.kind,
+    candidates: [],
+    branches_completed: [],
+    duration_ms: 0,
+  };
+  if (parsed.kind === "empty") {
+    return {...base, status: "nothing_found", duration_ms: Date.now() - start};
+  }
+
+  const notion =
+    opts?.notionClient ??
+    new Client({auth: accessToken, notionVersion: "2025-09-03", timeoutMs: 10000});
+
+  const branches: Array<{name: string; run: Promise<DiscoveryCandidate[]>}> = [];
+  if (parsed.kind === "id") {
+    branches.push({name: "direct", run: directBranch(notion, parsed.id)});
+    branches.push({name: "page", run: pageBranch(notion, parsed.id)});
+    if (parsed.slugText) branches.push({name: "search", run: searchBranch(notion, parsed.slugText)});
+  } else {
+    branches.push({name: "search", run: searchBranch(notion, parsed.text)});
+  }
+
+  const settled = await Promise.allSettled(branches.map((b) => withBudget(b.run, budgetMs)));
+
+  const lists: DiscoveryCandidate[][] = [];
+  const completed: string[] = [];
+  let sawTokenError = false;
+  let idNotFound = 0;
+  let idBranchCount = 0;
+
+  settled.forEach((s, i) => {
+    const name = branches[i].name;
+    const isIdBranch = name === "direct" || name === "page";
+    if (isIdBranch) idBranchCount++;
+    if (s.status === "fulfilled") {
+      completed.push(name);
+      lists.push(s.value);
+    } else {
+      const err = s.reason as {budget?: boolean; code?: string; status?: number};
+      if (err?.budget) return; // budget drop — silent by design
+      const notionErr = getNotionError(s.reason);
+      const isTknError = notionErr?.isTknError || err?.code === "unauthorized" || err?.status === 401;
+      if (isTknError) sawTokenError = true;
+      else if (isIdBranch && isNotFound(s.reason)) idNotFound++;
+      // Everything else (rate limit, server error): drop the branch silently.
+    }
+  });
+
+  const candidates = mergeCandidates(lists);
+  const duration_ms = Date.now() - start;
+
+  let status: DiscoveryResult["status"];
+  if (sawTokenError && candidates.length === 0) status = "token_error";
+  else if (candidates.length > 0) status = "ok";
+  else if (parsed.kind === "id" && parsed.fromUrl && idNotFound === idBranchCount && idBranchCount > 0)
+    status = "no_access";
+  else status = "nothing_found";
+
+  return {...base, status, candidates, branches_completed: completed, duration_ms};
 }
