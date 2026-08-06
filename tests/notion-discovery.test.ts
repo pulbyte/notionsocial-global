@@ -1,4 +1,4 @@
-import {parseNotionInput, containerCandidates, directBranch, mergeCandidates} from "../src/notion-discovery";
+import {parseNotionInput, containerCandidates, directBranch, mergeCandidates, pageBranch} from "../src/notion-discovery";
 import type {Client} from "@notionhq/client";
 import type {DiscoveryCandidate} from "../src/types";
 
@@ -174,5 +174,61 @@ describe("mergeCandidates", () => {
     expect(out).toHaveLength(2);
     expect(out[0]).toMatchObject({data_source_id: "a", source: "direct"});
     expect(out[1]).toMatchObject({data_source_id: "b", source: "sibling_source"});
+  });
+});
+
+describe("pageBranch", () => {
+  const ROW_PAGE = {
+    object: "page",
+    id: "page-row-1",
+    parent: {type: "data_source_id", data_source_id: "ds-111", database_id: CONTAINER.id},
+    properties: {Name: {type: "title", title: [{plain_text: "My post"}]}},
+  };
+
+  const PLAIN_PAGE = {
+    object: "page",
+    id: "page-plain-1",
+    parent: {type: "workspace", workspace: true},
+    properties: {title: {type: "title", title: [{plain_text: "Content Hub"}]}},
+  };
+
+  it("resolves a row page to its containing database as parent_of_row", async () => {
+    const notion = {
+      pages: {retrieve: jest.fn().mockResolvedValue(ROW_PAGE)},
+      databases: {retrieve: jest.fn().mockResolvedValue(CONTAINER)},
+      blocks: {children: {list: jest.fn()}},
+    } as unknown as Client;
+    const out = await pageBranch(notion, "page-row-1");
+    const row = out.find((c) => c.data_source_id === "ds-111");
+    expect(row?.source).toBe("parent_of_row");
+    expect(notion.blocks.children.list).not.toHaveBeenCalled();
+  });
+
+  it("scans a plain page's children for inline databases as found_in_link", async () => {
+    const notion = {
+      pages: {retrieve: jest.fn().mockResolvedValue(PLAIN_PAGE)},
+      blocks: {
+        children: {
+          list: jest.fn().mockResolvedValue({
+            results: [
+              {type: "paragraph", id: "b1"},
+              {type: "child_database", id: CONTAINER.id, child_database: {title: "Content DB"}},
+            ],
+          }),
+        },
+      },
+      databases: {retrieve: jest.fn().mockResolvedValue(CONTAINER)},
+    } as unknown as Client;
+    const out = await pageBranch(notion, "page-plain-1");
+    expect(out.length).toBeGreaterThan(0);
+    expect(out[0].source).toBe("found_in_link");
+    expect(out[0].breadcrumb).toEqual(["Content Hub"]);
+  });
+
+  it("propagates not-found so the orchestrator can classify no-access", async () => {
+    const notion = {
+      pages: {retrieve: jest.fn().mockRejectedValue(notFoundErr())},
+    } as unknown as Client;
+    await expect(pageBranch(notion, "nope")).rejects.toMatchObject({code: "object_not_found"});
   });
 });

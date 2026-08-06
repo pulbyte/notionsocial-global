@@ -62,7 +62,7 @@ export function parseNotionInput(raw: string): NotionInputParse {
   return {kind: "text", text: input};
 }
 
-function isNotFound(err: unknown): boolean {
+export function isNotFound(err: unknown): boolean {
   const e = err as {code?: string; status?: number};
   return e?.code === "object_not_found" || e?.status === 404;
 }
@@ -149,4 +149,65 @@ export function mergeCandidates(lists: DiscoveryCandidate[][]): DiscoveryCandida
     }
   }
   return [...byDs.values()].sort((a, b) => SOURCE_RANK[a.source] - SOURCE_RANK[b.source]);
+}
+
+function extractPageTitle(page: unknown): string {
+  const props = (page as {properties?: Record<string, {type?: string; title?: Array<{plain_text?: string}>}>})
+    .properties;
+  if (!props) return "";
+  const titleProp = Object.values(props).find((p) => p?.type === "title");
+  return (titleProp?.title || []).map((t) => t.plain_text ?? "").join("");
+}
+
+const PAGE_CHILD_DB_CAP = 3;
+
+export async function pageBranch(notion: Client, id: string): Promise<DiscoveryCandidate[]> {
+  const page = (await notion.pages.retrieve({page_id: id})) as {
+    parent?: {type?: string; data_source_id?: string; database_id?: string};
+  };
+  const pageTitle = extractPageTitle(page);
+  const parent = page.parent;
+
+  // Row page: the user pasted a page that lives INSIDE a database — its
+  // parent is the database they want. Notion 2025-09-03 row parents are
+  // {type: "data_source_id", data_source_id, database_id}.
+  if (parent?.type === "data_source_id" || parent?.type === "database_id") {
+    const dbId = parent.database_id;
+    const dsId = parent.data_source_id;
+    if (dbId) {
+      const container = await notion.databases.retrieve({database_id: dbId});
+      return containerCandidates(container, dsId).map((c) => ({
+        ...c,
+        breadcrumb: pageTitle ? [pageTitle] : [],
+        source: c.source === "direct" ? ("parent_of_row" as const) : c.source,
+      }));
+    }
+    return [];
+  }
+
+  // Plain page: one level of children only — discovery must stay fast, unlike
+  // the exhaustive findNotionInlineDatabases used post-OAuth.
+  const children = (await notion.blocks.children.list({block_id: id, page_size: 100})) as {
+    results: Array<{type?: string; id: string}>;
+  };
+  const childDbs = children.results
+    .filter((b) => b.type === "child_database")
+    .slice(0, PAGE_CHILD_DB_CAP);
+
+  const out: DiscoveryCandidate[] = [];
+  for (const block of childDbs) {
+    try {
+      const container = await notion.databases.retrieve({database_id: block.id});
+      out.push(
+        ...containerCandidates(container).map((c) => ({
+          ...c,
+          breadcrumb: pageTitle ? [pageTitle] : [],
+          source: c.source === "direct" ? ("found_in_link" as const) : c.source,
+        }))
+      );
+    } catch (err) {
+      if (!isNotFound(err)) throw err; // skip unreadable child, keep the rest
+    }
+  }
+  return out;
 }
