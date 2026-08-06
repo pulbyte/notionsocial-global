@@ -87,8 +87,11 @@ export function containerCandidates(
   const url = c.url || `https://www.notion.so/${dbId}`;
   const sources = c.data_sources ?? [];
 
+  // When preferredDsId is provided but not found, fall back to i===0 as direct
+  const foundPreferred = preferredDsId && sources.some((s) => s.id === preferredDsId);
   return sources.map((s, i) => {
     const isChosen = preferredDsId ? s.id === preferredDsId : i === 0;
+    const isFallback = preferredDsId && !foundPreferred && i === 0;
     return {
       id: dbId,
       data_source_id: s.id,
@@ -96,7 +99,7 @@ export function containerCandidates(
       icon,
       url,
       breadcrumb: [],
-      source: (isChosen ? "direct" : "sibling_source") as DiscoverySource,
+      source: ((isChosen || isFallback) ? "direct" : "sibling_source") as DiscoverySource,
     };
   });
 }
@@ -108,20 +111,22 @@ export function containerCandidates(
  * orchestrator can classify token errors and no-access.
  */
 export async function directBranch(notion: Client, id: string): Promise<DiscoveryCandidate[]> {
+  let ds: {object?: string; id: string; parent?: {type?: string; database_id?: string}} | undefined;
   try {
-    const ds = (await notion.dataSources.retrieve({data_source_id: id})) as {
+    ds = (await notion.dataSources.retrieve({data_source_id: id})) as {
       object?: string;
       id: string;
       parent?: {type?: string; database_id?: string};
     };
-    if (ds?.object === "data_source") {
-      const dbId = ds.parent?.type === "database_id" ? ds.parent.database_id : undefined;
-      if (!dbId) return []; // externally-synced source with no container
-      const container = await notion.databases.retrieve({database_id: dbId});
-      return containerCandidates(container, ds.id);
-    }
   } catch (err) {
     if (!isNotFound(err)) throw err;
+  }
+
+  if (ds?.object === "data_source") {
+    const dbId = ds.parent?.type === "database_id" ? ds.parent.database_id : undefined;
+    if (!dbId) return []; // externally-synced source with no container
+    const container = await notion.databases.retrieve({database_id: dbId});
+    return containerCandidates(container, ds.id);
   }
   const container = await notion.databases.retrieve({database_id: id});
   return containerCandidates(container);

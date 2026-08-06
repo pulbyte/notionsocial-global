@@ -97,6 +97,12 @@ describe("containerCandidates", () => {
     expect(out.find((c) => c.data_source_id === "ds-222")?.source).toBe("direct");
     expect(out.find((c) => c.data_source_id === "ds-111")?.source).toBe("sibling_source");
   });
+
+  it("falls back to first source when preferred data source is not found", () => {
+    const out = containerCandidates(CONTAINER, "ds-nonexistent");
+    expect(out.find((c) => c.data_source_id === "ds-111")?.source).toBe("direct");
+    expect(out.find((c) => c.data_source_id === "ds-222")?.source).toBe("sibling_source");
+  });
 });
 
 describe("directBranch", () => {
@@ -133,6 +139,26 @@ describe("directBranch", () => {
     await expect(directBranch(notion, "3f2a8b1c4d5e6f708192a3b4c5d6e7f8")).rejects.toThrow(
       "Unauthorized"
     );
+  });
+
+  it("propagates errors from parent container fetch after successful data_source resolve", async () => {
+    const containerNotFoundErr = Object.assign(new Error("Database not found"), {
+      code: "object_not_found",
+      status: 404,
+    });
+    const datasourceRetrieve = jest.fn().mockResolvedValue({
+      object: "data_source",
+      id: "ds-222",
+      parent: {type: "database_id", database_id: "parent-db-id"},
+    });
+    const databasesRetrieve = jest.fn().mockRejectedValue(containerNotFoundErr);
+    const notion = {
+      dataSources: {retrieve: datasourceRetrieve},
+      databases: {retrieve: databasesRetrieve},
+    } as unknown as Client;
+    await expect(directBranch(notion, "ds-222")).rejects.toThrow("Database not found");
+    expect(databasesRetrieve).toHaveBeenCalledTimes(1);
+    expect(databasesRetrieve).toHaveBeenCalledWith({database_id: "parent-db-id"});
   });
 });
 
