@@ -932,3 +932,24 @@ export type DataSourceStore = {
  */
 export type NotionDatabaseSchema = GetDataSourceResponse &
   Pick<DatabaseObjectResponse, "title" | "cover" | "url">;
+
+export type DiscoverySource =
+  | "direct" | "found_in_link" | "parent_of_row" | "sibling_source" | "workspace_search";
+export interface DiscoveryCandidate {
+  id: string;                 // database container id, hyphen-less
+  data_source_id: string;
+  title: string;              // plain text
+  icon: string | null;        // emoji char or external image url
+  url: string;
+  breadcrumb: string[];       // e.g. ["Content Hub"] — best effort, may be []
+  source: DiscoverySource;
+  already_connected?: boolean | "other_account"; // filled by the backend, not by global
+}
+export type DiscoveryStatus = "ok" | "no_access" | "nothing_found" | "token_error";
+export interface DiscoveryResult {
+  status: DiscoveryStatus;
+  input_kind: "id" | "text" | "empty";
+  candidates: DiscoveryCandidate[];
+  branches_completed: string[]; // e.g. ["direct", "search"] — for telemetry
+  duration_ms: number;
+}
