@@ -96,3 +96,16 @@ The system supports extensive configuration through `NotionDatabase` interface i
 - External dependency: `@pulbyte/social-stack-lib` (platform integrations)
 - Publishes to GitHub Packages registry
 - Browser build excludes Node.js-specific modules (net, http, https, dns)
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues in pulbyte/notionsocial-backend, not this repo; always pass `-R`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five roles: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Shared docs live in notionsocial-backend (../backend locally). See `docs/agents/domain.md`.
