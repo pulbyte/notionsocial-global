@@ -167,28 +167,40 @@ export async function pageBranch(notion: Client, id: string): Promise<DiscoveryC
     parent?: {type?: string; data_source_id?: string; database_id?: string};
   };
   const pageTitle = extractPageTitle(page);
-  const parent = page.parent;
 
-  // Row page: the user pasted a page that lives INSIDE a database — its
-  // parent is the database they want. Notion 2025-09-03 row parents are
-  // {type: "data_source_id", data_source_id, database_id}.
-  if (parent?.type === "data_source_id" || parent?.type === "database_id") {
-    const dbId = parent.database_id;
-    const dsId = parent.data_source_id;
-    if (dbId) {
-      const container = await notion.databases.retrieve({database_id: dbId});
-      return containerCandidates(container, dsId).map((c) => ({
-        ...c,
-        breadcrumb: pageTitle ? [pageTitle] : [],
-        source: c.source === "direct" ? ("parent_of_row" as const) : c.source,
-      }));
-    }
-    return [];
-  }
+  const [rowCandidates, inlineCandidates] = await Promise.all([
+    rowParentCandidates(notion, page.parent, pageTitle),
+    inlineDatabaseCandidates(notion, id, pageTitle),
+  ]);
+  return [...inlineCandidates, ...rowCandidates];
+}
 
-  // Plain page: one level of children only — discovery must stay fast, unlike
-  // the exhaustive findNotionInlineDatabases used post-OAuth.
-  const children = (await notion.blocks.children.list({block_id: id, page_size: 100})) as {
+// Row page: the page lives INSIDE a database, which is often the one they want. Notion
+// 2025-09-03 row parents are {type: "data_source_id", data_source_id, database_id}.
+async function rowParentCandidates(
+  notion: Client,
+  parent: {type?: string; data_source_id?: string; database_id?: string} | undefined,
+  pageTitle: string
+): Promise<DiscoveryCandidate[]> {
+  const isRow = parent?.type === "data_source_id" || parent?.type === "database_id";
+  if (!isRow || !parent?.database_id) return [];
+  const container = await notion.databases.retrieve({database_id: parent.database_id});
+  return containerCandidates(container, parent.data_source_id).map((c) => ({
+    ...c,
+    breadcrumb: pageTitle ? [pageTitle] : [],
+    source: c.source === "direct" ? ("parent_of_row" as const) : c.source,
+  }));
+}
+
+// Inline databases in the page, row page or not: a project row that holds the content
+// calendar inline must offer the calendar. One level of children only, to stay fast,
+// unlike the exhaustive findNotionInlineDatabases used post-OAuth.
+async function inlineDatabaseCandidates(
+  notion: Client,
+  pageId: string,
+  pageTitle: string
+): Promise<DiscoveryCandidate[]> {
+  const children = (await notion.blocks.children.list({block_id: pageId, page_size: 100})) as {
     results: Array<{type?: string; id: string}>;
   };
   const childDbs = children.results

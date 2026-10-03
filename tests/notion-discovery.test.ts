@@ -196,12 +196,40 @@ describe("pageBranch", () => {
     const notion = {
       pages: {retrieve: jest.fn().mockResolvedValue(ROW_PAGE)},
       databases: {retrieve: jest.fn().mockResolvedValue(CONTAINER)},
-      blocks: {children: {list: jest.fn()}},
+      blocks: {children: {list: jest.fn().mockResolvedValue({results: []})}},
     } as unknown as Client;
     const out = await pageBranch(notion, "page-row-1");
     const row = out.find((c) => c.data_source_id === "ds-111");
     expect(row?.source).toBe("parent_of_row");
-    expect(notion.blocks.children.list).not.toHaveBeenCalled();
+  });
+
+  // A page that is a row of one database (e.g. a project in an "OS" database) and also holds
+  // the user's content calendar inline: the inline database is what they pasted the link for.
+  it("also returns inline databases inside a row page as found_in_link", async () => {
+    const INLINE = {
+      ...CONTAINER,
+      id: "inline-db-1",
+      title: [{plain_text: "Content Calendar"}],
+      data_sources: [{id: "ds-inline", name: "Content Calendar"}],
+    };
+    const notion = {
+      pages: {retrieve: jest.fn().mockResolvedValue(ROW_PAGE)},
+      databases: {
+        retrieve: jest.fn(({database_id}: {database_id: string}) =>
+          Promise.resolve(database_id === "inline-db-1" ? INLINE : CONTAINER)
+        ),
+      },
+      blocks: {
+        children: {
+          list: jest.fn().mockResolvedValue({results: [{type: "child_database", id: "inline-db-1"}]}),
+        },
+      },
+    } as unknown as Client;
+    const out = await pageBranch(notion, "page-row-1");
+    const inline = out.find((c) => c.data_source_id === "ds-inline");
+    expect(inline?.source).toBe("found_in_link");
+    expect(inline?.breadcrumb).toEqual(["My post"]);
+    expect(out.find((c) => c.data_source_id === "ds-111")?.source).toBe("parent_of_row");
   });
 
   it("scans a plain page's children for inline databases as found_in_link", async () => {
