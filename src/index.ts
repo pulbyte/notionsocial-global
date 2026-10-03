@@ -4,6 +4,7 @@ export * from "./media";
 export * from "./file";
 export * from "./publish";
 export * from "./notion";
+export * from "./notion-discovery";
 export * from "./data";
 export * from "./firestore";
 export * from "./error";

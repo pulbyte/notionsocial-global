@@ -1,5 +1,5 @@
 import {Client} from "@notionhq/client";
-import {resolveDataSourceId, __clearDataSourceLRU, NotionAPI} from "../src/notion";
+import {resolveDataSourceId, __clearDataSourceLRU, seedDataSourceId, NotionAPI} from "../src/notion";
 import type {DataSourceStore} from "../src/types";
 
 jest.mock("@notionhq/client");
@@ -191,6 +191,27 @@ describe("resolveDataSourceId", () => {
     const id = await resolveDataSourceId(client, "db_no_store");
 
     expect(id).toBe("ds_primary");
+  });
+});
+
+describe("seedDataSourceId", () => {
+  beforeEach(() => {
+    __clearDataSourceLRU();
+    jest.clearAllMocks();
+  });
+
+  it("makes resolveDataSourceId return the seeded source with zero API calls", async () => {
+    const retrieve = jest.fn();
+    const client = makeClient(retrieve);
+    seedDataSourceId("db-1", "ds-chosen");
+    await expect(resolveDataSourceId(client, "db-1")).resolves.toBe("ds-chosen");
+    expect(retrieve).not.toHaveBeenCalled();
+  });
+
+  it("writes through to the store when provided", () => {
+    const store = makeStore();
+    seedDataSourceId("db-1", "ds-chosen", store);
+    expect(store.write).toHaveBeenCalledWith("db-1", "ds-chosen");
   });
 });
 

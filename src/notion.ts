@@ -64,6 +64,25 @@ export function __clearDataSourceLRU(): void {
 }
 
 /**
+ * Pre-seed the database_id → data_source_id mapping (e.g. when the user
+ * explicitly picked a data source in the discovery UI). Later
+ * resolveDataSourceId(databaseId) calls return this value instead of
+ * probing the API and silently defaulting to data_sources[0].
+ */
+export function seedDataSourceId(
+  databaseId: string,
+  dataSourceId: string,
+  store?: DataSourceStore
+): void {
+  cacheSet(databaseId, dataSourceId);
+  if (store) {
+    store.write(databaseId, dataSourceId).catch((err) => {
+      console.warn("data_source_store_write_failed", {databaseId, err: String(err)});
+    });
+  }
+}
+
+/**
  * Resolve `id` to a `data_source_id`.
  *
  * Resolution order — data_source first, database second:
