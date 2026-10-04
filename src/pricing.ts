@@ -11,7 +11,7 @@ import {STRIPE_SUB_STATUS} from "./types";
 export type PRICE_VARIANT = 0 | 1;
 export const PRICE_VARIANT: PRICE_VARIANT = 1;
 export const freeMonthlyPostLimit = 10;
-const FREE_DESC = "1 Social account, 1 Notion database, 10 posts.";
+const FREE_DESC = `1 Social account, 1 Notion database, ${freeMonthlyPostLimit} posts.`;
 const BASIC_DESC =
   "3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.";
 const PREMIUM_DESC =
@@ -102,14 +102,14 @@ const FREE_PRICES: PriceVariants = {
     features: {
       smAccLimit: 1,
       notionDbLimit: 1,
-      monthlyPosts: 30,
+      monthlyPosts: freeMonthlyPostLimit,
       platforms: ["facebook-page", "instagram", "linkedin-profile"],
       postMetrics: false,
       publishActions: false,
       imageSizeLimit: 5,
       videoSizeLimit: 80,
     },
-    desc: "1 Social account, 1 Notion database, 10 posts.",
+    desc: FREE_DESC,
   },
   1: {
     monthly: {
@@ -120,14 +120,14 @@ const FREE_PRICES: PriceVariants = {
     features: {
       smAccLimit: 1,
       notionDbLimit: 1,
-      monthlyPosts: 30,
+      monthlyPosts: freeMonthlyPostLimit,
       platforms: ["facebook-page", "instagram", "linkedin-profile"],
       postMetrics: false,
       publishActions: false,
       imageSizeLimit: 5,
       videoSizeLimit: 80,
     },
-    desc: "1 Social account, 1 Notion database, 10 posts.",
+    desc: FREE_DESC,
   },
 };
 const BASIC_PRICES: PriceVariants = {
