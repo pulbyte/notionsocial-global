@@ -9,7 +9,9 @@ export default defineConfig([
     format: ["cjs", "esm"],
     platform: "node",
     external: ["@pulbyte/social-stack-lib", "firebase-admin", "sharp"],
-    noExternal: [],
+    // effect v4 is ESM only; bundling it lets CommonJS consumers (functions, post-process,
+    // their jest tests) load global. Consumers call modules through Promise APIs, not Effect.
+    noExternal: ["effect"],
     treeshake: true,
     splitting: false,
   },
