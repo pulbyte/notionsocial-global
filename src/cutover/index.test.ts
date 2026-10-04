@@ -54,6 +54,13 @@ test("shadow returns old and reports a diff with ids", async () => {
   ]);
 });
 
+test("shadow compares through JSON: undefined fields and key order do not count", async () => {
+  const {cutover, events} = fakeSource({resolver: {mode: "shadow"}});
+
+  await cutover({...run(), old: async () => ({a: 1, b: 2}), next: async () => ({b: 2, a: 1, c: undefined})});
+  expect(events).toEqual([]);
+});
+
 test("shadow with equal results reports nothing", async () => {
   const {cutover, events} = fakeSource({resolver: {mode: "shadow"}});
 

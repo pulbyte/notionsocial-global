@@ -11,13 +11,19 @@ export {diffPaths, type Json} from "./diff";
 
 export type {CutoverEvent} from "./schema";
 
-export type CutoverRun<T extends Json> = {
+export type CutoverRun<T> = {
   module: string;
   uid: string;
   pageId?: string;
   old: () => Promise<T>;
   next: () => Promise<T>;
 };
+
+// Results are compared as they would be stored or sent: through JSON.
+function toJson<T>(value: T): Json {
+  // SAFETY: JSON.parse of JSON.stringify output is always a Json value.
+  return JSON.parse(JSON.stringify(value) ?? "null") as Json;
+}
 
 const message = (reason: Error | string) => (reason instanceof Error ? reason.message : String(reason));
 
@@ -26,7 +32,7 @@ const message = (reason: Error | string) => (reason instanceof Error ? reason.me
 export function createCutover(source: ConfigSource) {
   const config = cachedConfig(source);
 
-  return async function cutover<T extends Json>(run: CutoverRun<T>): Promise<T> {
+  return async function cutover<T>(run: CutoverRun<T>): Promise<T> {
     const sw = (await config())[run.module];
     const mode: CutoverMode = sw?.mode ?? "off";
     const event = {module: run.module, uid: run.uid, page_id: run.pageId, mode};
@@ -48,7 +54,7 @@ export function createCutover(source: ConfigSource) {
     if (next.status === "rejected") {
       source.report({...event, name: "cutover.diff", paths: ["(new threw)"], error: message(next.reason)});
     } else if (old.status === "fulfilled") {
-      const paths = diffPaths(old.value, next.value);
+      const paths = diffPaths(toJson(old.value), toJson(next.value));
 
       if (paths.length) source.report({...event, name: "cutover.diff", paths});
     }
