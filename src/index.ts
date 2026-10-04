@@ -28,3 +28,11 @@ export {
   type TokenStore,
   type TokenVault,
 } from "./tokens";
+export {
+  getEntitlements,
+  platformAccess,
+  reachedPostQuota,
+  type Entitlements,
+  type EntitlementsInput,
+  type PlatformAccess,
+} from "./entitlements";
