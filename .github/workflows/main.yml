@@ -27,7 +27,8 @@ jobs:
           echo "@pulbyte:registry=https://npm.pkg.github.com/" > ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
-      - run: npm install
+      # --legacy-peer-deps: npm 10 crashes (edgesOut of null) resolving vitest 4 optional peers
+      - run: npm install --legacy-peer-deps
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

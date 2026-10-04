@@ -22,7 +22,8 @@ jobs:
         run: |
           echo "@pulbyte:registry=https://npm.pkg.github.com/" > ~/.npmrc
           echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-      - run: npm install
+      # --legacy-peer-deps: npm 10 crashes (edgesOut of null) resolving vitest 4 optional peers
+      - run: npm install --legacy-peer-deps
       - run: npm run check
       - name: Legacy jest tests (6 known failures on main, not blocking yet)
         run: npm test
