@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Code rules
+
+Read `../backend/docs/engineering/CODE-RULES.md` before writing or reviewing code, and
+`SAFE-CHANGES.md` beside it before changing a live path. New code goes in a module, `src/<module>/`.
+`npm run check` is the gate for module code: strict tsc, oxlint + anti-slop, depcruise, knip, vitest.
+Flat files in `src/*.ts` are legacy and are not checked until their logic moves into a module.
+
 ## Development Commands
 
 ### Build and Development

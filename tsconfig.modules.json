@@ -1,0 +1,6 @@
+{
+  // Strict settings for modules in src/<module>/; run through scripts/check-types.mjs.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {"strict": true, "noUncheckedIndexedAccess": true, "noEmit": true},
+  "include": ["src"]
+}
