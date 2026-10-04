@@ -15,3 +15,16 @@ export * from "./url";
 export * from "./buffer";
 export {createCutover, type ConfigSource, type Cutover, type CutoverEvent} from "./cutover";
 export {decodeAccounts, resolveAccounts, unmatchedMessage, type Account, type Resolution, type WrittenTag} from "./accounts";
+export {
+  aesCipher,
+  createTokenVault,
+  legacyNotionToken,
+  legacySmAccToken,
+  tokenDocId,
+  type PutToken,
+  type StoredToken,
+  type Token,
+  type TokenRef,
+  type TokenStore,
+  type TokenVault,
+} from "./tokens";
