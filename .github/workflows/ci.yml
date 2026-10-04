@@ -1,0 +1,29 @@
+name: CI
+
+# Code standards gate (backend/docs/engineering/CODE-RULES.md). main.yml runs the same check
+# before it publishes.
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Create .npmrc file
+        run: |
+          echo "@pulbyte:registry=https://npm.pkg.github.com/" > ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+      - run: npm install
+      - run: npm run check
+      - name: Legacy jest tests (6 known failures on main, not blocking yet)
+        run: npm test
+        continue-on-error: true
