@@ -5,7 +5,7 @@ export const PAGE_STATES = ["draft", "queued", "scheduled", "publishing", "publi
 export type PageStateName = (typeof PAGE_STATES)[number];
 
 // Why the scan did not schedule a page (#48). Each one gets its own page text.
-export const SKIP_REASONS = ["copied-row", "no-platforms", "wrong-status", "archived", "unresolved-account", "locked"] as const;
+export const SKIP_REASONS = ["copied-row", "no-platforms", "wrong-status", "archived", "unresolved-account", "locked", "time-in-past"] as const;
 
 export type SkipReason = (typeof SKIP_REASONS)[number];
 
