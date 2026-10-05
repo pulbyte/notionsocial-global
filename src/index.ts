@@ -78,3 +78,12 @@ export {
   type EventType,
   type Route,
 } from "./events";
+export {
+  PLATFORM_SPEC,
+  platformSpecJson,
+  SPEC_PLATFORMS,
+  spec,
+  type PlatformSpec,
+  type SpecPlatform,
+  type TextLimit,
+} from "./platform-spec";
