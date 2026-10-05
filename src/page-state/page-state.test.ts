@@ -11,6 +11,7 @@ const sample: Record<PageEvent["type"], PageEvent> = {
   "publish.start": {type: "publish.start"},
   "publish.retry": {type: "publish.retry"},
   "publish.done": {type: "publish.done", ok: 2, failed: 0},
+  "publish.fail": {type: "publish.fail", code: "inactive-subscription"},
   retry: {type: "retry"},
   reset: {type: "reset"},
 };
@@ -20,8 +21,8 @@ const allowed: Record<PageStateName, Partial<Record<PageEvent["type"], PageState
   draft: {"scan.ready": "scheduled", "scan.queue": "queued", "scan.skip": "skipped", postpone: "scheduled"},
   skipped: {"scan.ready": "scheduled", "scan.queue": "queued", "scan.skip": "skipped", reset: "draft"},
   queued: {"scan.ready": "scheduled", "scan.skip": "skipped", cancel: "draft", reset: "draft"},
-  scheduled: {"publish.start": "publishing", postpone: "scheduled", cancel: "draft", "scan.skip": "skipped"},
-  publishing: {"publish.retry": "scheduled", "publish.done": "published"},
+  scheduled: {"publish.start": "publishing", "publish.fail": "failed", postpone: "scheduled", cancel: "draft", "scan.skip": "skipped"},
+  publishing: {"publish.retry": "scheduled", "publish.done": "published", "publish.fail": "failed"},
   published: {reset: "draft"},
   partial: {retry: "scheduled", reset: "draft"},
   failed: {retry: "scheduled", reset: "draft"},
@@ -62,6 +63,7 @@ const event = fc.oneof(
   fc.constantFrom(...SKIP_REASONS).map((reason): PageEvent => ({type: "scan.skip", reason})),
   fc.integer().map((n): PageEvent => ({type: "postpone", at: n})),
   fc.record({ok: fc.nat(5), failed: fc.nat(5)}).map((r): PageEvent => ({type: "publish.done", ...r})),
+  fc.string().map((code): PageEvent => ({type: "publish.fail", code})),
   fc.constantFrom<PageEvent>({type: "cancel"}, {type: "publish.start"}, {type: "publish.retry"}, {type: "retry"}, {type: "reset"}),
 );
 
@@ -84,4 +86,13 @@ test("any event sequence ends in a legal state; refused moves change nothing; ve
       expect(s.transitions.length).toBe(Math.min(moves, 20));
     }),
   );
+});
+
+test("the same skip reason on a skipped page changes nothing; a new reason is a move", () => {
+  const first = applyPageEvent(undefined, {type: "scan.skip", reason: "wrong-status"}, 1).stored;
+  const again = applyPageEvent(first, {type: "scan.skip", reason: "wrong-status"}, 2);
+  const other = applyPageEvent(first, {type: "scan.skip", reason: "no-platforms"}, 3);
+
+  expect([again.changed, again.stored.version]).toEqual([false, 1]);
+  expect([other.changed, other.stored.context.reason]).toEqual([true, "no-platforms"]);
 });
