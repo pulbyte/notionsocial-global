@@ -79,10 +79,16 @@ export {
   type Route,
 } from "./events";
 export {
+  ERROR_CATALOGUE,
+  explain,
   PLATFORM_SPEC,
   platformSpecJson,
   SPEC_PLATFORMS,
   spec,
+  type CatalogueEntry,
+  type ErrorCode,
+  type ErrorFault,
+  type Explained,
   type PlatformSpec,
   type SpecPlatform,
   type TextLimit,
