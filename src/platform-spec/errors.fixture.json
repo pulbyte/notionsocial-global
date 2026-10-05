@@ -27,5 +27,11 @@
   "threads-video-too-long": "Threads does not support videos larger than 5 minutes. Please check the duration of your video and try again.",
   "threads-no-content": "Nothing to post!, Please write the content for the thread in the Notion page or upload a media file and try again.",
   "ig-app-mismatch": "Please remove this Instagram account on notionsocial.app/app, and reconnect it using the new \"Connect Instagram\" option, This is needed due to a recent Instagram API update, Which is causing issues with the previous login method (Facebook login).",
-  "account-not-connected": "Social account is not connected to your Notionsocial account, Please login with the same account you used to connect your account."
+  "account-not-connected": "Social account is not connected to your Notionsocial account, Please login with the same account you used to connect your account.",
+  "account-expired": "Social account got disconnected, Please refresh it in Notionsocial.",
+  "account-locked": "Max social account limit reached",
+  "pin-no-board": "Please select the Pinterest board to add your pin to in the \"Pinterest - Board\" property and refresh your boards in Notionsocial to update the list. Learn more: https://notionsocial.app/pinterest-board",
+  "pin-video-cover": "Please also upload a cover image (jpeg, jpg, png) for the video in the media property.",
+  "yt-no-video": "No supported video found. Please upload a video file (MP4, MOV, AVI, WMV, FLV, 3GPP, WebM)",
+  "yt-thumbnail-unverified": "To upload a thumbnail for your video, Please ensure that your YouTube channel is verified, Learn more: https://support.google.com/youtube/answer/171664."
 }
