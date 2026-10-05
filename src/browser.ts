@@ -20,3 +20,4 @@ export * from "./logging";
 export * from "./PublishError";
 export * from "./time";
 export * from "./http";
+export * from "./entitlements";
