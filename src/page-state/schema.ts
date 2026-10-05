@@ -18,6 +18,7 @@ export type PageEvent =
   | {type: "publish.start"}
   | {type: "publish.retry"} // server error; the task runs again
   | {type: "publish.done"; ok: number; failed: number}
+  | {type: "publish.fail"; code: string} // the whole post failed before any platform (billing, accounts)
   | {type: "retry"} // re-publish a failed or partial page without clearing the property
   | {type: "reset"}; // the user cleared the NotionSocial property
 
@@ -27,6 +28,7 @@ export type PageContext = {
   until?: number;
   ok?: number;
   failed?: number;
+  code?: string;
 };
 
 export type Transition = {from: PageStateName; to: PageStateName; event: PageEvent["type"]; at: number};

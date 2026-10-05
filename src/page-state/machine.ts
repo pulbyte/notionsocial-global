@@ -15,10 +15,12 @@ export const pageMachine = setup({
     setTime: assign(({event}) => ("at" in event ? {at: event.at, reason: undefined, until: undefined} : {})),
     setUntil: assign(({event}) => ("until" in event ? {until: event.until, reason: undefined} : {})),
     setReason: assign(({event}) => ("reason" in event ? {reason: event.reason} : {})),
+    setCode: assign(({event}) => (event.type === "publish.fail" ? {code: event.code} : {})),
     setResult: assign(({event}) => (event.type === "publish.done" ? {ok: event.ok, failed: event.failed} : {})),
     clear: assign(() => ({reason: undefined, at: undefined, until: undefined, ok: undefined, failed: undefined})),
   },
   guards: {
+    newReason: ({context, event}) => event.type === "scan.skip" && event.reason !== context.reason,
     allOk: ({event}) => event.type === "publish.done" && event.failed === 0 && event.ok > 0,
     allFailed: ({event}) => event.type === "publish.done" && event.ok === 0,
   },
@@ -29,7 +31,14 @@ export const pageMachine = setup({
   states: {
     // A postpone after a cancel re-schedules the page (#32 acceptance).
     draft: {on: {...scanMoves, postpone: {target: "scheduled", actions: "setTime"}}},
-    skipped: {on: {...scanMoves, reset: {target: "draft", actions: "clear"}}},
+    // The scan re-checks skipped pages every run; the same reason again is not a new move.
+    skipped: {
+      on: {
+        ...scanMoves,
+        "scan.skip": {guard: "newReason", target: "skipped", actions: "setReason"},
+        reset: {target: "draft", actions: "clear"},
+      },
+    },
     queued: {
       on: {
         "scan.ready": scanMoves["scan.ready"],
@@ -41,6 +50,7 @@ export const pageMachine = setup({
     scheduled: {
       on: {
         "publish.start": "publishing",
+        "publish.fail": {target: "failed", actions: "setCode"},
         postpone: {target: "scheduled", actions: "setTime"},
         cancel: {target: "draft", actions: "clear"},
         "scan.skip": scanMoves["scan.skip"],
@@ -49,6 +59,7 @@ export const pageMachine = setup({
     publishing: {
       on: {
         "publish.retry": "scheduled",
+        "publish.fail": {target: "failed", actions: "setCode"},
         "publish.done": [
           {guard: "allOk", target: "published", actions: "setResult"},
           {guard: "allFailed", target: "failed", actions: "setResult"},
