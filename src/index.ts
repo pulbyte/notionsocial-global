@@ -51,6 +51,7 @@ export {
 export {
   choiceEffect,
   createDecide,
+  createDecideLive,
   DecisionLog,
   DecisionThresholds,
   Clef,

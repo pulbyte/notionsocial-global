@@ -1,8 +1,8 @@
 import {createHash} from "node:crypto";
 import {Duration, Effect, Layer, Schema} from "effect";
 import {ClefBadAnswer, ClefTimeout, UnsafePayload} from "./errors";
-import {type ChoiceAnswer, type ChoiceQuestion, type Decision, type DecisionAction, type ClefRequest, ClefResponse, ClefRestResponse, type Thresholds} from "./schema";
-import {DecisionLog, DecisionThresholds, Clef} from "./service";
+import {type ChoiceAnswer, type ChoiceQuestion, type ClefRequest, ClefResponse, ClefRestResponse, type Decision, type DecisionAction, type DecisionKind, type Thresholds} from "./schema";
+import {Clef, clefLive, DecisionLog, DecisionThresholds} from "./service";
 
 export {ClefBadAnswer, ClefHttpError, ClefTimeout, UnsafePayload} from "./errors";
 
@@ -102,3 +102,26 @@ export type DecideServices = Layer.Layer<Clef | DecisionLog | DecisionThresholds
 export function createDecide(services: DecideServices, timeoutMs = TIMEOUT_MS) {
   return {choice: (q: ChoiceQuestion, caller: string) => Effect.runPromise(choiceEffect(q, caller, timeoutMs).pipe(Effect.provide(services)))};
 }
+
+// Promise-only wiring for callers that cannot import Effect (functions' CommonJS tests):
+// Clef through the AI Gateway plus a decision writer and a threshold reader they supply.
+// A failed write or threshold read never turns an answer into an error.
+export function createDecideLive(opts: {
+  accountId: string;
+  apiToken: string;
+  writeDecision: (d: Decision) => Promise<void>;
+  thresholds: (kind: DecisionKind) => Promise<Thresholds>;
+}) {
+  return createDecide(
+    Layer.mergeAll(
+      clefLive({accountId: opts.accountId, apiToken: opts.apiToken}),
+      Layer.succeed(DecisionLog, {write: (d) => Effect.promise(() => opts.writeDecision(d).catch(() => undefined))}),
+      Layer.succeed(DecisionThresholds, {
+        get: (kind) => Effect.promise(() => opts.thresholds(kind).catch(() => FALLBACK_THRESHOLDS)),
+      }),
+    ),
+  );
+}
+
+// Used when the threshold read fails: strict, so a bad config never auto-accepts.
+const FALLBACK_THRESHOLDS: Thresholds = {accept: 1.01, review: 0.6};
