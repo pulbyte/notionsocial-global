@@ -2,6 +2,8 @@ import type {PlatformSpec, SpecPlatform} from "./schema";
 
 export {SPEC_PLATFORMS, type PlatformSpec, type SpecPlatform, type TextLimit} from "./schema";
 
+export {ERROR_CATALOGUE, explain, type CatalogueEntry, type ErrorCode, type ErrorFault, type Explained} from "./errors";
+
 const IMG = ["jpg", "jpeg", "png"] as const;
 
 // Source of each value: survey 2026-10-05 on #33 (file:line in the issue comment).
