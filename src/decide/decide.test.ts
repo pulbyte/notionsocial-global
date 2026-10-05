@@ -2,10 +2,10 @@ import {Effect, Layer} from "effect";
 import {expect, test} from "vitest";
 import {type ChoiceQuestion, createDecide, type Decision, DecisionLog, DecisionThresholds, Clef, ClefHttpError} from "./index";
 
-// Clef REST output per schema-output.json (@cf/cloudflare/clef); replace with a recorded answer once a token exists.
-const answer = {type: "choice", choice: "acc_ig", confidence: 0.94, probabilities: {acc_ig: 0.94, none: 0.06}};
+// Recorded from @cf/cloudflare/clef on 2026-10-05 (REST response, unchanged).
+const fixture = {"result": {"model": "clef", "answers": {"q": {"type": "choice", "choice": "acc_ig", "probabilities": {"acc_ig": 0.9487, "acc_x": 0.0142, "none": 0.0371}, "confidence": 0.8523}}, "usage": {"input_tokens": 178, "output_tokens": 0}}, "success": true, "errors": [], "messages": []};
 
-const fixture = {result: {model: "clef", answers: {q: answer}, usage: {input_tokens: 120, output_tokens: 1}}, success: true, errors: []};
+const answer = fixture.result.answers.q;
 
 const question: ChoiceQuestion = {
   kind: "account-match",
@@ -29,7 +29,7 @@ function setup(replies: Reply[]) {
     // Each run (including a retry) takes the next reply.
     Layer.succeed(Clef, {ask: (body) => (sent.push(body), Effect.suspend(() => (replies[Math.min(calls++, replies.length - 1)] ?? ok)()))}),
     Layer.succeed(DecisionLog, {write: (d) => Effect.sync(() => void logged.push(d))}),
-    Layer.succeed(DecisionThresholds, {get: () => Effect.succeed({accept: 0.9, review: 0.6})}),
+    Layer.succeed(DecisionThresholds, {get: () => Effect.succeed({accept: 0.85, review: 0.6})}),
   );
 
   return {decide: createDecide(layers, 50), logged, sent, calls: () => calls};
@@ -40,7 +40,7 @@ test("a typed answer is accepted above the configured threshold and logged once"
   const {decide, logged, sent} = setup([ok]);
   const d = await decide.choice(question, "test");
 
-  expect(d).toMatchObject({kind: "account-match", caller: "test", action: "accept", answer: {choice: "acc_ig", confidence: 0.94}});
+  expect(d).toMatchObject({kind: "account-match", caller: "test", action: "accept", answer: {choice: "acc_ig", confidence: 0.8523}});
   expect(logged).toEqual([d]);
   expect(sent[0]).toMatchObject({model: "clef", questions: {q: {type: "choice", criteria: {none: "none of these"}}}});
 });
