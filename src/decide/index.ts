@@ -1,4 +1,4 @@
-import {createHash} from "crypto";
+import {createHash} from "node:crypto";
 import {Duration, Effect, Layer, Schema} from "effect";
 import {ClefBadAnswer, ClefTimeout, UnsafePayload} from "./errors";
 import {type ChoiceAnswer, type ChoiceQuestion, type Decision, type DecisionAction, type ClefRequest, ClefResponse, ClefRestResponse, type Thresholds} from "./schema";
