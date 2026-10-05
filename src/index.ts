@@ -48,3 +48,21 @@ export {
   type StoredPageState,
   type Transition,
 } from "./page-state";
+export {
+  choiceEffect,
+  createDecide,
+  DecisionLog,
+  DecisionThresholds,
+  TypeSafe,
+  TypeSafeBadAnswer,
+  TypeSafeHttpError,
+  TypeSafeTimeout,
+  typeSafeLive,
+  UnsafePayload,
+  type ChoiceAnswer,
+  type ChoiceQuestion,
+  type Decision,
+  type DecisionAction,
+  type DecisionKind,
+  type Thresholds,
+} from "./decide";
