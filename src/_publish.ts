@@ -371,9 +371,10 @@ export function examinePostConfig(config: NotionPagePostConfig, disallowPostponi
   const isStatusScheduled = schStatus && statusValue == schStatus?.toLowerCase();
   const time = config?.schTime?.epochMs;
 
+  // A page in the Notion trash is never published (#48: ~2-4 a day were going out).
   if (config?.archived) {
     console.warn(`Post is archived [${config?._pageId}]`);
-    // return PublishError.reject("notion-page-deleted");
+    return PublishError.reject("notion-page-deleted");
   }
 
   // ? If the post is scheduled to be published in the future, reject the post
