@@ -67,3 +67,14 @@ export {
   type DecisionKind,
   type Thresholds,
 } from "./decide";
+export {
+  dedupeKey,
+  EVENT_TYPES,
+  planDelivery,
+  ROUTES,
+  type AppEvent,
+  type Channel,
+  type Delivery,
+  type EventType,
+  type Route,
+} from "./events";
