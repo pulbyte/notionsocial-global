@@ -1,9 +1,11 @@
 import {Effect, Layer} from "effect";
 import {expect, test} from "vitest";
-import {type ChoiceQuestion, createDecide, type Decision, DecisionLog, DecisionThresholds, TypeSafe, TypeSafeHttpError} from "./index";
+import {type ChoiceQuestion, createDecide, type Decision, DecisionLog, DecisionThresholds, Clef, ClefHttpError} from "./index";
 
-// Shape from the TypeSafe System One docs (ARCHITECTURE.md); replace with a recorded answer once a key exists.
-const fixture = {answers: {q: {choice: "acc_ig", confidence: 0.94, probabilities: {acc_ig: 0.94, none: 0.06}}}};
+// Clef REST output per schema-output.json (@cf/cloudflare/clef); replace with a recorded answer once a token exists.
+const answer = {type: "choice", choice: "acc_ig", confidence: 0.94, probabilities: {acc_ig: 0.94, none: 0.06}};
+
+const fixture = {result: {model: "clef", answers: {q: answer}, usage: {input_tokens: 120, output_tokens: 1}}, success: true, errors: []};
 
 const question: ChoiceQuestion = {
   kind: "account-match",
@@ -12,11 +14,11 @@ const question: ChoiceQuestion = {
   state: {value: "IG@ontherise"},
 };
 
-type Reply = () => Effect.Effect<unknown, TypeSafeHttpError>;
+type Reply = () => Effect.Effect<unknown, ClefHttpError>;
 
 const ok: Reply = () => Effect.succeed(fixture);
 
-const http500: Reply = () => Effect.fail(new TypeSafeHttpError({status: 500}));
+const http500: Reply = () => Effect.fail(new ClefHttpError({status: 500}));
 
 function setup(replies: Reply[]) {
   const logged: Decision[] = [];
@@ -25,7 +27,7 @@ function setup(replies: Reply[]) {
 
   const layers = Layer.mergeAll(
     // Each run (including a retry) takes the next reply.
-    Layer.succeed(TypeSafe, {ask: (body) => (sent.push(body), Effect.suspend(() => (replies[Math.min(calls++, replies.length - 1)] ?? ok)()))}),
+    Layer.succeed(Clef, {ask: (body) => (sent.push(body), Effect.suspend(() => (replies[Math.min(calls++, replies.length - 1)] ?? ok)()))}),
     Layer.succeed(DecisionLog, {write: (d) => Effect.sync(() => void logged.push(d))}),
     Layer.succeed(DecisionThresholds, {get: () => Effect.succeed({accept: 0.9, review: 0.6})}),
   );
@@ -40,7 +42,7 @@ test("a typed answer is accepted above the configured threshold and logged once"
 
   expect(d).toMatchObject({kind: "account-match", caller: "test", action: "accept", answer: {choice: "acc_ig", confidence: 0.94}});
   expect(logged).toEqual([d]);
-  expect(sent[0]).toMatchObject({model: "jev-latest", questions: {q: {type: "choice", criteria: {none: "none of these"}}}});
+  expect(sent[0]).toMatchObject({model: "clef", questions: {q: {type: "choice", criteria: {none: "none of these"}}}});
 });
 
 test("one 5xx is retried; two give a null answer and the safe path", async () => {
@@ -49,17 +51,17 @@ test("one 5xx is retried; two give a null answer and the safe path", async () =>
   expect(once.calls()).toBe(2);
 
   const twice = setup([http500, http500]);
-  expect(await twice.decide.choice(question, "t")).toMatchObject({answer: null, action: "safe-path", error: "TypeSafeHttpError"});
+  expect(await twice.decide.choice(question, "t")).toMatchObject({answer: null, action: "safe-path", error: "ClefHttpError"});
 });
 
 test("a timeout gives a null answer", async () => {
   const {decide} = setup([() => Effect.never]);
-  expect(await decide.choice(question, "t")).toMatchObject({answer: null, action: "safe-path", error: "TypeSafeTimeout"});
+  expect(await decide.choice(question, "t")).toMatchObject({answer: null, action: "safe-path", error: "ClefTimeout"});
 });
 
 test("an answer of the wrong shape gives a null answer", async () => {
   const {decide} = setup([() => Effect.succeed({answers: {q: {choice: "x", confidence: 7}}})]);
-  expect(await decide.choice(question, "t")).toMatchObject({answer: null, error: "TypeSafeBadAnswer"});
+  expect(await decide.choice(question, "t")).toMatchObject({answer: null, error: "ClefBadAnswer"});
 });
 
 test("a question carrying a token or a page body is never sent", async () => {
@@ -74,8 +76,14 @@ test("a question carrying a token or a page body is never sent", async () => {
 });
 
 test("confidence between review and accept is review; 'none' is reject", async () => {
-  const review = setup([() => Effect.succeed({answers: {q: {...fixture.answers.q, confidence: 0.7}}})]);
+  const review = setup([() => Effect.succeed({answers: {q: {...answer, confidence: 0.7}}})]);
   expect((await review.decide.choice(question, "t")).action).toBe("review");
   const none = setup([() => Effect.succeed({answers: {q: {choice: "none", confidence: 0.99, probabilities: {}}}})]);
   expect((await none.decide.choice(question, "t")).action).toBe("reject");
+});
+
+test("the bare model output (Workers binding) decodes like the REST wrapper", async () => {
+  const {decide} = setup([() => Effect.succeed({model: "clef", answers: {q: answer}, usage: {input_tokens: 1, output_tokens: 1}})]);
+
+  expect((await decide.choice(question, "t")).answer).toMatchObject({choice: "acc_ig"});
 });

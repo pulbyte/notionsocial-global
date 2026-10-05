@@ -1,10 +1,10 @@
 import {Data} from "effect";
 
-export class TypeSafeTimeout extends Data.TaggedError("TypeSafeTimeout")<{ms: number}> {}
+export class ClefTimeout extends Data.TaggedError("ClefTimeout")<{ms: number}> {}
 
-export class TypeSafeHttpError extends Data.TaggedError("TypeSafeHttpError")<{status: number}> {}
+export class ClefHttpError extends Data.TaggedError("ClefHttpError")<{status: number}> {}
 
-export class TypeSafeBadAnswer extends Data.TaggedError("TypeSafeBadAnswer")<{issue: string}> {}
+export class ClefBadAnswer extends Data.TaggedError("ClefBadAnswer")<{issue: string}> {}
 
 // The question would send a token or a page body; it is never sent.
 export class UnsafePayload extends Data.TaggedError("UnsafePayload")<{field: string}> {}

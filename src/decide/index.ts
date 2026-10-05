@@ -1,14 +1,14 @@
 import {createHash} from "crypto";
 import {Duration, Effect, Layer, Schema} from "effect";
-import {TypeSafeBadAnswer, TypeSafeTimeout, UnsafePayload} from "./errors";
-import {type ChoiceAnswer, type ChoiceQuestion, type Decision, type DecisionAction, type SystemOneRequest, SystemOneResponse, type Thresholds} from "./schema";
-import {DecisionLog, DecisionThresholds, TypeSafe} from "./service";
+import {ClefBadAnswer, ClefTimeout, UnsafePayload} from "./errors";
+import {type ChoiceAnswer, type ChoiceQuestion, type Decision, type DecisionAction, type ClefRequest, ClefResponse, ClefRestResponse, type Thresholds} from "./schema";
+import {DecisionLog, DecisionThresholds, Clef} from "./service";
 
-export {TypeSafeBadAnswer, TypeSafeHttpError, TypeSafeTimeout, UnsafePayload} from "./errors";
+export {ClefBadAnswer, ClefHttpError, ClefTimeout, UnsafePayload} from "./errors";
 
 export type {ChoiceAnswer, ChoiceQuestion, Decision, DecisionAction, DecisionKind, Thresholds} from "./schema";
 
-export {DecisionLog, DecisionThresholds, TypeSafe, typeSafeLive} from "./service";
+export {DecisionLog, DecisionThresholds, Clef, clefLive} from "./service";
 
 const TIMEOUT_MS = 5000;
 
@@ -45,22 +45,27 @@ const ask = (q: ChoiceQuestion, timeoutMs: number) =>
     const field = unsafeField(q);
 
     if (field) return yield* Effect.fail(new UnsafePayload({field}));
-    const typesafe = yield* TypeSafe;
+    const clef = yield* Clef;
 
-    const body: SystemOneRequest = {
-      model: "jev-latest",
+    const body: ClefRequest = {
+      model: "clef",
       state: q.state,
       questions: {[QUESTION]: {type: "choice", instructions: q.instructions, criteria: {...q.criteria, none: "none of these"}}},
     };
 
-    const raw = yield* typesafe.ask(body).pipe(
-      Effect.timeoutOrElse({duration: Duration.millis(timeoutMs), orElse: () => Effect.fail(new TypeSafeTimeout({ms: timeoutMs}))}),
+    const raw = yield* clef.ask(body).pipe(
+      Effect.timeoutOrElse({duration: Duration.millis(timeoutMs), orElse: () => Effect.fail(new ClefTimeout({ms: timeoutMs}))}),
       Effect.retry({times: 1}),
     );
 
-    const decoded = yield* Schema.decodeUnknownEffect(SystemOneResponse)(raw).pipe(Effect.mapError((e) => new TypeSafeBadAnswer({issue: String(e)})));
+    // REST wraps the output in `result`; accept both so a Workers binding can be swapped in.
+    const decoded = yield* Schema.decodeUnknownEffect(Schema.Union([ClefRestResponse, ClefResponse]))(raw).pipe(
+      Effect.mapError((e) => new ClefBadAnswer({issue: String(e)})),
+    );
 
-    return decoded.answers[QUESTION] ?? null;
+    const output = "result" in decoded ? decoded.result : decoded;
+
+    return output.answers[QUESTION] ?? null;
   });
 
 type Outcome = {answer: ChoiceAnswer | null; error?: string};
@@ -91,7 +96,7 @@ export const choiceEffect = (q: ChoiceQuestion, caller: string, timeoutMs = TIME
     return decision;
   });
 
-export type DecideServices = Layer.Layer<TypeSafe | DecisionLog | DecisionThresholds>;
+export type DecideServices = Layer.Layer<Clef | DecisionLog | DecisionThresholds>;
 
 // Promise API for callers outside Effect code (functions, admin).
 export function createDecide(services: DecideServices, timeoutMs = TIMEOUT_MS) {

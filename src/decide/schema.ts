@@ -13,14 +13,14 @@ export type ChoiceQuestion = {
   state: Record<string, string | number | boolean>; // ids and short labels only
 };
 
-// The request body System One takes; built only from a ChoiceQuestion.
-export type SystemOneRequest = {
-  model: "jev-latest";
+// The request body Clef takes (@cf/cloudflare/clef); built only from a ChoiceQuestion.
+export type ClefRequest = {
+  model: "clef";
   state: ChoiceQuestion["state"];
   questions: Record<string, {type: "choice"; instructions: string; criteria: Record<string, string>}>;
 };
 
-// TypeSafe System One answer for one question.
+// Clef choice answer for one question.
 export const ChoiceAnswer = Schema.Struct({
   choice: Schema.String,
   confidence: Schema.Finite.check(Schema.isBetween({minimum: 0, maximum: 1})),
@@ -29,7 +29,10 @@ export const ChoiceAnswer = Schema.Struct({
 
 export type ChoiceAnswer = typeof ChoiceAnswer.Type;
 
-export const SystemOneResponse = Schema.Struct({answers: Schema.Record(Schema.String, ChoiceAnswer)});
+export const ClefResponse = Schema.Struct({answers: Schema.Record(Schema.String, ChoiceAnswer)});
+
+// The REST API wraps the model output: {result: {...}, success, errors}; the Workers binding does not.
+export const ClefRestResponse = Schema.Struct({result: ClefResponse});
 
 export type Thresholds = {accept: number; review: number};
 
