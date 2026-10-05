@@ -21,3 +21,4 @@ export * from "./PublishError";
 export * from "./time";
 export * from "./http";
 export * from "./entitlements";
+export * from "./platform-spec";
