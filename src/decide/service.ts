@@ -13,8 +13,11 @@ export class DecisionThresholds extends Context.Service<
   {readonly get: (kind: DecisionKind) => Effect.Effect<Thresholds>}
 >()("DecisionThresholds") {}
 
-// Live Clef client: Workers AI REST API, Cloudflare API token (Workers AI Read) from Secret Manager.
-export function clefLive(auth: {accountId: string; apiToken: string}, fetchFn: typeof fetch = fetch) {
+type Fetch = (url: string, init: RequestInit) => Promise<Response>;
+
+// Live Clef client: Workers AI REST API through the "notionsocial" AI Gateway (logs, limits),
+// Cloudflare API token from Secret Manager (CLOUDFLARE_AI_TOKEN).
+export function clefLive(auth: {accountId: string; apiToken: string; gatewayId?: string}, fetchFn: Fetch = fetch) {
   const url = `https://api.cloudflare.com/client/v4/accounts/${auth.accountId}/ai/run/@cf/cloudflare/clef`;
 
   return Layer.succeed(Clef, {
@@ -23,7 +26,11 @@ export function clefLive(auth: {accountId: string; apiToken: string}, fetchFn: t
         try: async (signal) => {
           const res = await fetchFn(url, {
             method: "POST",
-            headers: {Authorization: `Bearer ${auth.apiToken}`, "Content-Type": "application/json"},
+            headers: {
+              Authorization: `Bearer ${auth.apiToken}`,
+              "Content-Type": "application/json",
+              "cf-aig-gateway-id": auth.gatewayId ?? "notionsocial",
+            },
             body: JSON.stringify(body),
             signal,
           });

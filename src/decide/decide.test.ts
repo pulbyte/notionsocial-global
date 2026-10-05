@@ -1,6 +1,6 @@
 import {Effect, Layer} from "effect";
 import {expect, test} from "vitest";
-import {type ChoiceQuestion, createDecide, type Decision, DecisionLog, DecisionThresholds, Clef, ClefHttpError} from "./index";
+import {type ChoiceQuestion, Clef, ClefHttpError, clefLive, createDecide, type Decision, DecisionLog, DecisionThresholds} from "./index";
 
 // Recorded from @cf/cloudflare/clef on 2026-10-05 (REST response, unchanged).
 const fixture = {"result": {"model": "clef", "answers": {"q": {"type": "choice", "choice": "acc_ig", "probabilities": {"acc_ig": 0.9487, "acc_x": 0.0142, "none": 0.0371}, "confidence": 0.8523}}, "usage": {"input_tokens": 178, "output_tokens": 0}}, "success": true, "errors": [], "messages": []};
@@ -86,4 +86,25 @@ test("the bare model output (Workers binding) decodes like the REST wrapper", as
   const {decide} = setup([() => Effect.succeed({model: "clef", answers: {q: answer}, usage: {input_tokens: 1, output_tokens: 1}})]);
 
   expect((await decide.choice(question, "t")).answer).toMatchObject({choice: "acc_ig"});
+});
+
+test("the live client calls Workers AI through the notionsocial AI Gateway", async () => {
+  const seen: Array<{url: string; headers: Record<string, string>}> = [];
+
+  const fakeFetch = async (url: string, init: RequestInit) => {
+    // SAFETY: clefLive always passes a plain headers object.
+    seen.push({url, headers: init.headers as Record<string, string>});
+
+    return new Response(JSON.stringify(fixture));
+  };
+
+  const layers = Layer.mergeAll(
+    clefLive({accountId: "acc1", apiToken: "tok"}, fakeFetch),
+    Layer.succeed(DecisionLog, {write: () => Effect.void}),
+    Layer.succeed(DecisionThresholds, {get: () => Effect.succeed({accept: 0.85, review: 0.6})}),
+  );
+
+  await createDecide(layers).choice(question, "t");
+
+  expect(seen[0]).toMatchObject({url: "https://api.cloudflare.com/client/v4/accounts/acc1/ai/run/@cf/cloudflare/clef", headers: {"cf-aig-gateway-id": "notionsocial"}});
 });
