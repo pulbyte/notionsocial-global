@@ -79,6 +79,7 @@ export {
   type Route,
 } from "./events";
 export {
+  codeForMessage,
   ERROR_CATALOGUE,
   explain,
   PLATFORM_SPEC,

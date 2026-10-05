@@ -51,3 +51,20 @@ export function explain(code: ErrorCode, web = "https://notionsocial.app"): Expl
 
   return {code, platform: e.platform, fault: e.fault, cause: e.cause, fix: e.fix, message: e.message(web)};
 }
+
+// The catalogue code a stored error text came from (#33): the longest catalogue message found
+// inside it, since publishers prefix some messages ("Video specs error: ..."). undefined = raw
+// platform text with no catalogue entry yet.
+export function codeForMessage(text: string | undefined, web = "https://notionsocial.app"): ErrorCode | undefined {
+  if (!text) return undefined;
+  let best: {code: ErrorCode; length: number} | undefined;
+
+  // SAFETY: Object.keys of ERROR_CATALOGUE are exactly its ErrorCode keys.
+  for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) {
+    const message = explain(code, web).message;
+
+    if (text.includes(message) && message.length > (best?.length ?? 0)) best = {code, length: message.length};
+  }
+
+  return best?.code;
+}

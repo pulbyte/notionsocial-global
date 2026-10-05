@@ -2,7 +2,7 @@ import type {PlatformSpec, SpecPlatform} from "./schema";
 
 export {SPEC_PLATFORMS, type PlatformSpec, type SpecPlatform, type TextLimit} from "./schema";
 
-export {ERROR_CATALOGUE, explain, type CatalogueEntry, type ErrorCode, type ErrorFault, type Explained} from "./errors";
+export {codeForMessage, ERROR_CATALOGUE, explain, type CatalogueEntry, type ErrorCode, type ErrorFault, type Explained} from "./errors";
 
 const IMG = ["jpg", "jpeg", "png"] as const;
 
