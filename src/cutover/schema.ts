@@ -1,6 +1,6 @@
 import {Schema} from "effect";
 
-// Firestore config/cutover: {"<module>": {mode, uids?, percent?}} (SAFE-CHANGES.md, "Cutover ladder").
+// Firestore config/cutover: {"<module>": {mode, uids?, percent?}} (backend docs/standards/live-changes.md).
 export const CutoverMode = Schema.Literals(["off", "shadow", "allowlist", "percent", "on"]);
 
 export type CutoverMode = typeof CutoverMode.Type;

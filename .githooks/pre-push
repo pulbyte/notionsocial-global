@@ -4,15 +4,17 @@
 # DEPLOYMENTS.csv (deploy log), tag pushes, and ALLOW_MAIN_PUSH=1 for an emergency.
 [ "$ALLOW_MAIN_PUSH" = "1" ] && exit 0
 zero=0000000000000000000000000000000000000000
+block() { echo "pre-push: direct push to main blocked ($1). Open a PR: gh pr create" >&2; exit 1; }
 while read -r local_ref local_sha remote_ref remote_sha; do
   [ "$remote_ref" = "refs/heads/main" ] || continue
-  [ "$local_sha" = "$zero" ] && continue
-  if [ "$remote_sha" = "$zero" ]; then range="$local_sha"; else range="$remote_sha..$local_sha"; fi
-  other=$(git diff --name-only "$range" 2>/dev/null | grep -v '^DEPLOYMENTS.csv$')
-  if [ -n "$other" ]; then
-    echo "pre-push: direct push to main blocked. Open a PR: git push -u origin <branch> && gh pr create" >&2
-    echo "pre-push: files: $(echo "$other" | head -5 | tr '\n' ' ')" >&2
-    exit 1
+  [ "$local_sha" = "$zero" ] && block "deleting main"
+  # New main, or a remote main we have not fetched: compare against the last known origin/main.
+  base="$remote_sha"
+  if [ "$base" = "$zero" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+    base=$(git merge-base "$local_sha" origin/main 2>/dev/null) || block "no common base with origin/main"
   fi
+  files=$(git diff --name-only "$base" "$local_sha") || block "git diff failed"
+  other=$(echo "$files" | grep -v -e '^DEPLOYMENTS.csv$' -e '^$')
+  [ -n "$other" ] && block "files: $(echo "$other" | head -5 | tr '\n' ' ')"
 done
 exit 0
