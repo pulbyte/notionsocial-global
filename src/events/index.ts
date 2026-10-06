@@ -16,6 +16,8 @@ export const ROUTES: Record<EventType, Route> = {
   "account.expired": {channels: ["email"], dedupeMs: 7 * DAY},
   "token.expiring": {channels: ["email"], dedupeMs: 7 * DAY},
   "ndb.broken": {channels: ["email"], dedupeMs: 3 * DAY},
+  // #40: the receipt after a self-serve delete; one per account.
+  "account.deleted": {channels: ["email"], dedupeMs: DAY},
   "billing.payment_failed": {channels: ["email", "crisp"], dedupeMs: 3 * DAY},
   "trial.ending": {channels: ["email"], dedupeMs: 30 * DAY},
   "ops.quota_low": {channels: ["ops"], dedupeMs: 6 * HOUR},
