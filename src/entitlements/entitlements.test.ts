@@ -59,3 +59,19 @@ test("platform access matches the publish lists for every platform and plan", ()
 test("no user doc reads as an unpaid user with free limits", () => {
   expect(getEntitlements(undefined)).toMatchObject({label: "none", paid: false, active: false, limits: {smAccs: 1, notionDbs: 1}});
 });
+
+// #107: getAuthor now uses these; they must equal the checks it replaced.
+test("paid, active and quota match the old checks for every plan, status and count", () => {
+  for (const plan_id of [...Object.keys(PRICING_PLANS), undefined, "unknown"])
+    for (const status of ["active", "trialing", "past_due", "canceled", "incomplete", undefined])
+      for (const count of [0, freeMonthlyPostLimit + 1, freeMonthlyPostLimit + 2, 100]) {
+        const ent = getEntitlements({billing: {plan_id, status}});
+        // SAFETY: the old helpers type these as the stored ids/statuses; the values are those strings or undefined.
+        const oldPaid = isPlanPaid(plan_id as never);
+        // SAFETY: as above, a stored status string or undefined.
+        const oldActive = isSubscriptionActive(status as never);
+        expect(ent.paid).toBe(oldPaid);
+        expect(ent.active).toBe(oldActive);
+        expect(reachedPostQuota(ent, count)).toBe(!oldPaid && count >= freeMonthlyPostLimit + 2);
+      }
+});

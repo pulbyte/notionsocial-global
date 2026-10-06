@@ -1,5 +1,5 @@
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
-import {NotionBlockType, QueueName, StorageBucketName} from "./types";
+import type {NotionBlockType, QueueName, StorageBucketName} from "./types";
 export const dev = ["development", "test"].includes(getEnv("NODE_ENV", "development"));
 export const prod = getEnv("NODE_ENV", "development") == "production";
 export const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24; // 30 days in seconds
