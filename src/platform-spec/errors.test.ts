@@ -28,3 +28,9 @@ test("codeForMessage finds the entry inside prefixed texts and ignores raw platf
   expect(codeForMessage("(#100) Invalid parameter")).toBeUndefined();
   expect(codeForMessage(undefined)).toBeUndefined();
 });
+
+test("#108 gaps: texts seen in production now map to an entry", () => {
+  expect(codeForMessage("Invalid media dimensions. Videos must be between 360px and 4096px for both height and width.\n\nAlways set a time")).toBe("tt-video-dimensions");
+  expect(codeForMessage("The user has exceeded the number of videos they may upload.")).toBe("yt-upload-limit");
+  expect(codeForMessage("You cannot access the app till you log in to www.facebook.com and follow the instructions given.")).toBe("fb-login-checkpoint");
+});
