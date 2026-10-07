@@ -19,12 +19,8 @@ import {
   getTransformedMedia,
 } from "./media";
 import {getUserDoc, getUserPostCount} from "./data";
-import {
-  PRICING_PLANS,
-  freeMonthlyPostLimit,
-  isPlanPaid,
-  isSubscriptionActive,
-} from "./pricing";
+import {PRICING_PLANS, freeMonthlyPostLimit} from "./pricing";
+import {getEntitlements, reachedPostQuota} from "./entitlements";
 import {auth} from "firebase-admin";
 import {maxMediaSize} from "./env";
 import {filterPublishMedia} from "./_media";
@@ -247,8 +243,10 @@ export function getAuthor(
     const user = doc.data as UserData;
 
     let canPost = true;
-    __.hasActiveSubscription = isSubscriptionActive(user.billing?.status);
-    __.hasPaidSubscription = isPlanPaid(user.billing?.plan_id);
+    // #107: one source for plan rules (getEntitlements); same results as the old checks.
+    const ent = getEntitlements(user);
+    __.hasActiveSubscription = ent.active;
+    __.hasPaidSubscription = ent.paid;
 
     return auth()
       .getUser(uuid)
@@ -260,9 +258,7 @@ export function getAuthor(
         const plan = PRICING_PLANS[user.billing?.plan_id];
 
         __.monthPostCount = postCount;
-        __.hasPaidSubscription = isPlanPaid(user.billing?.plan_id);
-        __.reachedFreePostsQuota =
-          !__.hasPaidSubscription && postCount >= freeMonthlyPostLimit + 2;
+        __.reachedFreePostsQuota = reachedPostQuota(ent, postCount);
         __.plan = plan;
 
         if (__.reachedFreePostsQuota) {

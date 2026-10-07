@@ -7,7 +7,8 @@ module.exports = {
       comment: "Legacy src/*.ts files already import in circles; only module code is held to this.",
       severity: "error",
       from: {path: "^src/[^/]+/"},
-      to: {circular: true},
+      // Type-only imports are erased at build; a cycle through them never runs.
+      to: {circular: true, viaOnly: {dependencyTypesNot: ["type-only"]}},
     },
     {
       name: "module-internals",
