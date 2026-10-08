@@ -8,6 +8,9 @@ export type SpecPlatform = (typeof SPEC_PLATFORMS)[number];
 // utf16: String.length (what the code counts today); weighted: twitter-text weightedLength.
 export type TextLimit = {max: number; unit: "utf16" | "weighted"};
 
+// Accepted frame: width in px, aspect as "w:h" (narrowest to widest).
+export type Frame = {width: {min: number; max: number}; aspect: {min: string; max: string}};
+
 export type PlatformSpec = {
   text: TextLimit; // caption / description / post body
   threadChunk?: TextLimit; // threads split long text into posts of this size
@@ -15,4 +18,5 @@ export type PlatformSpec = {
   media: {max: number; videoMax: number; images: readonly string[]; videos: readonly string[]; docs?: readonly string[]};
   bytesMB?: {image?: number; video?: number; doc?: number; gif?: number};
   firstComment?: {max: number};
+  frame?: {image?: Frame; video?: Frame}; // post-process fits media into these (#108)
 };
