@@ -1,3 +1,4 @@
+import {spec} from "./platform-spec";
 import {
   NotionPageContent,
   FacebookContent,
@@ -501,7 +502,7 @@ export function getXContent(
     pageContent.media
   );
 
-  const posts = getXContentFromParagraphs(processedParagraphs, allowLongPosts ? 25000 : 280);
+  const posts = getXContentFromParagraphs(processedParagraphs, allowLongPosts ? spec("x").longText!.max : spec("x").text.max);
 
   return posts;
 }

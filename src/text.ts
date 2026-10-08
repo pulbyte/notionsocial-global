@@ -1,3 +1,4 @@
+import {spec} from "./platform-spec";
 import {RichTextItemResponse} from "@notionhq/client/build/src/api-endpoints";
 import TwitterText from "twitter-text";
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
@@ -172,7 +173,7 @@ export function hasText(inputString: string | any) {
   return /\S/.test(inputString);
 }
 
-export function splitStrIntoChunks(str: string, size = 280) {
+export function splitStrIntoChunks(str: string, size = spec("x").text.max) {
   const chunks = [];
   while (str.length > size) {
     const chunk = str.substring(0, size);
@@ -269,7 +270,7 @@ export function replaceLineBreaksWithEmptySpaces(inputString: string) {
     .join("");
 }
 export function checkTextExceedsTweetCharLimit(text: string) {
-  return parseTweet(text).weightedLength > 280;
+  return parseTweet(text).weightedLength > spec("x").text.max;
 }
 export function linkedinUrn(pid: string, accType?: "page" | "group") {
   return accType == "page" ? `urn:li:organization:${pid}` : `urn:li:person:${pid}`;

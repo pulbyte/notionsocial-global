@@ -1,3 +1,4 @@
+import {spec} from "./platform-spec";
 import {extractTags, hasText, trimAndRemoveWhitespace} from "./text";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
@@ -15,7 +16,7 @@ import {extractTweetIdFromUrl} from "./_url";
  */
 export function getXContentFromParagraphs(
   paragraphs: Array<{text: string; media?: PostMediaFile[]}>,
-  maxPostLength = 280
+  maxPostLength = spec("x").text.max
 ): XContent {
   const content: XContent = [];
 

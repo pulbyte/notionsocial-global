@@ -1,3 +1,4 @@
+import {spec} from "./platform-spec";
 import {getMediaFromNotionBlock, getStaticMediaFromNotionBlock} from "./_media";
 import {parseNotionBlockToText} from "./parser";
 import {hasText, trimString} from "./text";
@@ -10,7 +11,10 @@ import {
   Paragraph,
 } from "./types";
 
-export function getRichTextFromText(string: string, limit = 63206): RichTextContent {
+// Longest caption any platform takes (Facebook); text beyond it is never posted.
+const LONGEST_CAPTION = spec("facebook").text.max;
+
+export function getRichTextFromText(string: string, limit = LONGEST_CAPTION): RichTextContent {
   const text: string = string.substring(0, limit);
   return {
     text: text.trimEnd(),
@@ -29,7 +33,7 @@ export function convertSectionsToParagraphs(
 }
 
 export function getRichTextFromNotionBlocksSync(blocks): RichTextContent {
-  const limit = 63206;
+  const limit = LONGEST_CAPTION;
   let parsedBlocks: ParsedNotionBlock[] = [];
 
   let listIndex = 0;
@@ -193,7 +197,7 @@ function processNotionBlockCommon(
   block: NotionBlock,
   nextBlock: NotionBlock,
   listIndex: number,
-  limit = 63206,
+  limit = LONGEST_CAPTION,
   media: Media | null,
   options?: FormattingOptions
 ): [number, number] {

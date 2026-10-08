@@ -14,6 +14,7 @@ export type Frame = {width: {min: number; max: number}; aspect: {min: string; ma
 export type PlatformSpec = {
   text: TextLimit; // caption / description / post body
   threadChunk?: TextLimit; // threads split long text into posts of this size
+  longText?: TextLimit; // X: one long post instead of a thread (tweet-cross-limit-action "long-tweet")
   title?: number;
   media: {max: number; videoMax: number; images: readonly string[]; videos: readonly string[]; docs?: readonly string[]};
   bytesMB?: {image?: number; video?: number; doc?: number; gif?: number};
