@@ -11,6 +11,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
   x: {
     text: {max: 280, unit: "weighted"},
     threadChunk: {max: 280, unit: "weighted"},
+    longText: {max: 25000, unit: "weighted"},
     media: {max: 4, videoMax: 1, images: ["gif", "jpg", "png", "webp", "jpeg"], videos: ["mp4"]},
     bytesMB: {image: 5, gif: 15, video: 512},
     firstComment: {max: 280},

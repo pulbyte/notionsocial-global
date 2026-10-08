@@ -1,3 +1,4 @@
+import {spec} from "./platform-spec";
 import TwitterText from "twitter-text";
 const {parseTweet} = TwitterText;
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
@@ -156,7 +157,7 @@ export function incrementObjectValues(sourceObj, destObj) {
   return destObj;
 }
 
-export function splitStringCharacters(inputString, maxTweetLength = 280): string[] {
+export function splitStringCharacters(inputString, maxTweetLength = spec("x").text.max): string[] {
   const words = inputString.split(" ");
   const tweets = [];
   let currentTweet = "";
