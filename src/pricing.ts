@@ -103,7 +103,8 @@ const FREE_PRICES: PriceVariants = {
       smAccLimit: 1,
       notionDbLimit: 1,
       monthlyPosts: freeMonthlyPostLimit,
-      platforms: ["facebook-page", "instagram", "linkedin-profile"],
+      // Threads is not blocked on free (entitlements NOT_ON_FREE); decided 2026-10-08 (#108).
+      platforms: ["facebook-page", "instagram", "linkedin-profile", "threads"],
       postMetrics: false,
       publishActions: false,
       imageSizeLimit: 5,
@@ -121,7 +122,8 @@ const FREE_PRICES: PriceVariants = {
       smAccLimit: 1,
       notionDbLimit: 1,
       monthlyPosts: freeMonthlyPostLimit,
-      platforms: ["facebook-page", "instagram", "linkedin-profile"],
+      // Threads is not blocked on free (entitlements NOT_ON_FREE); decided 2026-10-08 (#108).
+      platforms: ["facebook-page", "instagram", "linkedin-profile", "threads"],
       postMetrics: false,
       publishActions: false,
       imageSizeLimit: 5,
