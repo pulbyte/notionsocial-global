@@ -31,3 +31,11 @@ test("every platform lists image types and a sane media count", () => {
 test("the JSON export round-trips", () => {
   expect(JSON.parse(platformSpecJson())).toEqual(JSON.parse(JSON.stringify(PLATFORM_SPEC)));
 });
+
+// #108: post-process fits Instagram media into these; values equal its old ImgDimensions/VidDimensions.instagram.
+test("instagram frame matches what post-process enforced", () => {
+  expect(PLATFORM_SPEC.instagram.frame).toEqual({
+    image: {width: {min: 320, max: 1440}, aspect: {min: "3:4", max: "1.91:1"}},
+    video: {width: {min: 1080, max: 1440}, aspect: {min: "4:5", max: "1.91:1"}},
+  });
+});

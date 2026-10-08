@@ -1,6 +1,6 @@
 import type {PlatformSpec, SpecPlatform} from "./schema";
 
-export {SPEC_PLATFORMS, type PlatformSpec, type SpecPlatform, type TextLimit} from "./schema";
+export {SPEC_PLATFORMS, type Frame, type PlatformSpec, type SpecPlatform, type TextLimit} from "./schema";
 
 export {codeForMessage, ERROR_CATALOGUE, explain, type CatalogueEntry, type ErrorCode, type ErrorFault, type Explained} from "./errors";
 
@@ -24,6 +24,10 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     text: {max: 2200, unit: "utf16"},
     media: {max: 10, videoMax: 1, images: IMG, videos: ["mp4", "mov", "qt"]},
     firstComment: {max: 8000},
+    frame: {
+      image: {width: {min: 320, max: 1440}, aspect: {min: "3:4", max: "1.91:1"}},
+      video: {width: {min: 1080, max: 1440}, aspect: {min: "4:5", max: "1.91:1"}},
+    },
   },
   linkedin: {
     text: {max: 3000, unit: "utf16"},
