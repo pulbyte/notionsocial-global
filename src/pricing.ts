@@ -41,8 +41,9 @@ interface Features {
   publishActions: boolean;
   postMetrics: boolean;
   specialPosts?: SpecialPost[];
-  imageSizeLimit: 5 | 30 | 50;
-  videoSizeLimit: 80 | 200 | 500;
+  // Per-plan media caps in MB, decided 2026-10-08 (backend#108). env maxMediaSize still caps all plans.
+  imageSizeLimit: 5 | 30 | 100;
+  videoSizeLimit: 50 | 500 | 1000;
 }
 interface Price {
   monthly: {
@@ -108,7 +109,7 @@ const FREE_PRICES: PriceVariants = {
       postMetrics: false,
       publishActions: false,
       imageSizeLimit: 5,
-      videoSizeLimit: 80,
+      videoSizeLimit: 50,
     },
     desc: FREE_DESC,
   },
@@ -127,7 +128,7 @@ const FREE_PRICES: PriceVariants = {
       postMetrics: false,
       publishActions: false,
       imageSizeLimit: 5,
-      videoSizeLimit: 80,
+      videoSizeLimit: 50,
     },
     desc: FREE_DESC,
   },
@@ -153,7 +154,7 @@ const BASIC_PRICES: PriceVariants = {
       postMetrics: true,
       specialPosts: ["reel", "story", "document"],
       imageSizeLimit: 30,
-      videoSizeLimit: 80,
+      videoSizeLimit: 500,
     },
     desc: "3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Reels, Stories & more.",
   },
@@ -186,7 +187,7 @@ const BASIC_PRICES: PriceVariants = {
       postMetrics: true,
       specialPosts: ["reel", "story", "document", "thread"],
       imageSizeLimit: 30,
-      videoSizeLimit: 80,
+      videoSizeLimit: 500,
     },
     desc: "3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.",
   },
@@ -221,8 +222,8 @@ const PREMIUM_PRICES: PriceVariants = {
       publishActions: true,
       postMetrics: true,
       specialPosts: ["reel", "story", "document", "thread"],
-      imageSizeLimit: 30,
-      videoSizeLimit: 80,
+      imageSizeLimit: 100,
+      videoSizeLimit: 1000,
     },
     desc: "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.",
   },
@@ -258,8 +259,8 @@ const PREMIUM_PRICES: PriceVariants = {
       publishActions: true,
       postMetrics: true,
       specialPosts: ["reel", "story", "document", "thread"],
-      imageSizeLimit: 30,
-      videoSizeLimit: 80,
+      imageSizeLimit: 100,
+      videoSizeLimit: 1000,
     },
     desc: "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories, Bluesky, Google My Business & more.",
   },

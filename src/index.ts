@@ -30,10 +30,13 @@ export {
 } from "./tokens";
 export {
   getEntitlements,
+  mediaOverPlanCap,
   platformAccess,
   reachedPostQuota,
   type Entitlements,
+  type CappedMedia,
   type EntitlementsInput,
+  type MediaOverCap,
   type PlatformAccess,
 } from "./entitlements";
 export {
