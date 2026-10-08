@@ -21,7 +21,7 @@ export const ROUTES: Record<EventType, Route> = {
   // #109: the welcome email once per user; the checkout reminder at most every 3 days.
   "user.welcome": {channels: ["email"], dedupeMs: 365 * DAY},
   "billing.checkout_incomplete": {channels: ["email"], dedupeMs: 3 * DAY},
-  "billing.payment_failed": {channels: ["email", "crisp"], dedupeMs: 3 * DAY},
+  "billing.payment_failed": {channels: ["email"], dedupeMs: 3 * DAY},
   "trial.ending": {channels: ["email"], dedupeMs: 30 * DAY},
   "ops.quota_low": {channels: ["ops"], dedupeMs: 6 * HOUR},
 };
