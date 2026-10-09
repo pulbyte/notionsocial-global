@@ -34,3 +34,18 @@ test("#108 gaps: texts seen in production now map to an entry", () => {
   expect(codeForMessage("The user has exceeded the number of videos they may upload.")).toBe("yt-upload-limit");
   expect(codeForMessage("You cannot access the app till you log in to www.facebook.com and follow the instructions given.")).toBe("fb-login-checkpoint");
 });
+
+test("#108 gaps: every text functions errors.ts produces maps to its own entry", () => {
+  expect(codeForMessage("Cannot tag one or more users - their accounts are private or usernames are invalid. Please remove these tags and try again.")).toBe("ig-invalid-user-tags");
+  expect(codeForMessage("Your account is temporarily locked. Please log in to https://x.com to unlock your account.")).toBe("x-account-locked");
+  expect(codeForMessage("Can't access video file. Video must be under 4GB.")).toBe("tt-video-pull");
+  expect(codeForMessage("Content flagged. Review TikTok's community guidelines.")).toBe("tt-spam");
+  expect(codeForMessage("Post description flagged. Please modify and retry.")).toBe("tt-spam-text");
+  expect(codeForMessage("Google My Business API rate limit exceeded. Please try again later.")).toBe("gmb-rate-limit");
+  expect(codeForMessage("YouTube quota exceeded, Wait for at least 24 hours before trying again.")).toBe("yt-quota");
+});
+
+test("every catalogue message maps back to its own code", () => {
+  // SAFETY: Object.keys of ERROR_CATALOGUE are exactly its ErrorCode keys.
+  for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) expect([code, codeForMessage(explain(code).message)]).toEqual([code, code]);
+});
