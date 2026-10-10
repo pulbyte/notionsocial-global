@@ -1,6 +1,7 @@
 import {dev} from "./env";
 import chalk from "chalk";
 import {formatBytesIntoReadable} from "./text";
+import {redactSecrets} from "./redact";
 
 export function dog(...args: any[]) {
   if (dev && args?.length > 0) {
@@ -104,7 +105,7 @@ export function safeStringify(obj) {
   }
 
   const seen = new Map();
-  const processedObj = preProcess(obj);
+  const processedObj = redactSecrets(preProcess(obj));
   return JSON.stringify(processedObj, null, 2);
 }
 

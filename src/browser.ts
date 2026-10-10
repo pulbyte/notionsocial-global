@@ -20,5 +20,6 @@ export * from "./logging";
 export * from "./PublishError";
 export * from "./time";
 export * from "./http";
+export {redactSecrets} from "./redact";
 export * from "./entitlements";
 export * from "./platform-spec";

@@ -1,6 +1,7 @@
 import axios, {AxiosError, isAxiosError} from "axios";
 import {format as formatAxiosError} from "@redtea/format-axios-error";
 import {safeStringify} from "./logging";
+import {redactSecrets} from "./redact";
 // Shared browser-like headers to avoid 403 errors
 export const getBrowserHeaders = () => {
   // Rotate User-Agent strings to appear more human-like
@@ -45,12 +46,12 @@ export function logAxiosError(error: AxiosError | any, message?: string) {
 
   if (isAxiosError(error)) {
     try {
-      log(safeStringify(formatAxiosError(error)));
+      log(safeStringify(redactSecrets(formatAxiosError(error))));
     } catch (e) {
-      log(safeStringify(error));
+      log(safeStringify(redactSecrets(error)));
     }
   } else if (error) {
-    log(safeStringify(error));
+    log(safeStringify(redactSecrets(error)));
   } else {
     log("Unknown error occurred");
   }
