@@ -19,6 +19,7 @@ export type PlatformSpec = {
   media: {max: number; videoMax: number; images: readonly string[]; videos: readonly string[]; docs?: readonly string[]};
   bytesMB?: {image?: number; video?: number; doc?: number; gif?: number};
   firstComment?: {max: number};
+  hashtags?: {max: number}; // most hashtags one post may carry; the platform rejects more (#50)
   frame?: {image?: Frame; video?: Frame}; // post-process fits media into these (#108)
   shortsMaxSec?: number; // YouTube: longest vertical video the app calls a Short (#108)
 };

@@ -30,6 +30,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     text: {max: 2200, unit: "utf16"},
     media: {max: 10, videoMax: 1, ...META_MEDIA},
     firstComment: {max: 8000},
+    hashtags: {max: 30}, // Instagram rejects a caption with more (#50 pre-flight)
     frame: {
       image: {width: {min: 320, max: 1440}, aspect: {min: "3:4", max: "1.91:1"}},
       video: {width: {min: 1080, max: 1440}, aspect: {min: "4:5", max: "1.91:1"}},
