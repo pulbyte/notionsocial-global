@@ -76,6 +76,9 @@ export const ERROR_CATALOGUE = {
   "gmb-rate-limit": {platform: "gmb", fault: "platform", cause: "Google Business Profile rate-limited the request.", fix: "Retry later.", message: () => `Google My Business API rate limit exceeded. Please try again later.`},
   "gmb-invalid-post": {platform: "gmb", fault: "user", cause: "Google Business Profile rejected the post text.", fix: "Check the post text and media, then reschedule.", message: () => `Post content is invalid. Please check your text and media.`},
   "gmb-media": {platform: "gmb", fault: "user", cause: "Google Business Profile rejected the media format or size.", fix: "Check the image or video format and size, then reschedule.", message: () => `Media upload failed. Please check your image/video format and size.`},
+  // #53 publisher contract: a hung upload stopped at the per-file bound; LinkedIn media still processing after every re-check.
+  "upload-timeout": {platform: "*", fault: "platform", cause: "Uploading a file to the platform did not finish within the time limit.", fix: "Reschedule the post; if it happens again, use a smaller file.", message: () => `The file upload did not finish in time, so it was stopped. Please reschedule the post; if it happens again, use a smaller file.`},
+  "li-processing": {platform: "linkedin", fault: "platform", cause: "LinkedIn did not finish processing the media within the re-check window.", fix: "Reschedule the post later.", message: () => `LinkedIn is taking longer than expected to process your media. Please try again later.`},
 } satisfies Record<string, CatalogueEntry>;
 
 export type ErrorCode = keyof typeof ERROR_CATALOGUE;

@@ -61,5 +61,7 @@
   "gmb-quota": "Google My Business API quota exceeded. Please try again later.",
   "gmb-rate-limit": "Google My Business API rate limit exceeded. Please try again later.",
   "gmb-invalid-post": "Post content is invalid. Please check your text and media.",
-  "gmb-media": "Media upload failed. Please check your image/video format and size."
+  "gmb-media": "Media upload failed. Please check your image/video format and size.",
+  "upload-timeout": "The file upload did not finish in time, so it was stopped. Please reschedule the post; if it happens again, use a smaller file.",
+  "li-processing": "LinkedIn is taking longer than expected to process your media. Please try again later."
 }
