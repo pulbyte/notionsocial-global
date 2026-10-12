@@ -294,3 +294,398 @@ After one empty block
 After two empty blocks
 
 Four leading spaces
+
+########## disable formatting
+===== facebook (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+Four leading spaces
+===== instagram (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+Four leading spaces
+===== linkedin (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== tiktok (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+Four leading spaces
+===== youtube (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== pinterest (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== gmb (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== threads (140)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== bluesky (140)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== x (140)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+
+########## caption fixes
+===== facebook (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+Four leading spaces
+===== instagram (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+Four leading spaces
+===== linkedin (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== tiktok (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+Four leading spaces
+===== youtube (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== pinterest (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== gmb (136)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== threads (140)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== bluesky (140)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+===== x (140)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+Next block
+
+After one empty block
+
+
+After two empty blocks
+Four leading spaces
+
+########## caption fixes + line break per block
+===== facebook (140)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+
+Four leading spaces
+===== instagram (140)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+
+Four leading spaces
+===== linkedin (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+
+
+After two empty blocks
+
+Four leading spaces
+===== tiktok (140)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+ 
+ 
+After two empty blocks
+
+Four leading spaces
+===== youtube (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+
+
+After two empty blocks
+
+Four leading spaces
+===== pinterest (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+
+
+After two empty blocks
+
+Four leading spaces
+===== gmb (138)
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+
+
+After two empty blocks
+
+Four leading spaces
+===== threads (142)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+
+
+After two empty blocks
+
+Four leading spaces
+===== bluesky (142)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+
+
+After two empty blocks
+
+Four leading spaces
+===== x (142)
+[1]
+Soft break (Shift + Enter)
+New line
+
+After one blank line
+
+Next block
+
+After one empty block
+
+
+After two empty blocks
+
+Four leading spaces

@@ -148,3 +148,198 @@ Part one.
 Part two.
 [3]
 Part three.
+
+########## disable formatting
+===== facebook (33)
+Part one.
+
+Part two.
+
+Part three.
+===== instagram (33)
+Part one.
+
+Part two.
+
+Part three.
+===== linkedin (33)
+Part one.
+
+Part two.
+
+Part three.
+===== tiktok (33)
+Part one.
+
+Part two.
+
+Part three.
+===== youtube (33)
+Part one.
+
+Part two.
+
+Part three.
+===== pinterest (33)
+Part one.
+
+Part two.
+
+Part three.
+===== gmb (33)
+Part one.
+
+Part two.
+
+Part three.
+===== threads (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+===== bluesky (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+===== x (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+
+########## caption fixes
+===== facebook (33)
+Part one.
+
+Part two.
+
+Part three.
+===== instagram (33)
+Part one.
+
+Part two.
+
+Part three.
+===== linkedin (33)
+Part one.
+
+Part two.
+
+Part three.
+===== tiktok (33)
+Part one.
+
+Part two.
+
+Part three.
+===== youtube (33)
+Part one.
+
+Part two.
+
+Part three.
+===== pinterest (33)
+Part one.
+
+Part two.
+
+Part three.
+===== gmb (33)
+Part one.
+
+Part two.
+
+Part three.
+===== threads (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+===== bluesky (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+===== x (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+
+########## caption fixes + line break per block
+===== facebook (33)
+Part one.
+
+Part two.
+
+Part three.
+===== instagram (33)
+Part one.
+
+Part two.
+
+Part three.
+===== linkedin (33)
+Part one.
+
+Part two.
+
+Part three.
+===== tiktok (33)
+Part one.
+
+Part two.
+
+Part three.
+===== youtube (33)
+Part one.
+
+Part two.
+
+Part three.
+===== pinterest (33)
+Part one.
+
+Part two.
+
+Part three.
+===== gmb (33)
+Part one.
+
+Part two.
+
+Part three.
+===== threads (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+===== bluesky (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.
+===== x (43)
+[1]
+Part one.
+[2]
+Part two.
+[3]
+Part three.

@@ -151,3 +151,188 @@ Text after the image
 [2 +1 media]
 
 Second part
+
+########## disable formatting
+===== facebook (58)
+Text before the image
+Text after the image
+ 
+ 
+Second part
+===== instagram (58)
+Text before the image
+Text after the image
+ 
+ 
+Second part
+===== linkedin (56)
+Text before the image
+Text after the image
+
+
+Second part
+===== tiktok (58)
+Text before the image
+Text after the image
+ 
+ 
+Second part
+===== youtube (56)
+Text before the image
+Text after the image
+
+
+Second part
+===== pinterest (56)
+Text before the image
+Text after the image
+
+
+Second part
+===== gmb (56)
+Text before the image
+Text after the image
+
+
+Second part
+===== threads (81)
+[1 +1 media]
+Text before the image
+Text after the image
+[2 +1 media]
+
+Second part
+===== bluesky (81)
+[1 +1 media]
+Text before the image
+Text after the image
+[2 +1 media]
+
+Second part
+===== x (81)
+[1 +1 media]
+Text before the image
+Text after the image
+[2 +1 media]
+
+Second part
+
+########## caption fixes
+===== facebook (55)
+Text before the image
+Text after the image
+
+Second part
+===== instagram (55)
+Text before the image
+Text after the image
+
+Second part
+===== linkedin (55)
+Text before the image
+Text after the image
+
+Second part
+===== tiktok (55)
+Text before the image
+Text after the image
+
+Second part
+===== youtube (55)
+Text before the image
+Text after the image
+
+Second part
+===== pinterest (55)
+Text before the image
+Text after the image
+
+Second part
+===== gmb (55)
+Text before the image
+Text after the image
+
+Second part
+===== threads (80)
+[1 +1 media]
+Text before the image
+Text after the image
+[2 +1 media]
+Second part
+===== bluesky (80)
+[1 +1 media]
+Text before the image
+Text after the image
+[2 +1 media]
+Second part
+===== x (80)
+[1 +1 media]
+Text before the image
+Text after the image
+[2 +1 media]
+Second part
+
+########## caption fixes + line break per block
+===== facebook (56)
+Text before the image
+
+Text after the image
+
+Second part
+===== instagram (56)
+Text before the image
+
+Text after the image
+
+Second part
+===== linkedin (56)
+Text before the image
+
+Text after the image
+
+Second part
+===== tiktok (56)
+Text before the image
+
+Text after the image
+
+Second part
+===== youtube (56)
+Text before the image
+
+Text after the image
+
+Second part
+===== pinterest (56)
+Text before the image
+
+Text after the image
+
+Second part
+===== gmb (56)
+Text before the image
+
+Text after the image
+
+Second part
+===== threads (81)
+[1 +1 media]
+Text before the image
+
+Text after the image
+[2 +1 media]
+Second part
+===== bluesky (81)
+[1 +1 media]
+Text before the image
+
+Text after the image
+[2 +1 media]
+Second part
+===== x (81)
+[1 +1 media]
+Text before the image
+
+Text after the image
+[2 +1 media]
+Second part

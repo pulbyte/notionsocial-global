@@ -695,6 +695,8 @@ export interface FormattingOptions {
   disableTextFormatting?: boolean;
   // #65: embed blocks that link a file become media (config/cutover."media-extraction").
   mediaLinks?: boolean;
+  // #63: caption bug fixes; the backend sets it from config/cutover."caption-fixes".
+  captionFixes?: boolean;
 }
 export interface NotionPagePropertiesForPost {
   nsProp: NotionTextProperty;

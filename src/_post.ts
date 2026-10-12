@@ -1,4 +1,4 @@
-import {spec} from "./platform-spec";
+import {spec, type SpecPlatform} from "./platform-spec";
 import {
   NotionPageContent,
   FacebookContent,
@@ -36,6 +36,31 @@ import {
 } from "@pulbyte/social-stack-lib";
 import {GmbPostTopicType} from "@pulbyte/social-stack-lib";
 import {dog} from "./logging";
+import {fitText} from "./caption";
+import TwitterText from "twitter-text";
+
+// #63: with captionFixes, formatted text over the Platform's limit is posted as plain text.
+function fit(
+  text: string,
+  platform: SpecPlatform,
+  config: NotionPagePostConfig,
+  max = spec(platform).text.max,
+  measure?: (s: string) => number
+) {
+  return config.formattingOptions?.captionFixes ? fitText(text, max, measure) : text;
+}
+
+function fitParagraphs(
+  paragraphs: Paragraph[] | undefined,
+  platform: SpecPlatform,
+  config: NotionPagePostConfig,
+  max?: number,
+  measure?: (s: string) => number
+) {
+  return paragraphs?.map((p) => ({...p, text: fit(p.text, platform, config, max, measure)}));
+}
+
+const tweetLength = (s: string) => TwitterText.parseTweet(s).weightedLength;
 
 /**
  * Helper function to select the appropriate video thumbnail based on configuration and available media
@@ -251,7 +276,11 @@ export function getFacebookContent(
   config: NotionPagePostConfig
 ): FacebookContent {
   // Use platform-specific caption if available, otherwise use general text
-  const text = config.platformCaptions?.facebook || pageContent.richText?.text || "";
+  const text = fit(
+    config.platformCaptions?.facebook || pageContent.richText?.text || "",
+    "facebook",
+    config
+  );
 
   // Select and process thumbnail
   const rawThumbnail = selectVideoThumbnail(pageContent, config);
@@ -289,7 +318,11 @@ export function getInstagramContent(
   isPaidUser: boolean
 ): InstagramContent {
   // Use platform-specific caption if available, otherwise use general text
-  const caption = config.platformCaptions?.instagram || pageContent.richText?.text || "";
+  const caption = fit(
+    config.platformCaptions?.instagram || pageContent.richText?.text || "",
+    "instagram",
+    config
+  );
 
   // Select and process thumbnail
   const rawThumbnail = selectVideoThumbnail(pageContent, config);
@@ -328,7 +361,11 @@ export function getYouTubeContent(
   config: NotionPagePostConfig
 ): YouTubeContent {
   // Use platform-specific caption if available, otherwise use general text
-  const description = config.platformCaptions?.youtube || pageContent.richText?.text || "";
+  const description = fit(
+    config.platformCaptions?.youtube || pageContent.richText?.text || "",
+    "youtube",
+    config
+  );
 
   // Select and process thumbnail
   const rawThumbnail = selectVideoThumbnail(pageContent, config);
@@ -361,7 +398,11 @@ export function getLinkedInContent(
   config: NotionPagePostConfig
 ): LinkedInContent {
   // Use platform-specific caption if available, otherwise use general text
-  const text = config.platformCaptions?.linkedin || pageContent.richText?.text || "";
+  const text = fit(
+    config.platformCaptions?.linkedin || pageContent.richText?.text || "",
+    "linkedin",
+    config
+  );
 
   // Select and process thumbnail
   const rawThumbnail = selectVideoThumbnail(pageContent, config);
@@ -389,9 +430,14 @@ export function getThreadsContent(
   pageContent: NotionPageContent,
   config: NotionPagePostConfig
 ): ThreadsContent {
-  const paragraphs = config.platformCaptions?.threads
-    ? getRichTextFromText(config.platformCaptions.threads).paragraphs
-    : pageContent.richText?.paragraphs;
+  const paragraphs = fitParagraphs(
+    config.platformCaptions?.threads
+      ? getRichTextFromText(config.platformCaptions.threads, undefined, config.formattingOptions)
+          .paragraphs
+      : pageContent.richText?.paragraphs,
+    "threads",
+    config
+  );
 
   const thread = chunkParagraphs(paragraphs, 500);
 
@@ -406,9 +452,14 @@ export function getBlueskyContent(
   pageContent: NotionPageContent,
   config: NotionPagePostConfig
 ): BlueskyContent {
-  const paragraphs = config.platformCaptions?.bluesky
-    ? getRichTextFromText(config.platformCaptions.bluesky).paragraphs
-    : pageContent.richText?.paragraphs;
+  const paragraphs = fitParagraphs(
+    config.platformCaptions?.bluesky
+      ? getRichTextFromText(config.platformCaptions.bluesky, undefined, config.formattingOptions)
+          .paragraphs
+      : pageContent.richText?.paragraphs,
+    "bluesky",
+    config
+  );
 
   const thread = chunkParagraphs(paragraphs, 300);
 
@@ -425,8 +476,11 @@ export function getPinterestContent(
   pinterestBoards: PinterestBoard[]
 ): PinterestContent {
   // Use platform-specific caption if available, otherwise use general text
-  const originalDescription =
-    config.platformCaptions?.pinterest || pageContent.richText?.text || "";
+  const originalDescription = fit(
+    config.platformCaptions?.pinterest || pageContent.richText?.text || "",
+    "pinterest",
+    config
+  );
   let [description, link] = extractUrlFromString(originalDescription, true);
   // Select and process thumbnail
   const rawThumbnail = selectVideoThumbnail(pageContent, config);
@@ -464,7 +518,11 @@ export function getTikTokContent(
   config: NotionPagePostConfig
 ): TikTokContent {
   // Use platform-specific caption if available, otherwise use general text
-  const caption = config.platformCaptions?.tiktok || pageContent.richText?.text || "";
+  const caption = fit(
+    config.platformCaptions?.tiktok || pageContent.richText?.text || "",
+    "tiktok",
+    config
+  );
 
   // Select thumbnail (for potential removal from media)
   const rawThumbnail = selectVideoThumbnail(pageContent, config);
@@ -491,9 +549,17 @@ export function getXContent(
   config: NotionPagePostConfig,
   allowLongPosts: boolean = false
 ): XContent {
-  const paragraphs = config.platformCaptions?.x
-    ? getRichTextFromText(config.platformCaptions.x).paragraphs
-    : pageContent.richText?.paragraphs;
+  const max = allowLongPosts ? spec("x").longText!.max : spec("x").text.max;
+  const paragraphs = fitParagraphs(
+    config.platformCaptions?.x
+      ? getRichTextFromText(config.platformCaptions.x, undefined, config.formattingOptions)
+          .paragraphs
+      : pageContent.richText?.paragraphs,
+    "x",
+    config,
+    max,
+    tweetLength
+  );
 
   // Process media in paragraphs if available
   const processedParagraphs = processParagraphsMedia<"file">(
@@ -502,7 +568,7 @@ export function getXContent(
     pageContent.media
   );
 
-  const posts = getXContentFromParagraphs(processedParagraphs, allowLongPosts ? spec("x").longText!.max : spec("x").text.max);
+  const posts = getXContentFromParagraphs(processedParagraphs, max);
 
   return posts;
 }
@@ -515,7 +581,11 @@ export function getGmbContent(
   config: NotionPagePostConfig
 ): GmbContent {
   // Use platform-specific caption if available, otherwise use general text
-  const summary = config.platformCaptions?.gmb || pageContent.richText?.text || "";
+  const summary = fit(
+    config.platformCaptions?.gmb || pageContent.richText?.text || "",
+    "gmb",
+    config
+  );
 
   // Process media for GMB platform
   const processedMedia = processMediaForPlatform<"media">(pageContent.media, "gmb");

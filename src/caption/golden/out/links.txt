@@ -193,3 +193,248 @@ Underscore URL https://notion_social.app/a_b
 
 Title with a break read
 more
+
+########## disable formatting
+===== facebook (195)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== instagram (195)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== linkedin (195)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== tiktok (195)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== youtube (195)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== pinterest (133)
+Bare URL 
+Custom title → notionsocial
+Bold text + bold URL 
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== gmb (195)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== threads (199)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== bluesky (199)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+===== x (199)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → notionsocial
+Bold text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break read
+more
+
+########## caption fixes
+===== facebook (232)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== instagram (232)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== linkedin (232)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== tiktok (232)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== youtube (232)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== pinterest (115)
+Bare URL 
+Custom title → 
+𝗕𝗼𝗹𝗱 text + bold URL 
+Underscore URL https://notion_social.app/a_b
+Title with a break
+===== gmb (232)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== threads (236)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== bluesky (236)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+===== x (236)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+Custom title → https://notionsocial.app/
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+Underscore URL https://notion_social.app/a_b
+Title with a break https://notionsocial.app/more
+
+########## caption fixes + line break per block
+===== facebook (236)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== instagram (236)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== linkedin (236)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== tiktok (236)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== youtube (236)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== pinterest (119)
+Bare URL 
+
+Custom title → 
+
+𝗕𝗼𝗹𝗱 text + bold URL 
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break
+===== gmb (236)
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== threads (240)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== bluesky (240)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more
+===== x (240)
+[1]
+Bare URL https://notionsocial.app/blog?a=1&b=2
+
+Custom title → https://notionsocial.app/
+
+𝗕𝗼𝗹𝗱 text + bold URL https://notionsocial.app/
+
+Underscore URL https://notion_social.app/a_b
+
+Title with a break https://notionsocial.app/more

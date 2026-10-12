@@ -8,14 +8,19 @@ import {divider, empty, image, num, p, rich, span, todo, type FixtureBlock} from
 import {configFor, renderBody} from "./golden/render";
 
 const OLD: FormattingOptions = {addLineBreakOnParagraphBlock: true};
+
 const NEW: FormattingOptions = {addLineBreakOnParagraphBlock: true, captionFixes: true};
+
 const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras porttitor elit urna. ";
 
 async function page(blocks: FixtureBlock[], options: FormattingOptions): Promise<NotionPageContent> {
   return {richText: await renderBody(blocks, options), media: [], title: "Title"};
 }
 
-async function both(blocks: () => FixtureBlock[], read: (c: NotionPageContent, o: FormattingOptions) => string) {
+async function both(
+  blocks: () => FixtureBlock[],
+  read: (c: NotionPageContent, o: FormattingOptions) => string,
+): Promise<[string, string]> {
   return [read(await page(blocks(), OLD), OLD), read(await page(blocks(), NEW), NEW)];
 }
 
@@ -25,7 +30,7 @@ const fb = (c: NotionPageContent, o: FormattingOptions) => getFacebookContent(c,
 
 const body = (c: NotionPageContent) => c.richText.text;
 
-describe("caption bugs (#63)", () => {
+describe("caption bugs (#63): spacing, lists, media", () => {
   it("T07 IG line spacing: one empty block is one blank line", async () => {
     const [old, fixed] = await both(() => [p("Next block"), empty(), p("After")], ig);
 
@@ -49,6 +54,9 @@ describe("caption bugs (#63)", () => {
     expect(fixed).toBe("Before\n\nSecond part");
   });
 
+});
+
+describe("caption bugs (#63): sections, links, threads", () => {
   it("T54 '---' typed as text splits like a divider (Facebook gets a blank line)", async () => {
     const blocks = () => [p("Before"), p("---"), p("After"), p("—-"), p("Last")];
     const [old, fixed] = await both(blocks, fb);
@@ -59,6 +67,7 @@ describe("caption bugs (#63)", () => {
 
   it("T54 '---' in the Caption property splits X posts", () => {
     const text = "Part one\n---\nPart two";
+
     const posts = (o: FormattingOptions) =>
       getXContent({richText: getRichTextFromText(text, undefined, o), media: []}, configFor(o)).map((t) => t.text);
 

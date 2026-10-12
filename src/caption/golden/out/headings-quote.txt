@@ -174,3 +174,238 @@ Small heading
 A quote block
 
 End.
+
+########## disable formatting
+===== facebook (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== instagram (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== linkedin (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== tiktok (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== youtube (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== pinterest (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== gmb (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== threads (68)
+[1]
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== bluesky (68)
+[1]
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== x (68)
+[1]
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+
+########## caption fixes
+===== facebook (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== instagram (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== linkedin (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== tiktok (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== youtube (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== pinterest (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== gmb (64)
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== threads (68)
+[1]
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== bluesky (68)
+[1]
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+===== x (68)
+[1]
+Heading one
+Body under heading.
+Small heading
+A quote block
+End.
+
+########## caption fixes + line break per block
+===== facebook (68)
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== instagram (68)
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== linkedin (68)
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== tiktok (68)
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== youtube (68)
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== pinterest (68)
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== gmb (68)
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== threads (72)
+[1]
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== bluesky (72)
+[1]
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.
+===== x (72)
+[1]
+Heading one
+
+Body under heading.
+
+Small heading
+
+A quote block
+
+End.

@@ -174,3 +174,198 @@ After the dashes
 —-
 
 Range 9-5 and em—dash stay
+
+########## disable formatting
+===== facebook (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== instagram (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== linkedin (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== tiktok (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== youtube (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== pinterest (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== gmb (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== threads (72)
+[1]
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== bluesky (72)
+[1]
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== x (72)
+[1]
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+
+########## caption fixes
+===== facebook (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== instagram (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== linkedin (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== tiktok (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== youtube (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== pinterest (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== gmb (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== threads (73)
+[1]
+Before the dashes
+[2]
+After the dashes
+[3]
+Range 9-5 and em—dash stay
+===== bluesky (73)
+[1]
+Before the dashes
+[2]
+After the dashes
+[3]
+Range 9-5 and em—dash stay
+===== x (73)
+[1]
+Before the dashes
+[2]
+After the dashes
+[3]
+Range 9-5 and em—dash stay
+
+########## caption fixes + line break per block
+===== facebook (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== instagram (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== linkedin (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== tiktok (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== youtube (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== pinterest (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== gmb (63)
+Before the dashes
+
+After the dashes
+
+Range 9-5 and em—dash stay
+===== threads (73)
+[1]
+Before the dashes
+[2]
+After the dashes
+[3]
+Range 9-5 and em—dash stay
+===== bluesky (73)
+[1]
+Before the dashes
+[2]
+After the dashes
+[3]
+Range 9-5 and em—dash stay
+===== x (73)
+[1]
+Before the dashes
+[2]
+After the dashes
+[3]
+Range 9-5 and em—dash stay

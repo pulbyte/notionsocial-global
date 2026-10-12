@@ -8,6 +8,9 @@ import {configFor, renderBody, renderPlatforms} from "./golden/render";
 const VARIANTS: Array<[string, FormattingOptions]> = [
   ["default", {}],
   ["line break per block", {addLineBreakOnParagraphBlock: true}],
+  ["disable formatting", {disableTextFormatting: true}],
+  ["caption fixes", {captionFixes: true}],
+  ["caption fixes + line break per block", {captionFixes: true, addLineBreakOnParagraphBlock: true}],
 ];
 
 describe("caption golden", () => {

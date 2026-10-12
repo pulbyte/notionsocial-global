@@ -36,6 +36,7 @@ import {
   SocialPlatformType,
 } from "@pulbyte/social-stack-lib";
 import {dog} from "./logging";
+import {formattingFrom} from "./caption";
 
 export function extractPlatformCaptions(
   properties: Record<string, any>,
@@ -352,14 +353,11 @@ export function getNotionPageConfig(
     !__.archived;
   __.isPostReadyToSchedule = isPostReadyToSchedule;
 
-  __.formattingOptions = {
-    addLineBreakOnParagraphBlock:
-      notionDatabaseData.formatting_options?.add_line_break_on_paragraph_block ||
-      authorRecord?.ndb_settings?.formatting_options?.add_line_break_on_paragraph_block,
-    disableTextFormatting:
-      notionDatabaseData.formatting_options?.disable_text_formatting ||
-      authorRecord?.ndb_settings?.formatting_options?.disable_text_formatting,
-  };
+  // #63: the database setting wins over the account-wide one (was ||, so "off" could not stick).
+  __.formattingOptions = formattingFrom(
+    notionDatabaseData.formatting_options,
+    authorRecord?.ndb_settings?.formatting_options
+  );
   return __;
 }
 

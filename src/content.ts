@@ -57,7 +57,11 @@ export async function getRichTextContent(
   }
   // The main priority is the caption in the property
   if (hasText(config.captionText)) {
-    const captionFromProp = getRichTextFromText(config.captionText);
+    const captionFromProp = getRichTextFromText(
+      config.captionText,
+      undefined,
+      config.formattingOptions
+    );
     richText = captionFromProp;
   }
   return richText;
@@ -198,5 +202,5 @@ export async function getContentFromNotionBlocksAsync(
   }
   if (batch.length > 0) await batchProcess(batch);
 
-  return {richText: getRichTextContentFromParsedBlocks(parsedBlocks), blocks};
+  return {richText: getRichTextContentFromParsedBlocks(parsedBlocks, options), blocks};
 }

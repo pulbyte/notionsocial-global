@@ -114,3 +114,158 @@ First paragraph.
 Second paragraph.
 
 Third paragraph.
+
+########## disable formatting
+===== facebook (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== instagram (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== linkedin (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== tiktok (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== youtube (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== pinterest (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== gmb (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== threads (55)
+[1]
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== bluesky (55)
+[1]
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== x (55)
+[1]
+First paragraph.
+Second paragraph.
+Third paragraph.
+
+########## caption fixes
+===== facebook (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== instagram (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== linkedin (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== tiktok (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== youtube (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== pinterest (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== gmb (51)
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== threads (55)
+[1]
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== bluesky (55)
+[1]
+First paragraph.
+Second paragraph.
+Third paragraph.
+===== x (55)
+[1]
+First paragraph.
+Second paragraph.
+Third paragraph.
+
+########## caption fixes + line break per block
+===== facebook (53)
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== instagram (53)
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== linkedin (53)
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== tiktok (53)
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== youtube (53)
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== pinterest (53)
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== gmb (53)
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== threads (57)
+[1]
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== bluesky (57)
+[1]
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
+===== x (57)
+[1]
+First paragraph.
+
+Second paragraph.
+
+Third paragraph.
