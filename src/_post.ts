@@ -37,9 +37,11 @@ import {
 import {GmbPostTopicType} from "@pulbyte/social-stack-lib";
 import {dog} from "./logging";
 import {fitText} from "./caption";
+import {withLinkTools} from "./link-tools";
 import TwitterText from "twitter-text";
 
 // #63: with captionFixes, formatted text over the Platform's limit is posted as plain text.
+// #82: links get the Page's UTM tags and short links first, so the limit sees the posted text.
 function fit(
   text: string,
   platform: SpecPlatform,
@@ -47,7 +49,8 @@ function fit(
   max = spec(platform).text.max,
   measure?: (s: string) => number
 ) {
-  return config.formattingOptions?.captionFixes ? fitText(text, max, measure) : text;
+  const linked = withLinkTools(text, platform, config.linkTools);
+  return config.formattingOptions?.captionFixes ? fitText(linked, max, measure) : linked;
 }
 
 function fitParagraphs(
@@ -304,7 +307,7 @@ export function getFacebookContent(
     media: processedMedia,
     videoThumbnail: finalThumbnail,
     ctaButton: config.ctaButton,
-    ctaValue: config.ctaValue,
+    ctaValue: config.ctaValue && withLinkTools(config.ctaValue, "facebook", config.linkTools),
     postType: postType,
   };
 }
@@ -632,7 +635,7 @@ export function getGmbContent(
       } else {
         content.callToAction = {
           actionType: actionType,
-          url: config.ctaValue,
+          url: withLinkTools(config.ctaValue, "gmb", config.linkTools),
         };
       }
     }
