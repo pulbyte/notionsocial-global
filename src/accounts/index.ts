@@ -1,3 +1,10 @@
-export {resolveAccounts, unmatchedMessage} from "./resolver";
+export {aiAskable, resolveAccounts, unmatchedMessage} from "./resolver";
 
-export {decodeAccounts, type Account, type Resolution, type WrittenTag} from "./schema";
+export {
+  decodeAccountGroups,
+  decodeAccounts,
+  type Account,
+  type AccountGroup,
+  type Resolution,
+  type WrittenTag,
+} from "./schema";

@@ -1,5 +1,5 @@
 import {handleMatches, kindOf, prefixTarget, splitValue, tagOf} from "./match";
-import type {Account, Resolution, Resolved, Unmatched, WrittenTag} from "./schema";
+import type {Account, AccountGroup, Resolution, Resolved, Unmatched, WrittenTag} from "./schema";
 
 type Outcome = Resolved | Unmatched;
 
@@ -66,38 +66,70 @@ function latestPerUid(accounts: readonly Account[]): Account[] {
   return [...byUid.values()];
 }
 
+// #69: a group name is an exact target that expands to its connected members. It never goes on
+// to the tag, handle or AI tiers, even when no member is connected.
+function byGroup(value: string, accounts: Account[], groups: readonly AccountGroup[]): Outcome[] | undefined {
+  const group = groups.find((g) => same(g.name, value));
+
+  if (!group) return undefined;
+
+  const members = accounts.filter((a) => group.platform_uids.includes(a.platform_uid));
+
+  if (!members.length) return [unmatched(value, "empty-group", accounts)];
+
+  return members.map((account): Resolved => ({value, account, rule: "group"}));
+}
+
+function record(resolution: Resolution, seen: Set<string>, outcome: Outcome): void {
+  if ("reason" in outcome) {
+    resolution.unmatched.push(outcome);
+
+    return;
+  }
+
+  if (seen.has(outcome.account.platform_uid)) return;
+
+  seen.add(outcome.account.platform_uid);
+  resolution.resolved.push(outcome);
+}
+
 // Exact tier of the account resolver (#17): every Platforms value either finds one of the
 // user's live accounts or comes back unmatched with a reason. Nothing is dropped in silence.
 export function resolveAccounts(
   values: readonly string[],
   accounts: readonly Account[],
   written: readonly WrittenTag[] = [],
+  groups: readonly AccountGroup[] = [],
 ): Resolution {
   const resolution: Resolution = {resolved: [], unmatched: []};
   const seen = new Set<string>();
   const live = latestPerUid(accounts);
 
   for (const value of values) {
-    const outcome = resolveOne(value, live, written);
+    const outcomes = byGroup(value, live, groups) ?? [resolveOne(value, live, written)];
 
-    if ("reason" in outcome) resolution.unmatched.push(outcome);
-    else if (!seen.has(outcome.account.platform_uid)) {
-      seen.add(outcome.account.platform_uid);
-      resolution.resolved.push(outcome);
-    }
+    for (const outcome of outcomes) record(resolution, seen, outcome);
   }
 
   return resolution;
+}
+
+// Whether a later tier (cached resolution, AI) may try a value no rule matched. An unknown
+// prefix names no platform; a group name (#69) must never become a single account.
+export function aiAskable(miss: Unmatched): boolean {
+  return miss.reason !== "unknown-platform" && miss.reason !== "empty-group";
 }
 
 // Page text for values that found no account (CONTEXT.md: Resolution).
 export function unmatchedMessage(miss: Unmatched): string {
   const connected = miss.candidates.length ? miss.candidates.join(", ") : "none";
 
-  const lead =
-    miss.reason === "ambiguous"
-      ? `"${miss.value}" matches more than one connected account`
-      : `No connected account matches "${miss.value}"`;
+  const leads: Partial<Record<Unmatched["reason"], string>> = {
+    ambiguous: `"${miss.value}" matches more than one connected account`,
+    "empty-group": `Group "${miss.value}" has no connected accounts`,
+  };
+
+  const lead = leads[miss.reason] ?? `No connected account matches "${miss.value}"`;
 
   return `${lead}. Connected: ${connected}`;
 }

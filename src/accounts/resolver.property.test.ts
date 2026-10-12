@@ -1,6 +1,6 @@
 import fc from "fast-check";
 import {expect, test} from "vitest";
-import {resolveAccounts, type Account} from "./index";
+import {aiAskable, resolveAccounts, type Account} from "./index";
 import {tagOf} from "./match";
 
 const platforms = ["instagram", "twitter", "linkedin", "facebook", "tiktok", "threads", "bluesky", "pinterest", "youtube"];
@@ -56,6 +56,25 @@ test("values in Notion tag shape always resolve or say why", () => {
       expect(result.resolved.length + result.unmatched.length).toBe(1);
 
       if (prefix === "ZZ") expect(result.unmatched[0]?.reason).toBe("unknown-platform");
+    }),
+  );
+});
+
+// #69: a group name resolves to exactly its connected members, or to an empty-group miss that
+// later tiers may not try; it never becomes a single account picked by a looser rule.
+test("a group name expands to exactly its connected members, whatever the accounts are called", () => {
+  const groupName = fc.oneof(fc.stringMatching(/^[A-Za-z][A-Za-z0-9 ]{0,20}$/), fc.constantFrom("acme", "acme_x"));
+
+  fc.assert(
+    fc.property(accountSet, groupName, fc.array(fc.nat(), {maxLength: 4}), (accounts: Account[], name, picks) => {
+      const members = [...new Set(picks.map((i) => accounts[i % Math.max(accounts.length, 1)]?.platform_uid ?? "gone"))];
+      const result = resolveAccounts([name], accounts, [], [{name, platform_uids: members}]);
+      const live = members.filter((uid) => accounts.some((a) => a.platform_uid === uid));
+
+      expect(result.resolved.map((r) => r.account.platform_uid).sort()).toEqual([...live].sort());
+      expect(result.resolved.every((r) => r.rule === "group")).toBe(true);
+
+      if (!live.length) expect(result.unmatched.map((m) => [m.reason, aiAskable(m)])).toEqual([["empty-group", false]]);
     }),
   );
 });
