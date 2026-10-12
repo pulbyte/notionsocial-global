@@ -30,6 +30,8 @@ type Platform =
   | "tiktok"
   | "youtube"
   | "bluesky"
+  | "mastodon"
+  | "telegram"
   | "threads"
   | "gmb";
 type SpecialPost = "reel" | "story" | "document" | "thread";
@@ -182,6 +184,8 @@ const BASIC_PRICES: PriceVariants = {
         "pinterest",
         "threads",
         "bluesky",
+        "mastodon",
+        "telegram",
       ],
       dailyTwitterPosts: -1,
       publishActions: true,
@@ -253,6 +257,8 @@ const PREMIUM_PRICES: PriceVariants = {
         "tiktok",
         "youtube",
         "bluesky",
+        "mastodon",
+        "telegram",
         "threads",
         "gmb",
       ],

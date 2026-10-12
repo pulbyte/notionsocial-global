@@ -183,6 +183,25 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     bytesMB: {image: 25},
     draft: {unsupported: "the Business Profile API has no draft posts; a created post is live"},
   },
+  // #79: mastodon.social defaults (4.x); other instances may set their own. Long text: reply chain.
+  // No length limit for video, only the file size.
+  mastodon: {
+    text: {max: 500, unit: "utf16"},
+    threadChunk: {max: 500, unit: "utf16"},
+    media: {max: 4, videoMax: 1, images: ["jpg", "jpeg", "png", "gif", "webp"], videos: ["mp4", "m4v", "mov", "qt", "webm"]},
+    bytesMB: {image: 16, video: 99},
+    video: {minSec: 0, maxSec: 86400},
+    draft: {unsupported: "the Mastodon API has scheduled posts but no drafts"},
+  },
+  // #80: Bot API multipart upload limits (photo 10 MB, other files 50 MB); an album holds 10 files.
+  telegram: {
+    text: {max: 4096, unit: "utf16"},
+    mediaCaption: 1024,
+    media: {max: 10, videoMax: 10, images: ["jpg", "jpeg", "png"], videos: ["mp4"]},
+    bytesMB: {image: 10, video: 50},
+    video: {minSec: 0, maxSec: 86400},
+    draft: {unsupported: "the Telegram Bot API has no drafts; a sent message is live"},
+  },
 };
 
 export const spec = (platform: SpecPlatform): PlatformSpec => PLATFORM_SPEC[platform];

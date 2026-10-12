@@ -11,6 +11,10 @@ const tt: Account = {platform_uid: "tt1", platform: "tiktok", username: "acme.tt
 
 const th: Account = {platform_uid: "th1", platform: "threads", username: "acme.th"};
 
+const masto: Account = {platform_uid: "109@mastodon.social", platform: "mastodon", username: "acme"};
+
+const tg: Account = {platform_uid: "-100123", platform: "telegram", username: "acme_news"};
+
 const accounts = [ig, x, liPage, tt, th];
 
 const uidsFor = (values: string[], from: Account[] = accounts) =>
@@ -37,6 +41,16 @@ test.each([
   ["THREADS@acme.th", "th1"],
 ])("%s resolves by alias", (value, uid) => {
   expect(uidsFor([value])).toEqual([uid]);
+});
+
+// #79 #80
+test.each([
+  ["MASTO@acme", "109@mastodon.social"],
+  ["MASTODON@acme", "109@mastodon.social"],
+  ["TG@acme_news", "-100123"],
+  ["TELEGRAM@acme_news", "-100123"],
+])("%s resolves by alias", (value, uid) => {
+  expect(uidsFor([value], [...accounts, masto, tg])).toEqual([uid]);
 });
 
 test("LI@acme reaches the LinkedIn page when no profile acme exists", () => {

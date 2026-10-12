@@ -1,7 +1,7 @@
 // What each platform accepts (#33). Values are the ones the code enforces today; a change here
 // is a product decision, not a refactor.
 
-export const SPEC_PLATFORMS = ["x", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest", "threads", "bluesky", "gmb"] as const;
+export const SPEC_PLATFORMS = ["x", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest", "threads", "bluesky", "gmb", "mastodon", "telegram"] as const;
 
 export type SpecPlatform = (typeof SPEC_PLATFORMS)[number];
 
@@ -37,6 +37,7 @@ export type PlatformSpec = {
   threadChunk?: TextLimit; // threads split long text into posts of this size
   longText?: TextLimit; // X: one long post instead of a thread (tweet-cross-limit-action "long-tweet")
   title?: number;
+  mediaCaption?: number; // Telegram: text sent with media; longer text goes in its own message (#80)
   media: {max: number; videoMax: number; images: readonly string[]; videos: readonly string[]; docs?: readonly string[]};
   bytesMB?: {image?: number; video?: number; doc?: number; gif?: number};
   firstComment?: {max: number};

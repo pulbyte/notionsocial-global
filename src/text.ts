@@ -85,6 +85,10 @@ export function getSmShortName(platform: SocialPlatformType) {
       return "THREADS";
     case "bluesky":
       return "BSKY";
+    case "mastodon":
+      return "MASTO";
+    case "telegram":
+      return "TG";
     default:
       return String(platform).toUpperCase();
   }

@@ -394,6 +394,7 @@ export interface SocialAccountData {
     expires?: number;
   };
   handle?: string;
+  instance_url?: string; // #79 Mastodon: the server the account is on, e.g. https://mastodon.social
   urn?: string;
   active?: boolean;
   acc_type?: "page" | "group";
@@ -611,6 +612,8 @@ export interface PlatformContent {
   threads: ThreadsContent;
   bluesky: BlueskyContent;
   gmb: GmbContent;
+  mastodon: MastodonContent;
+  telegram: TelegramContent;
 }
 
 export interface PlatformError {
@@ -931,6 +934,18 @@ export type BlueskyContent = Array<{
   media: Array<PostMediaFile>;
   text: string;
 }>;
+
+// #79: one status per item; items after the first reply to the one before.
+export type MastodonContent = Array<{
+  media: Array<PostMediaFile>;
+  text: string;
+}>;
+
+// #80: one message (or album) to the channel.
+export interface TelegramContent {
+  text: string;
+  media: Array<PostMediaFile>;
+}
 
 export interface PinterestContent {
   description: string;

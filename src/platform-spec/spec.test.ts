@@ -16,6 +16,8 @@ test("enforced limits", () => {
     ["threads", 500, 10],
     ["bluesky", 300, 4],
     ["gmb", 1500, 1],
+    ["mastodon", 500, 4],
+    ["telegram", 4096, 10],
   ]);
 });
 
@@ -53,6 +55,8 @@ test("video lengths and fit frames", () => {
     ["threads", 0, 300],
     ["bluesky", 0, 180],
     ["gmb", undefined, undefined],
+    ["mastodon", 0, 86400],
+    ["telegram", 0, 86400],
   ]);
 
   for (const p of SPEC_PLATFORMS) {
@@ -77,6 +81,14 @@ test("file types follow what each publisher sends", () => {
   expect(PLATFORM_SPEC.gmb.media.images).toContain("bmp");
   expect(PLATFORM_SPEC.youtube.media.images).toEqual(["jpg", "jpeg", "png"]);
   expect(PLATFORM_SPEC.youtube.shortsMaxSec).toBe(60);
+});
+
+// #79 #80: Mastodon long text is a reply chain; Telegram text over the media caption goes alone.
+test("mastodon and telegram", () => {
+  expect(spec("mastodon").threadChunk?.max).toBe(spec("mastodon").text.max);
+  expect(spec("telegram").mediaCaption).toBe(1024);
+  expect(spec("telegram").mediaCaption).toBeLessThan(spec("telegram").text.max);
+  expect(SPEC_PLATFORMS.filter((p) => spec(p).mediaCaption)).toEqual(["telegram"]);
 });
 
 test("plan caps are the plan table values", () => {

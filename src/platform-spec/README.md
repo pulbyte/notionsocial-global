@@ -13,5 +13,6 @@ options   post options set on the Page or Account; postOption(p, id); each names
 draft     where a Send to Drafts post lands, or why the platform API has no drafts (#73)
 errors    explain(code): cause, fix, message, link (guide, else /help/errors#code), ref (outside URL)
 next      publishers, post-process and pre-flight read from here (one platform at a time)
+new       mastodon (#79), telegram (#80): limits from their docs; Telegram mediaCaption
 drift     2026-10-12 (#108): the spec records production today; Bluesky graphemes: follow-up
 ```

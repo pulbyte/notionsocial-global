@@ -22,7 +22,7 @@ const legacy = {
     const paid = isPlanPaid(u.billing.plan_id);
     const page = platform == "linkedin" && accType == "page";
 
-    if ((["twitter", "youtube", "tiktok", "pinterest", "bluesky", "gmb"].includes(platform) || page) && !paid) return "free";
+    if ((["twitter", "youtube", "tiktok", "pinterest", "bluesky", "gmb", "mastodon", "telegram"].includes(platform) || page) && !paid) return "free";
 
     if (PRICING_PLANS[u.billing.plan_id]?.label == "basic" && (["youtube", "tiktok", "gmb"].includes(platform) || page)) return "basic";
 
@@ -46,7 +46,7 @@ test("limits, paid and active match today's gates for every plan, status and add
 });
 
 test("platform access matches the publish lists for every platform and plan", () => {
-  const platforms = ["x", "twitter", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest", "threads", "bluesky", "gmb"];
+  const platforms = ["x", "twitter", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest", "threads", "bluesky", "gmb", "mastodon", "telegram"];
   fc.assert(
     fc.property(user, fc.constantFrom(...platforms), fc.constantFrom("page", "profile", undefined), (u, p, accType) => {
       const access = platformAccess(getEntitlements(u), p, accType);
