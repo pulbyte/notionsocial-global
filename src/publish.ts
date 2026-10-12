@@ -17,12 +17,14 @@ import {
   getMediaFromNotionFiles,
   getMediaFile,
   getTransformedMedia,
+  getLinkedMediaFromNotionFiles,
 } from "./media";
+import {isPdf, withPdfPages} from "./media-links";
 import {getUserDoc, getUserPostCount} from "./data";
 import {PRICING_PLANS, freeMonthlyPostLimit} from "./pricing";
 import {getEntitlements, reachedPostQuota} from "./entitlements";
 import {auth} from "firebase-admin";
-import {maxMediaSize} from "./env";
+import {maxMediaSize, ProcessedMediaBucket} from "./env";
 import {filterPublishMedia} from "./_media";
 import {PublishError} from "./PublishError";
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
@@ -104,16 +106,27 @@ export async function getNotionPageContent(
   };
 }
 
+// #65: with config.mediaLinks, links give their files and each PDF is followed by the page
+// images post-process stored; pdfs lists the PDFs for post-process to turn into pages.
+async function getMediaProperty(config: NotionPagePostConfig): Promise<{media: Media[]; pdfs: Media[]}> {
+  if (!config.mediaLinks) {
+    return {media: await getMediaFromNotionFiles(config.media, config.altTextArr), pdfs: []};
+  }
+  const media = await getLinkedMediaFromNotionFiles(config.media, config.altTextArr);
+  return {
+    media: withPdfPages(media, config._postRecord?.processed_media, ProcessedMediaBucket),
+    pdfs: media.filter(isPdf),
+  };
+}
+
 export async function getPropertyMedia(
   config: NotionPagePostConfig
-): Promise<{media: Media[]; videoThumbnail: Media}> {
+): Promise<{media: Media[]; videoThumbnail: Media; pdfs: Media[]}> {
   try {
-    const media = await getMediaFromNotionFiles(config.media, config.altTextArr).then(
-      (media) =>
-        filterPublishMedia(
-          media,
-          config.smAccs.map((acc) => acc.platform)
-        )
+    const property = await getMediaProperty(config);
+    const media = filterPublishMedia(
+      property.media,
+      config.smAccs.map((acc) => acc.platform)
     );
     const videoThumbnail = await getMediaFromNotionFiles(config.videoThumbnail).then(
       (media) => {
@@ -125,7 +138,7 @@ export async function getPropertyMedia(
         return filtered[0];
       }
     );
-    return {media, videoThumbnail};
+    return {media, videoThumbnail, pdfs: property.pdfs};
   } catch (error) {
     throw PublishError.create("error-getting-property-media", {cause: error});
   }

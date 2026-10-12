@@ -1,5 +1,6 @@
 import {
   FormattingOptions,
+  Media,
   NotionBlock,
   NotionPagePostConfig,
   ParsedNotionBlock,
@@ -15,6 +16,7 @@ import {arrayToAsyncIterator, callFunctionsSequentially} from "./utils";
 import {Client, iteratePaginatedAPI} from "@notionhq/client";
 import {hasText} from "./text";
 import {processMedia} from "./publish";
+import {getMediaFromLink} from "./media";
 import {SUPPORTED_NOTION_CONTENT_BLOCKS} from "./env";
 
 export async function getNotionPageRichTextContent(
@@ -37,7 +39,7 @@ export async function getNotionPageRichTextContent(
 
   const {richText} = await getContentFromNotionBlocksAsync(
     pageChildrenIterator,
-    config.formattingOptions,
+    config.mediaLinks ? {...config.formattingOptions, mediaLinks: true} : config.formattingOptions,
     getChildrenIterator
   );
 
@@ -77,6 +79,17 @@ export async function processRichTextContentMedia(
     }
   }
   return richText;
+}
+
+// #65: the files an embed block links to; [] when the link is not a file (a tweet, a video page,
+// a private Drive file), so the URL stays in the text as before.
+async function getEmbedMedia(block: NotionBlock): Promise<Media[]> {
+  const url = block.type == "embed" ? (block["embed"]?.["url"] as string | undefined) : undefined;
+  if (!url) return [];
+  return getMediaFromLink(url).catch((e) => {
+    console.warn(JSON.stringify({msg: "embed not used as media", url_host: url.split("/")[2], err: String(e?.message ?? e)}));
+    return [];
+  });
 }
 
 type NotionBlocksIter = AsyncIterableIterator<NotionBlock | PartialBlockObjectResponse>;
@@ -128,6 +141,15 @@ export async function getContentFromNotionBlocksAsync(
     }
     // push the current block to the blocks array
     blocks.push(currentBlock);
+
+    // #65: an embed that links a file posts the file instead of its URL text.
+    const embedded = options?.mediaLinks ? await getEmbedMedia(currentBlock) : [];
+    if (embedded.length) {
+      for (const media of embedded) parsedBlocks.push({type: "media", media});
+      // Same as an image block: an empty text entry closes the section.
+      parsedBlocks.push({type: "nil", content: null});
+      return [listIndex, limitLeft];
+    }
 
     // Process current block
     const [newListIndex, newLimitLeft] = await processNotionBlock(

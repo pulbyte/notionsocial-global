@@ -14,6 +14,8 @@ import {formatBytesIntoReadable} from "./text";
 import {getMediaFromNotionFile, getMimeTypeFromContentType} from "./_media";
 import {downloadFromUrl} from "./file";
 import {ProcessedMediaBucket} from "./env";
+import axios from "axios";
+import {mediaFromLink, type LinkDeps} from "./media-links";
 
 export const getMediaFromNotionFiles = (
   files: NotionFiles,
@@ -44,6 +46,48 @@ export const getMediaFromNotionFiles = (
     });
   }
 };
+
+// #65: a GET that never throws on status; redirects followed, body as text.
+const httpGet: LinkDeps<Media>["get"] = async (url) => {
+  const res = await axios.get(url, {
+    timeout: 30000,
+    maxRedirects: 5,
+    responseType: "text",
+    transformResponse: (d) => d,
+    validateStatus: () => true,
+    headers: {"User-Agent": "Mozilla/5.0 (compatible; NotionSocial/1.0; +https://notionsocial.app)"},
+  });
+  return {status: res.status, body: String(res.data ?? ""), url: res.request?.res?.responseUrl || url};
+};
+
+const linkDeps: LinkDeps<Media> = {
+  get: httpGet,
+  fromUrl: (url) => getMediaFromNotionFile({type: "external", name: url, external: {url}} as any),
+  driveApiKey: process.env.GOOGLE_DRIVE_API_KEY,
+};
+
+// The media a pasted link stands for (Drive folder, Canva design, Drive or direct file link).
+export const getMediaFromLink = (url: string) => mediaFromLink(url, linkDeps);
+
+/**
+ * #65 (config/cutover."media-extraction"): like getMediaFromNotionFiles, but a pasted link can
+ * give several files (a Drive folder) and Drive or Canva links that give none throw the catalogue
+ * error instead of being dropped. Files keep the order of the property.
+ */
+export async function getLinkedMediaFromNotionFiles(
+  files: NotionFiles,
+  altTextArr?: string[]
+): Promise<Media[]> {
+  const out: Media[] = [];
+  for (const [index, file] of (files || []).entries()) {
+    const extUrl = file?.["external"]?.["url"] as string | undefined;
+    const media = extUrl ? await getMediaFromLink(extUrl) : [await getMediaFromNotionFile(file)];
+    const found = media.filter(Boolean);
+    const description = found.length == 1 ? altTextArr?.[index]?.trim() || "" : "";
+    for (const m of found) out.push(Object.assign(m, {description}));
+  }
+  return out;
+}
 
 export function getMediaTransformations(
   file: Media,

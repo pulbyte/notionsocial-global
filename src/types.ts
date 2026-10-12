@@ -41,6 +41,8 @@ export interface Media {
   size: number;
   type: "video" | "image" | "doc";
   refId: string;
+  // #65: a page image of this PDF (its refId); LinkedIn posts the PDF instead.
+  pageOf?: string;
 }
 // Media, Which is downloaded.
 export interface MediaFile extends Media {
@@ -691,6 +693,8 @@ export type ArrayElement<ArrayType extends readonly unknown[]> =
 export interface FormattingOptions {
   addLineBreakOnParagraphBlock?: boolean;
   disableTextFormatting?: boolean;
+  // #65: embed blocks that link a file become media (config/cutover."media-extraction").
+  mediaLinks?: boolean;
 }
 export interface NotionPagePropertiesForPost {
   nsProp: NotionTextProperty;
@@ -756,6 +760,9 @@ export interface NotionPagePostConfig {
   rules: NotionRules;
   isPostReadyToSchedule: boolean;
   formattingOptions: FormattingOptions;
+  // #65: Drive folders, Canva links, embeds and PDF pages as media; set by the caller from
+  // config/cutover."media-extraction". Unset: the old extraction.
+  mediaLinks?: boolean;
   postOptions?: {
     gmbTopicType: GmbPostTopicType;
     gmbQuestionText?: string;
