@@ -55,15 +55,21 @@ test("every catalogue message maps back to its own code", () => {
   for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) expect([code, codeForMessage(explain(code).message)]).toEqual([code, code]);
 });
 
-test("#51: every entry has a link: its own, else the message's URL, else /docs", () => {
-  expect(explain("drive-restricted").link).toBe("https://support.google.com/drive/answer/2494822");
-  expect(explain("canva-link", "https://w.app").link).toBe("https://w.app/media-specs");
-  expect(explain("ig-reel-plan", "https://w.app").link).toBe("https://w.app/pricing");
-  expect(explain("ig-not-business").link).toBe("https://help.instagram.com/502981923235522");
-  expect(explain("meta-restricted-activity", "https://w.app").link).toBe("https://w.app/docs");
+test("#56: every entry links a help page: its guide, else its row on /help/errors", () => {
+  expect(explain("account-expired", "https://w.app").link).toBe("https://w.app/help/account-disconnects");
+  expect(explain("fb-page-permission", "https://w.app").link).toBe("https://w.app/help/grant-access");
+  expect(explain("canva-link", "https://w.app").link).toBe("https://w.app/help/errors#canva-link");
 
   // SAFETY: Object.keys of ERROR_CATALOGUE are exactly its ErrorCode keys.
-  for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) expect(explain(code).link).toMatch(/^https:\/\/\S+[^.,)]$/);
+  for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) expect(explain(code, "https://w.app").link).toMatch(/^https:\/\/w\.app\/help\/[a-z-]+(#[a-z0-9-]+)?$/);
+});
+
+test("#56: ref is the entry's outside reference, else the message's URL, else absent", () => {
+  expect(explain("drive-restricted").ref).toBe("https://support.google.com/drive/answer/2494822");
+  expect(explain("canva-link", "https://w.app").ref).toBe("https://w.app/media-specs");
+  expect(explain("ig-reel-plan", "https://w.app").ref).toBe("https://w.app/pricing");
+  expect(explain("ig-not-business").ref).toBe("https://help.instagram.com/502981923235522");
+  expect(explain("meta-restricted-activity").ref).toBeUndefined();
 });
 
 test("#51: Drive, Canva, external media, Meta's restriction and unsupported types have entries", () => {
