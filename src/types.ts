@@ -642,6 +642,8 @@ export interface UpdateNdbPayload {
   publish_changes?: NotionDatabase["publish_changes"];
   post_metric_tracking?: NotionDatabase["post_metric_tracking"];
   options?: NotionDatabase["options"];
+  // #63: per-database caption options from DB settings.
+  formatting_options?: NotionDatabase["formatting_options"];
 }
 export type NotionPage = GetPageResponse;
 export type NotionProperties = Record<string, NotionProperty>;
