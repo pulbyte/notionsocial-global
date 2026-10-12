@@ -45,6 +45,11 @@ test("#108 gaps: every text functions errors.ts produces maps to its own entry",
   expect(codeForMessage("YouTube quota exceeded, Wait for at least 24 hours before trying again.")).toBe("yt-quota");
 });
 
+test("#53: the upload bound text (after a file name) and the LinkedIn re-check text map to their entries", () => {
+  expect(codeForMessage(`photo.jpg: ${explain("upload-timeout").message}`)).toBe("upload-timeout");
+  expect(codeForMessage("LinkedIn is taking longer than expected to process your media. Please try again later.")).toBe("li-processing");
+});
+
 test("every catalogue message maps back to its own code", () => {
   // SAFETY: Object.keys of ERROR_CATALOGUE are exactly its ErrorCode keys.
   for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) expect([code, codeForMessage(explain(code).message)]).toEqual([code, code]);
