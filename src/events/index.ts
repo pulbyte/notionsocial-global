@@ -6,6 +6,9 @@ const HOUR = 3_600_000;
 
 const DAY = 24 * HOUR;
 
+// Never sent again for the same user and subject.
+const ONCE = Number.POSITIVE_INFINITY;
+
 // One rule per event type. dedupeMs: the same event for the same subject inside this window is
 // recorded but not sent again (one user got 19 'access invalid' emails in a week before this).
 export const ROUTES: Record<EventType, Route> = {
@@ -22,7 +25,9 @@ export const ROUTES: Record<EventType, Route> = {
   // a repeat inside the hour (a double click) is logged, not pushed again.
   "account.action": {channels: ["crisp"], dedupeMs: HOUR},
   // #109: the welcome email once per user; the checkout reminder at most every 3 days.
-  "user.welcome": {channels: ["email"], dedupeMs: 365 * DAY},
+  "user.welcome": {channels: ["email"], dedupeMs: ONCE},
+  // #58: one setup email to a user with a database and no post 24 h after connect.
+  "setup.no_post": {channels: ["email"], dedupeMs: ONCE},
   "billing.checkout_incomplete": {channels: ["email"], dedupeMs: 3 * DAY},
   "billing.payment_failed": {channels: ["email"], dedupeMs: 3 * DAY},
   "trial.ending": {channels: ["email"], dedupeMs: 30 * DAY},

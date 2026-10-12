@@ -40,3 +40,12 @@ test("any sequence of repeats sends at most once per window", () => {
     }),
   );
 });
+
+test("the welcome and setup emails send once per user, however late the repeat", () => {
+  for (const type of ["user.welcome", "setup.no_post"] as const) {
+    const e: AppEvent = {type, uid: "u1", subject: "u1", data: {}};
+
+    expect(planDelivery(e, undefined, 0).send).toBe(true);
+    expect(planDelivery(e, 0, 10 * 365 * 86_400_000).send).toBe(false);
+  }
+});
