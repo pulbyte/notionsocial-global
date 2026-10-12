@@ -1,6 +1,6 @@
 import type {PlatformSpec, PostOption, SpecPlatform} from "./schema";
 
-export {SPEC_PLATFORMS, type Frame, type PlatformSpec, type PostOption, type SpecPlatform, type TextLimit, type VideoLength} from "./schema";
+export {SPEC_PLATFORMS, type DraftSupport, type Frame, type PlatformSpec, type PostOption, type SpecPlatform, type TextLimit, type VideoLength} from "./schema";
 
 export {PLAN_SPEC, type PlanSpec} from "./plans";
 
@@ -21,6 +21,18 @@ const FIRST_COMMENT_DELAY: PostOption = {
   switch: "first-comment-delay",
 };
 
+// #73: a Page with Send to Drafts ticked goes to the platform's drafts, where the API has them.
+// Sources (API docs, 2026-10-12): TikTok inbox/video/init + MEDIA_UPLOAD photos, YouTube private,
+// Graph /videos DRAFT, /video_reels video_state DRAFT, /feed published=false; LinkedIn Posts
+// lifecycleState; atproto app.bsky.draft.defs (embeds are device-bound).
+const SEND_TO_DRAFTS: PostOption = {
+  id: "draft",
+  label: "Send to drafts: tick Send to Drafts on the Page to finish the post in the platform's app",
+  setOn: "page",
+  property: "Send to Drafts",
+  switch: "platform-drafts",
+};
+
 // Source of each value: survey 2026-10-05 on #33 (file:line in the issue comment).
 // video (#62): each platform's documented API length; post-process trims or pads into it.
 export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
@@ -33,6 +45,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     firstComment: {max: 280},
     video: {minSec: 0.5, maxSec: 140},
     options: [FIRST_COMMENT_DELAY],
+    draft: {unsupported: "the X API has no drafts; a created post is live"},
   },
   facebook: {
     text: {max: 63206, unit: "utf16"},
@@ -41,7 +54,8 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     // story images are padded to 9:16 (#62)
     frame: {story: {width: {min: 720, max: 1080}, aspect: {min: "9:16", max: "9:16"}}},
     video: {minSec: 3, maxSec: 14400},
-    options: [FIRST_COMMENT_DELAY],
+    options: [FIRST_COMMENT_DELAY, SEND_TO_DRAFTS],
+    draft: {where: "unpublished on your Page: open Meta Business Suite > Content to finish it (stories have no drafts)"},
   },
   instagram: {
     text: {max: 2200, unit: "utf16"},
@@ -54,6 +68,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
       video: {width: {min: 1080, max: 1440}, aspect: {min: "4:5", max: "1.91:1"}},
     },
     video: {minSec: 3, maxSec: 900},
+    draft: {unsupported: "the Instagram API has no drafts; a media container can only be published"},
   },
   linkedin: {
     text: {max: 3000, unit: "utf16"},
@@ -67,6 +82,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
       {id: "images-20", label: "Up to 20 images in one post", setOn: "page", max: 20, switch: "linkedin-images-20"},
       FIRST_COMMENT_DELAY,
     ],
+    draft: {unsupported: "the LinkedIn Posts API accepts only PUBLISHED when a post is created"},
   },
   youtube: {
     text: {max: 5000, unit: "utf16"},
@@ -76,12 +92,16 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     bytesMB: {image: 2},
     shortsMaxSec: 60, // app copy; YouTube decides what is a Short, publish does not check it
     video: {minSec: 1, maxSec: 43200},
+    options: [SEND_TO_DRAFTS],
+    draft: {where: "uploaded as private: open YouTube Studio to finish it and change the visibility"},
   },
   tiktok: {
     text: {max: 2200, unit: "utf16"},
     title: 90,
     media: {max: 35, videoMax: 1, images: ["webp", "jpeg", "jpg"], videos: ["mp4", "webm", "mov", "qt"]},
     video: {minSec: 3, maxSec: 600},
+    options: [SEND_TO_DRAFTS],
+    draft: {where: "in your TikTok inbox: open the TikTok app to add sound and post (paste the caption for videos)"},
   },
   pinterest: {
     text: {max: 500, unit: "utf16"},
@@ -99,6 +119,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
         switch: "pinterest-default-board",
       },
     ],
+    draft: {unsupported: "the Pinterest API has no draft pins; a created pin is live"},
   },
   threads: {
     text: {max: 500, unit: "utf16"},
@@ -107,6 +128,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     media: {max: 10, videoMax: 1, images: ["jpg", "jpeg", "png", "gif", "webp"], videos: ["mp4", "mov", "qt"]},
     bytesMB: {image: 5},
     video: {minSec: 0, maxSec: 300},
+    draft: {unsupported: "the Threads API has no drafts; a container can only be published"},
   },
   bluesky: {
     text: {max: 300, unit: "utf16"},
@@ -116,12 +138,14 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     firstComment: {max: 300},
     video: {minSec: 0, maxSec: 180},
     options: [FIRST_COMMENT_DELAY],
+    draft: {unsupported: "Bluesky drafts keep media as files on the device, so a server cannot attach images or video"},
   },
   gmb: {
     text: {max: 1500, unit: "utf16"},
     // images only, bmp included: what the publisher sends (#108 decision 3)
     media: {max: 1, videoMax: 0, images: ["jpg", "jpeg", "png", "gif", "bmp", "webp"], videos: []},
     bytesMB: {image: 25},
+    draft: {unsupported: "the Business Profile API has no draft posts; a created post is live"},
   },
 };
 

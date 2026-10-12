@@ -98,9 +98,12 @@ test("post options", () => {
   expect(ids).toEqual([
     "x:first-comment-delay:first-comment-delay",
     "facebook:first-comment-delay:first-comment-delay",
+    "facebook:draft:platform-drafts",
     "instagram:first-comment-delay:first-comment-delay",
     "linkedin:images-20:linkedin-images-20",
     "linkedin:first-comment-delay:first-comment-delay",
+    "youtube:draft:platform-drafts",
+    "tiktok:draft:platform-drafts",
     "pinterest:default-board:pinterest-default-board",
     "bluesky:first-comment-delay:first-comment-delay",
   ]);
@@ -111,4 +114,18 @@ test("post options", () => {
 
   // The delay option sits on every platform that takes a first comment, and only there.
   for (const p of SPEC_PLATFORMS) expect(!!postOption(p, "first-comment-delay")).toBe(!!spec(p).firstComment);
+});
+
+// #73: every platform says where a draft lands or why it has none; the option sits only where it lands.
+test("drafts", () => {
+  const where = SPEC_PLATFORMS.filter((p) => "where" in spec(p).draft);
+  expect(where).toEqual(["facebook", "youtube", "tiktok"]);
+
+  for (const p of SPEC_PLATFORMS) {
+    const d = spec(p).draft;
+    expect(("where" in d ? d.where : d.unsupported).length).toBeGreaterThan(30);
+    expect(!!postOption(p, "draft")).toBe("where" in d);
+  }
+
+  expect(postOption("tiktok", "draft")).toMatchObject({property: "Send to Drafts", switch: "platform-drafts", setOn: "page"});
 });
