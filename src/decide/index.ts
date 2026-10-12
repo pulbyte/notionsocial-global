@@ -1,4 +1,3 @@
-import {createHash} from "node:crypto";
 import {Duration, Effect, Layer, Schema} from "effect";
 import {ClefBadAnswer, ClefTimeout, UnsafePayload} from "./errors";
 import {type ChoiceAnswer, type ChoiceQuestion, type ClefRequest, ClefResponse, ClefRestResponse, type Decision, type DecisionAction, type DecisionKind, type Thresholds} from "./schema";
@@ -30,7 +29,14 @@ function unsafeField(q: ChoiceQuestion): string | undefined {
   return fields.find(([, v]) => v.length > MAX_VALUE || TOKEN_LIKE.test(v))?.[0];
 }
 
-const hash = (q: ChoiceQuestion) => createHash("sha256").update(JSON.stringify([q.kind, q.criteria, q.state])).digest("hex").slice(0, 16);
+// Web Crypto, not node:crypto, so the ./decide subpath loads in Workers. Same sha256 hex as before.
+const hash = (q: ChoiceQuestion) =>
+  Effect.promise(async () => {
+    const bytes = new TextEncoder().encode(JSON.stringify([q.kind, q.criteria, q.state]));
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+
+    return Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("").slice(0, 16);
+  });
 
 const actionFor = (answer: ChoiceAnswer | null, t: Thresholds): DecisionAction => {
   if (!answer || answer.choice === "none") return answer ? "reject" : "safe-path";
@@ -84,7 +90,7 @@ export const choiceEffect = (q: ChoiceQuestion, caller: string, timeoutMs = TIME
     const decision: Decision = {
       kind: q.kind,
       caller,
-      input_hash: hash(q),
+      input_hash: yield* hash(q),
       answer: outcome.answer,
       action: actionFor(outcome.answer, thresholds),
       ...(outcome.error && {error: outcome.error}),

@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "4.39.0",
+  "version": "4.40.0",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -42,6 +42,11 @@
       "types": "./dist/user-ops.d.ts",
       "import": "./dist/user-ops.mjs",
       "require": "./dist/user-ops.js"
+    },
+    "./decide": {
+      "types": "./dist/decide.d.ts",
+      "import": "./dist/decide.mjs",
+      "require": "./dist/decide.js"
     }
   },
   "scripts": {

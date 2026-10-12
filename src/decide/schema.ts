@@ -1,7 +1,7 @@
 import {Schema} from "effect";
 
 // Who asks and why. Thresholds are configured per kind, never in callers.
-export const DecisionKind = Schema.Literals(["account-match", "crisp-intake", "error-map", "property-suggest"]);
+export const DecisionKind = Schema.Literals(["account-match", "crisp-intake", "error-map", "property-suggest", "support-topic"]);
 
 export type DecisionKind = typeof DecisionKind.Type;
 
