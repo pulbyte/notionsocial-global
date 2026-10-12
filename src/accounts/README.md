@@ -4,9 +4,11 @@ Finds the connected account each Platforms value on a Page means (CONTEXT.md: Re
 Ticket: pulbyte/notionsocial-backend#17 (exact tier). #37 adds fuzzy and AI tiers.
 
 ```
-api       resolveAccounts(values, liveAccounts, writtenTags?) -> {resolved, unmatched}
+api       resolveAccounts(values, liveAccounts, writtenTags?, groups?) -> {resolved, unmatched}
           unmatchedMessage(miss) -> 'No connected account matches "IG@x". Connected: …'
-rules     platform_uid · written tag (notion_dbs.sm_accs, survives renames) · account tag ·
+          aiAskable(miss) -> false for unknown platforms and empty groups (no AI, no cache)
+rules     group name (#69: every connected member, else empty-group) · platform_uid ·
+          written tag (notion_dbs.sm_accs, survives renames) · account tag ·
           alias prefix (IG=IN=INSTAGRAM, X=TW, TT, TH, LI<->LI-PAGE when unique) · bare handle
 input     live sm_accs of the author (duplicates collapse to the latest doc)
 never     drops a value: each is resolved or unmatched with a reason

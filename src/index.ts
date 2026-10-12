@@ -15,7 +15,17 @@ export * from "./url";
 export * from "./buffer";
 export {MAX_PDF_PAGES, MediaLinkError, isPdf, pageRef, withPdfPages} from "./media-links";
 export {createCutover, type ConfigSource, type Cutover, type CutoverEvent} from "./cutover";
-export {decodeAccounts, resolveAccounts, unmatchedMessage, type Account, type Resolution, type WrittenTag} from "./accounts";
+export {
+  aiAskable,
+  decodeAccountGroups,
+  decodeAccounts,
+  resolveAccounts,
+  unmatchedMessage,
+  type Account,
+  type AccountGroup,
+  type Resolution,
+  type WrittenTag,
+} from "./accounts";
 export {
   aesCipher,
   createTokenVault,

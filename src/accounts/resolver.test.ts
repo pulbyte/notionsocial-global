@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {resolveAccounts, unmatchedMessage, type Account} from "./index";
+import {aiAskable, resolveAccounts, unmatchedMessage, type Account} from "./index";
 
 const ig: Account = {platform_uid: "17841", platform: "instagram", username: "ontherise.menswear"};
 
@@ -102,4 +102,47 @@ test("duplicate docs of one account are one account, the latest one", () => {
   const newer: Account = {...older, last_updated_at: 2, handle: "newer"};
 
   expect(resolveAccounts(["IN@ffpo.eu"], [older, newer]).resolved).toMatchObject([{account: newer}]);
+});
+
+const brandA = {name: "Brand A", platform_uids: ["1946", "17841", "90960"]};
+
+const uidsForGroups = (values: string[], groups: {name: string; platform_uids: string[]}[]) =>
+  resolveAccounts(values, accounts, [], groups).resolved.map((r) => r.account.platform_uid);
+
+test("#69: a group option resolves to each member account, any case", () => {
+  const result = resolveAccounts(["brand a"], accounts, [], [brandA]);
+
+  expect(result.resolved.map((r) => [r.account.platform_uid, r.rule])).toEqual([
+    ["17841", "group"],
+    ["1946", "group"],
+    ["90960", "group"],
+  ]);
+  expect(result.unmatched).toEqual([]);
+});
+
+test("#69: a member removed from the group is not resolved; a member also picked alone posts once", () => {
+  const smaller = {...brandA, platform_uids: ["1946"]};
+
+  expect(uidsForGroups(["Brand A"], [smaller])).toEqual(["1946"]);
+  expect(uidsForGroups(["Brand A", "TW@acme_x"], [brandA])).toEqual(["17841", "1946", "90960"]);
+});
+
+test("#69: a group name wins over an account with the same handle", () => {
+  expect(uidsForGroups(["acme_x"], [{name: "acme_x", platform_uids: ["17841"]}])).toEqual(["17841"]);
+});
+
+test("#69: a group with no connected member is unmatched, named, and not for the AI tier", () => {
+  const result = resolveAccounts(["Brand A"], accounts, [], [{name: "Brand A", platform_uids: ["gone"]}]);
+  const [miss] = result.unmatched;
+
+  expect(result.resolved).toEqual([]);
+  expect(miss?.reason).toBe("empty-group");
+  expect(aiAskable(miss!)).toBe(false);
+  expect(unmatchedMessage(miss!)).toMatch(/^Group "Brand A" has no connected accounts\. Connected: /);
+});
+
+test("aiAskable: unknown platforms and empty groups are not asked; other misses are", () => {
+  const reasons = ["no-account", "ambiguous", "unknown-platform", "empty-group"] as const;
+
+  expect(reasons.map((reason) => aiAskable({value: "v", reason, candidates: []}))).toEqual([true, true, false, false]);
 });
