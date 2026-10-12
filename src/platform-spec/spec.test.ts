@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {PLAN_SPEC, PLATFORM_SPEC, platformSpecJson, SPEC_PLATFORMS, spec} from "./index";
+import {PLAN_SPEC, PLATFORM_SPEC, platformSpecJson, postOption, SPEC_PLATFORMS, spec} from "./index";
 
 // Pins the values publishers enforce today (#33 survey). Changing one is a product decision.
 test("enforced limits", () => {
@@ -90,4 +90,25 @@ test("plan caps are the plan table values", () => {
 // #50: pre-flight blocks Instagram when the caption has more hashtags than this.
 test("only instagram caps hashtags", () => {
   expect(SPEC_PLATFORMS.filter((p) => spec(p).hashtags).map((p) => [p, spec(p).hashtags?.max])).toEqual([["instagram", 30]]);
+});
+
+// #67: each post option has a spec entry the capability page lists, and its own cutover switch.
+test("post options", () => {
+  const ids = SPEC_PLATFORMS.flatMap((p) => (spec(p).options ?? []).map((o) => `${p}:${o.id}:${o.switch}`));
+  expect(ids).toEqual([
+    "x:first-comment-delay:first-comment-delay",
+    "facebook:first-comment-delay:first-comment-delay",
+    "instagram:first-comment-delay:first-comment-delay",
+    "linkedin:images-20:linkedin-images-20",
+    "linkedin:first-comment-delay:first-comment-delay",
+    "pinterest:default-board:pinterest-default-board",
+    "bluesky:first-comment-delay:first-comment-delay",
+  ]);
+
+  expect(postOption("linkedin", "images-20")?.max).toBe(20);
+  expect(postOption("x", "first-comment-delay")).toMatchObject({defaultSec: 45, property: "First Comment Delay"});
+  expect(postOption("pinterest", "nope")).toBeUndefined();
+
+  // The delay option sits on every platform that takes a first comment, and only there.
+  for (const p of SPEC_PLATFORMS) expect(!!postOption(p, "first-comment-delay")).toBe(!!spec(p).firstComment);
 });
