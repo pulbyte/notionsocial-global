@@ -58,4 +58,15 @@ export default defineConfig([
     treeshake: true,
     noExternal: ["effect"],
   },
+  {
+    // decide (#130) for the admin Worker: Web Crypto only, no Node built-ins; effect is bundled in.
+    entry: {decide: "src/decide/index.ts"},
+    format: ["esm", "cjs"],
+    outDir: "dist",
+    dts: true,
+    clean: false,
+    platform: "neutral",
+    treeshake: true,
+    noExternal: ["effect"],
+  },
 ]);

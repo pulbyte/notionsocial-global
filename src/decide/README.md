@@ -10,5 +10,6 @@ services  Clef (clefLive({accountId, apiToken}): Workers AI REST via AI Gateway 
 rules     5 s timeout, 1 retry · null -> action "safe-path" (never publish on null) ·
           tokens and long text are refused before sending (UnsafePayload)
 errors    ClefTimeout · ClefHttpError · ClefBadAnswer · UnsafePayload
+import    "@pulbyte/notionsocial-global/decide" in Workers (no Node built-ins; admin, #130)
 pending   score() · a recorded fixture (needs CLOUDFLARE_AI_TOKEN) · admin review list
 ```

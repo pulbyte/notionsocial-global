@@ -108,3 +108,20 @@ test("the live client calls Workers AI through the notionsocial AI Gateway", asy
 
   expect(seen[0]).toMatchObject({url: "https://api.cloudflare.com/client/v4/accounts/acc1/ai/run/@cf/cloudflare/clef", headers: {"cf-aig-gateway-id": "notionsocial"}});
 });
+
+test("input_hash is the first 16 hex of sha256 over [kind, criteria, state], as before Web Crypto", async () => {
+  const {createHash} = await import("node:crypto");
+  const {decide} = setup([ok]);
+  const want = createHash("sha256").update(JSON.stringify([question.kind, question.criteria, question.state])).digest("hex").slice(0, 16);
+
+  expect((await decide.choice(question, "t")).input_hash).toBe(want);
+});
+
+test("the ./decide subpath imports no Node built-ins, so it loads in Workers", async () => {
+  const {readdirSync, readFileSync} = await import("node:fs");
+  const sources = readdirSync(__dirname).filter((f) => f.endsWith(".ts") && !f.endsWith(".test.ts"));
+
+  expect(sources.length).toBeGreaterThan(0);
+
+  for (const f of sources) expect(readFileSync(`${__dirname}/${f}`, "utf8"), f).not.toMatch(/from "node:/);
+});
