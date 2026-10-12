@@ -1,0 +1,961 @@
+########## default
+===== facebook (193)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== instagram (193)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== linkedin (193)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== tiktok (193)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== youtube (193)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== pinterest (193)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== gmb (193)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== threads (197)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== bluesky (197)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== x (197)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+
+########## line break per block
+===== facebook (198)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+===== instagram (198)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+===== linkedin (198)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+===== tiktok (198)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+===== youtube (198)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+===== pinterest (198)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+===== gmb (198)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+===== threads (201)
+[1]
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+===== bluesky (201)
+[1]
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+===== x (201)
+[1]
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+
+After the list
+
+########## disable formatting
+===== facebook (186)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== instagram (186)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== linkedin (186)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== tiktok (186)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== youtube (186)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== pinterest (186)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== gmb (186)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== threads (190)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== bluesky (190)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+===== x (190)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. Two bold
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+soft break in a child
+4. Soft break
+in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+second line
+After the list
+
+########## caption fixes
+===== facebook (201)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== instagram (201)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== linkedin (201)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== tiktok (201)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== youtube (201)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== pinterest (201)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== gmb (201)
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== threads (205)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== bluesky (205)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+===== x (205)
+[1]
+Numbered:
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+Bullets:
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+After the list
+
+########## caption fixes + line break per block
+===== facebook (205)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== instagram (205)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== linkedin (205)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== tiktok (205)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== youtube (205)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== pinterest (205)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== gmb (205)
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== threads (209)
+[1]
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== bluesky (209)
+[1]
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list
+===== x (209)
+[1]
+Numbered:
+
+1. One
+⠀⠀Child paragraph
+2. 𝗧𝘄𝗼 𝗯𝗼𝗹𝗱
+3. Three
+⠀⠀a. Sub a
+⠀⠀b. Sub b
+⠀⠀⠀⠀soft break in a child
+4. Soft break
+⠀⠀in an item
+
+Bullets:
+
+• Alpha
+⠀⠀◦ Nested
+• Beta
+⠀⠀second line
+
+After the list

@@ -16,6 +16,7 @@ const NBMPInstance = NotionBlocksMarkdownParser.getInstance({
 import {string_to_unicode_variant as toUnicodeVariant} from "string-to-unicode-variant";
 import {FormattingOptions, NotionBlock, NotionBlockType, ParsedNotionBlock} from "./types";
 import {dog} from "./logging";
+import {indentSoftBreaks, isDashLine, linkToUrl} from "./caption";
 
 function mkdwn(block: NotionBlock) {
   try {
@@ -38,6 +39,8 @@ export function parseNotionBlockToText(
   parentBlock?: NotionBlock
 ): [ParsedNotionBlock, number, number] {
   let markdown = mkdwn(block);
+  const fixes = !!options?.captionFixes;
+  const level = nestIndex;
 
   const type = block.type as NotionBlockType;
   const hasChildren = block.has_children;
@@ -59,7 +62,10 @@ export function parseNotionBlockToText(
   const isToggleable = block[type]?.["is_toggleable"];
   const nextParagraph = getParagraphText(nextBlock);
   const notSupported = !SUPPORTED_NOTION_CONTENT_BLOCKS.includes(type);
-  const isNextBlockEmpty = nextParagraph && !hasText(trimString(nextParagraph));
+  // #63 (T07): a fully empty next block has no rich text; only captionFixes counts it as empty.
+  const isNextBlockEmpty = fixes
+    ? nextBlock?.type == "paragraph" && !hasText(nextParagraph)
+    : nextParagraph && !hasText(trimString(nextParagraph));
 
   function __(result?: string | boolean): [ParsedNotionBlock, number, number] {
     const obj: ParsedNotionBlock =
@@ -76,6 +82,8 @@ export function parseNotionBlockToText(
   }
 
   if (isDivider) return __(true);
+  // #63 (T54): "---" typed as text splits sections like a divider block.
+  if (fixes && isParagraph && isDashLine(paragraph)) return __(true);
 
   if ((!isText && !isList && hasChildren) || isMedia || isToggleable || notSupported)
     return __();
@@ -114,7 +122,7 @@ export function parseNotionBlockToText(
     }
   } else nestIndex = 1;
 
-  let formatted = formatMarkdown(markdown);
+  let formatted = formatMarkdown(markdown, options);
   let text = markdownToTxt(formatted, {gfm: false}); //.split("\n\n").join("\n");
 
   if (text && isNumberedListItem)
@@ -122,6 +130,10 @@ export function parseNotionBlockToText(
   if (text && isBulletItem) text = `${getBulletListPrefix(nestIndex, isNested)} ${text}`;
 
   if (isParagraph) text = trimString(formatted);
+
+  // #63 (T52): soft-break lines stay under the item's text (lists, to-dos, nested blocks).
+  if (fixes && (isStacked || parentBlock))
+    text = indentSoftBreaks(text, "⠀".repeat(2 * (isStacked ? level : level - 1)));
 
   text += childrenText;
 
@@ -189,13 +201,14 @@ function stripHtmlTags(text: string): string {
     .replace(/&#39;/g, "'");
 }
 
-export function formatMarkdown(text) {
+export function formatMarkdown(text, options?: FormattingOptions) {
   // Remove HTML tags with notion-color attributes and other HTML artifacts
   text = stripHtmlTags(text);
+  const applyStyleToText = options?.disableTextFormatting ? unstyled : styled;
 
-  // Transform markdown URLs
+  // Transform markdown URLs; #63: with captionFixes the URL replaces the title.
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
-    return linkText;
+    return options?.captionFixes ? linkToUrl(linkText, url) : linkText;
   });
 
   // Transform bold and italic text
@@ -257,7 +270,12 @@ export function formatMarkdown(text) {
   return text;
 }
 
-function applyStyleToText(text, style) {
+// #63: the "disable formatting" database option keeps bold and italic as plain letters.
+function unstyled(text, _style?) {
+  return removeUnsupportedUnicodeChars(text);
+}
+
+function styled(text, style) {
   // Clean the input text first to remove unsupported characters
   text = removeUnsupportedUnicodeChars(text);
 

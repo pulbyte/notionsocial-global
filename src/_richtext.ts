@@ -2,6 +2,7 @@ import {spec} from "./platform-spec";
 import {getMediaFromNotionBlock, getStaticMediaFromNotionBlock} from "./_media";
 import {parseNotionBlockToText} from "./parser";
 import {hasText, trimString} from "./text";
+import {isDashLine, splitOnDashLines} from "./caption";
 import {
   FormattingOptions,
   Media,
@@ -14,8 +15,17 @@ import {
 // Longest caption any platform takes (Facebook); text beyond it is never posted.
 const LONGEST_CAPTION = spec("facebook").text.max;
 
-export function getRichTextFromText(string: string, limit = LONGEST_CAPTION): RichTextContent {
+export function getRichTextFromText(
+  string: string,
+  limit = LONGEST_CAPTION,
+  options?: FormattingOptions
+): RichTextContent {
   const text: string = string.substring(0, limit);
+  // #63 (T54): a "---" line in a caption property splits sections like a divider block.
+  if (options?.captionFixes && text.split("\n").some(isDashLine)) {
+    const sections = splitOnDashLines(text);
+    return getRichTextContentFromSections(sections, sections.map(() => []));
+  }
   return {
     text: text.trimEnd(),
     paragraphs: [{text, media: []}],
@@ -32,7 +42,10 @@ export function convertSectionsToParagraphs(
   }));
 }
 
-export function getRichTextFromNotionBlocksSync(blocks): RichTextContent {
+export function getRichTextFromNotionBlocksSync(
+  blocks,
+  options?: FormattingOptions
+): RichTextContent {
   const limit = LONGEST_CAPTION;
   let parsedBlocks: ParsedNotionBlock[] = [];
 
@@ -46,13 +59,14 @@ export function getRichTextFromNotionBlocksSync(blocks): RichTextContent {
       block,
       nextBlock,
       listIndex,
-      limit
+      limit,
+      options
     );
     listIndex = _listIndex;
     if (!_limitLeft) break;
   }
 
-  return getRichTextContentFromParsedBlocks(parsedBlocks);
+  return getRichTextContentFromParsedBlocks(parsedBlocks, options);
 }
 export function getRichTextContentFromSections(textArray: string[], mediaArray: Media[][]) {
   const text = textArray.join("\n\n");
@@ -77,7 +91,8 @@ export function getRichTextContentFromSections(textArray: string[], mediaArray: 
  * @returns Tuple containing arrays of cleaned-up text sections and corresponding media sections
  */
 export function getRichTextContentFromParsedBlocks(
-  parsedBlocks: ParsedNotionBlock[]
+  parsedBlocks: ParsedNotionBlock[],
+  options?: FormattingOptions
 ): RichTextContent {
   // Initialize storage arrays for final output
   const mediaSections: Media[][] = [];
@@ -104,6 +119,10 @@ export function getRichTextContentFromParsedBlocks(
     mediaBuffer = updatedMediaBuffer;
   });
 
+  // #63 (T52): a media block leaves a line break at the start of its section.
+  if (options?.captionFixes) {
+    textSections.forEach((t, i) => (textSections[i] = trimString(t, true, false)));
+  }
   // Clean up and validate sections
   cleanupSections(textSections, mediaSections);
 

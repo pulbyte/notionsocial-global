@@ -1,0 +1,271 @@
+########## default
+===== facebook (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== instagram (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== linkedin (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== tiktok (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== youtube (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== pinterest (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== gmb (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== threads (116)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== bluesky (116)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== x (116)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+########## line break per block
+===== facebook (115)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+===== instagram (115)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+===== linkedin (115)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+===== tiktok (115)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+===== youtube (115)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+===== pinterest (115)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+===== gmb (115)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+===== threads (118)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== bluesky (118)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== x (118)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+########## disable formatting
+===== facebook (87)
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== instagram (87)
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== linkedin (87)
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== tiktok (87)
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== youtube (87)
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== pinterest (87)
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== gmb (87)
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== threads (91)
+[1]
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== bluesky (91)
+[1]
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+===== x (91)
+[1]
+Bold and italic and both
+Inline `code` stays plain
+snake_case_word and underscored text
+
+########## caption fixes
+===== facebook (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== instagram (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== linkedin (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== tiktok (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== youtube (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== pinterest (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== gmb (112)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== threads (116)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== bluesky (116)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== x (116)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+Inline `code` stays plain
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+
+########## caption fixes + line break per block
+===== facebook (114)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== instagram (114)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== linkedin (114)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== tiktok (114)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== youtube (114)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== pinterest (114)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== gmb (114)
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== threads (118)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== bluesky (118)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text
+===== x (118)
+[1]
+𝗕𝗼𝗹𝗱 and 𝘪𝘵𝘢𝘭𝘪𝘤 and 𝙗𝙤𝙩𝙝
+
+Inline `code` stays plain
+
+snake_case_word and 𝘶𝘯𝘥𝘦𝘳𝘴𝘤𝘰𝘳𝘦𝘥 text

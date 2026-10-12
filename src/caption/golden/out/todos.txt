@@ -1,0 +1,471 @@
+########## default
+===== facebook (91)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== instagram (91)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== linkedin (91)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== tiktok (91)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== youtube (91)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== pinterest (91)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== gmb (91)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== threads (95)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== bluesky (95)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+===== x (95)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+Done.
+
+########## line break per block
+===== facebook (94)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+===== instagram (94)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+===== linkedin (94)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+===== tiktok (94)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+===== youtube (94)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+===== pinterest (94)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+===== gmb (94)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+===== threads (97)
+[1]
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+===== bluesky (97)
+[1]
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+===== x (97)
+[1]
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+in a to-do
+
+Done.
+
+########## disable formatting
+===== facebook (83)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== instagram (83)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== linkedin (83)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== tiktok (83)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== youtube (83)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== pinterest (83)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== gmb (83)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== threads (87)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== bluesky (87)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+===== x (87)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ Bold item
+⬜ Two lines
+in a to-do
+Done.
+
+########## caption fixes
+===== facebook (93)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== instagram (93)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== linkedin (93)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== tiktok (93)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== youtube (93)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== pinterest (93)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== gmb (93)
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== threads (97)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== bluesky (97)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+===== x (97)
+[1]
+Checklist:
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+Done.
+
+########## caption fixes + line break per block
+===== facebook (95)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== instagram (95)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== linkedin (95)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== tiktok (95)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== youtube (95)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== pinterest (95)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== gmb (95)
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== threads (99)
+[1]
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== bluesky (99)
+[1]
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.
+===== x (99)
+[1]
+Checklist:
+
+⬜ Unchecked item
+✅ Checked item
+⬜ 𝗕𝗼𝗹𝗱 𝗶𝘁𝗲𝗺
+⬜ Two lines
+⠀⠀in a to-do
+
+Done.

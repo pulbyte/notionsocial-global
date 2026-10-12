@@ -122,3 +122,4 @@ export {
   type VideoLength,
 } from "./platform-spec";
 export {healProps, statusFilterType, type Healed, type PropMeta, type PropsMeta, type Schema as NotionSchema} from "./notion-props";
+export {fitText, plainText} from "./caption";

@@ -642,6 +642,8 @@ export interface UpdateNdbPayload {
   publish_changes?: NotionDatabase["publish_changes"];
   post_metric_tracking?: NotionDatabase["post_metric_tracking"];
   options?: NotionDatabase["options"];
+  // #63: per-database caption options from DB settings.
+  formatting_options?: NotionDatabase["formatting_options"];
 }
 export type NotionPage = GetPageResponse;
 export type NotionProperties = Record<string, NotionProperty>;
@@ -695,6 +697,8 @@ export interface FormattingOptions {
   disableTextFormatting?: boolean;
   // #65: embed blocks that link a file become media (config/cutover."media-extraction").
   mediaLinks?: boolean;
+  // #63: caption bug fixes; the backend sets it from config/cutover."caption-fixes".
+  captionFixes?: boolean;
 }
 export interface NotionPagePropertiesForPost {
   nsProp: NotionTextProperty;
