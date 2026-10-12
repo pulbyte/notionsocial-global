@@ -33,6 +33,8 @@ const PLATFORM_PREFIXES = new Map(Object.entries({
   MASTODON: "mastodon",
   TG: "telegram",
   TELEGRAM: "telegram",
+  REDDIT: "reddit",
+  RD: "reddit",
 }));
 
 const KIND_SUFFIXES = new Map<string, Kind>([
@@ -67,6 +69,7 @@ const WRITTEN_PREFIX = new Map(Object.entries({
   bluesky: "BSKY",
   mastodon: "MASTO",
   telegram: "TG",
+  reddit: "REDDIT",
 }));
 
 export function writtenPrefix(platform: string): string {

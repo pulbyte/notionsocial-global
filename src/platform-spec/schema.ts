@@ -1,7 +1,7 @@
 // What each platform accepts (#33). Values are the ones the code enforces today; a change here
 // is a product decision, not a refactor.
 
-export const SPEC_PLATFORMS = ["x", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest", "threads", "bluesky", "gmb", "mastodon", "telegram"] as const;
+export const SPEC_PLATFORMS = ["x", "facebook", "instagram", "linkedin", "youtube", "tiktok", "pinterest", "threads", "bluesky", "gmb", "mastodon", "telegram", "reddit"] as const;
 
 export type SpecPlatform = (typeof SPEC_PLATFORMS)[number];
 

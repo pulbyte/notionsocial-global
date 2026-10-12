@@ -202,6 +202,33 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     video: {minSec: 0, maxSec: 86400},
     draft: {unsupported: "the Telegram Bot API has no drafts; a sent message is live"},
   },
+  // #77 Reddit (API docs, 2026-10-12): /api/submit title 300, selftext 40,000; galleries 2-20
+  // images (submit_gallery_post); a video needs a poster image; reddit.com/wiki/video 15 min, 1 GB;
+  // images 20 MB. Media posts carry no body text.
+  reddit: {
+    text: {max: 40000, unit: "utf16"},
+    title: 300,
+    media: {max: 20, videoMax: 1, images: ["jpg", "jpeg", "png", "gif"], videos: ["mp4", "mov", "qt"]},
+    bytesMB: {image: 20, video: 1024},
+    video: {minSec: 0, maxSec: 900},
+    options: [
+      {
+        id: "subreddit",
+        label: "Subreddit: the post goes to the community in the Reddit - Subreddit property",
+        setOn: "page",
+        property: "Reddit - Subreddit",
+        switch: "reddit",
+      },
+      {
+        id: "flair",
+        label: "Flair: the flair named in the Reddit - Flair property, for communities that ask for one",
+        setOn: "page",
+        property: "Reddit - Flair",
+        switch: "reddit",
+      },
+    ],
+    draft: {unsupported: "the Reddit API has no drafts; a submitted post is live"},
+  },
 };
 
 export const spec = (platform: SpecPlatform): PlatformSpec => PLATFORM_SPEC[platform];

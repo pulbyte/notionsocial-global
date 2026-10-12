@@ -18,6 +18,7 @@ test("enforced limits", () => {
     ["gmb", 1500, 1],
     ["mastodon", 500, 4],
     ["telegram", 4096, 10],
+    ["reddit", 40000, 20],
   ]);
 });
 
@@ -57,6 +58,7 @@ test("video lengths and fit frames", () => {
     ["gmb", undefined, undefined],
     ["mastodon", 0, 86400],
     ["telegram", 0, 86400],
+    ["reddit", 0, 900],
   ]);
 
   for (const p of SPEC_PLATFORMS) {
@@ -121,6 +123,8 @@ test("post options", () => {
     "tiktok:draft:platform-drafts",
     "pinterest:default-board:pinterest-default-board",
     "bluesky:first-comment-delay:first-comment-delay",
+    "reddit:subreddit:reddit",
+    "reddit:flair:reddit",
   ]);
 
   expect(postOption("linkedin", "images-20")?.max).toBe(20);

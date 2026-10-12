@@ -89,6 +89,8 @@ export function getSmShortName(platform: SocialPlatformType) {
       return "MASTO";
     case "telegram":
       return "TG";
+    case "reddit":
+      return "REDDIT";
     default:
       return String(platform).toUpperCase();
   }

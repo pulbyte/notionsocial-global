@@ -141,6 +141,8 @@ export const binaryUploadSocialPlatforms: SocialPlatformType[] = [
   "bluesky",
   "mastodon",
   "telegram",
+  // #77: Reddit takes media as uploads to its S3 lease
+  "reddit",
 ];
 export const urlUploadSocialPlatforms: SocialPlatformType[] = [
   "facebook",
