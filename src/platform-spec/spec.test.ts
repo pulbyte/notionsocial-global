@@ -40,6 +40,33 @@ test("instagram frame matches what post-process enforced", () => {
   });
 });
 
+// #62: post-process trims or pads video into these lengths and pads story / carousel images.
+test("video lengths and fit frames", () => {
+  expect(SPEC_PLATFORMS.map((p) => [p, spec(p).video?.minSec, spec(p).video?.maxSec])).toEqual([
+    ["x", 0.5, 140],
+    ["facebook", 3, 14400],
+    ["instagram", 3, 900],
+    ["linkedin", 3, 1800],
+    ["youtube", 1, 43200],
+    ["tiktok", 3, 600],
+    ["pinterest", 4, 900],
+    ["threads", 0, 300],
+    ["bluesky", 0, 180],
+    ["gmb", undefined, undefined],
+  ]);
+
+  for (const p of SPEC_PLATFORMS) {
+    const v = spec(p).video;
+
+    if (v) expect(v.minSec).toBeLessThan(v.maxSec);
+
+    expect(!!v).toBe(spec(p).media.videoMax > 0);
+  }
+
+  expect(PLATFORM_SPEC.facebook.frame?.story?.aspect).toEqual({min: "9:16", max: "9:16"});
+  expect(PLATFORM_SPEC.pinterest.frame?.carousel?.aspect).toEqual({min: "2:3", max: "2:3"});
+});
+
 // #108 drift decisions (2026-10-12): the spec records what production does today.
 test("file types follow what each publisher sends", () => {
   expect(PLATFORM_SPEC.facebook.media.images).toBe(PLATFORM_SPEC.instagram.media.images);

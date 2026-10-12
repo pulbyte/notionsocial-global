@@ -11,6 +11,9 @@ export type TextLimit = {max: number; unit: "utf16" | "weighted"};
 // Accepted frame: width in px, aspect as "w:h" (narrowest to widest).
 export type Frame = {width: {min: number; max: number}; aspect: {min: string; max: string}};
 
+// Video length the platform accepts, in seconds; post-process trims or pads into it (#62).
+export type VideoLength = {minSec: number; maxSec: number};
+
 export type PlatformSpec = {
   text: TextLimit; // caption / description / post body
   threadChunk?: TextLimit; // threads split long text into posts of this size
@@ -20,6 +23,8 @@ export type PlatformSpec = {
   bytesMB?: {image?: number; video?: number; doc?: number; gif?: number};
   firstComment?: {max: number};
   hashtags?: {max: number}; // most hashtags one post may carry; the platform rejects more (#50)
-  frame?: {image?: Frame; video?: Frame}; // post-process fits media into these (#108)
+  // post-process fits media into these (#108); story: story images, carousel: each carousel image (#62)
+  frame?: {image?: Frame; video?: Frame; story?: Frame; carousel?: Frame};
+  video?: VideoLength; // #62
   shortsMaxSec?: number; // YouTube: longest vertical video the app calls a Short (#108)
 };
