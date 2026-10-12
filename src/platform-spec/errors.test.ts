@@ -54,3 +54,20 @@ test("every catalogue message maps back to its own code", () => {
   // SAFETY: Object.keys of ERROR_CATALOGUE are exactly its ErrorCode keys.
   for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) expect([code, codeForMessage(explain(code).message)]).toEqual([code, code]);
 });
+
+test("#51: every entry has a link: its own, else the message's URL, else /docs", () => {
+  expect(explain("drive-restricted").link).toBe("https://support.google.com/drive/answer/2494822");
+  expect(explain("canva-link", "https://w.app").link).toBe("https://w.app/media-specs");
+  expect(explain("ig-reel-plan", "https://w.app").link).toBe("https://w.app/pricing");
+  expect(explain("ig-not-business").link).toBe("https://help.instagram.com/502981923235522");
+  expect(explain("meta-restricted-activity", "https://w.app").link).toBe("https://w.app/docs");
+
+  // SAFETY: Object.keys of ERROR_CATALOGUE are exactly its ErrorCode keys.
+  for (const code of Object.keys(ERROR_CATALOGUE) as ErrorCode[]) expect(explain(code).link).toMatch(/^https:\/\/\S+[^.,)]$/);
+});
+
+test("#51: Drive, Canva, external media, Meta's restriction and unsupported types have entries", () => {
+  for (const code of ["drive-restricted", "canva-link", "external-media", "meta-restricted-activity", "media-type-unsupported"] as const) {
+    expect(ERROR_CATALOGUE[code].platform).toBe("*");
+  }
+});
