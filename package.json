@@ -1,6 +1,6 @@
 {
   "name": "@pulbyte/notionsocial-global",
-  "version": "4.28.0",
+  "version": "4.29.0",
   "description": "Global code resources for Notionsocial",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -37,6 +37,11 @@
       "types": "./dist/paypal.d.ts",
       "import": "./dist/paypal.mjs",
       "require": "./dist/paypal.js"
+    },
+    "./user-ops": {
+      "types": "./dist/user-ops.d.ts",
+      "import": "./dist/user-ops.mjs",
+      "require": "./dist/user-ops.js"
     }
   },
   "scripts": {

@@ -47,4 +47,15 @@ export default defineConfig([
     treeshake: true,
     external: ["@pulbyte/social-stack-lib"],
   },
+  {
+    // Account ops (#31) for the admin Worker: no Node built-ins; effect is bundled in.
+    entry: {"user-ops": "src/user-ops/index.ts"},
+    format: ["esm", "cjs"],
+    outDir: "dist",
+    dts: true,
+    clean: false,
+    platform: "neutral",
+    treeshake: true,
+    noExternal: ["effect"],
+  },
 ]);

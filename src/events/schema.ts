@@ -9,6 +9,7 @@ export const EVENT_TYPES = [
   "token.expiring",
   "ndb.broken",
   "account.deleted",
+  "account.action",
   "user.welcome",
   "billing.checkout_incomplete",
   "billing.payment_failed",
