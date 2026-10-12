@@ -14,6 +14,18 @@ export type Frame = {width: {min: number; max: number}; aspect: {min: string; ma
 // Video length the platform accepts, in seconds; post-process trims or pads into it (#62).
 export type VideoLength = {minSec: number; maxSec: number};
 
+// A post option the user sets on the Page (a Notion property) or on the Account (#67).
+// switch: the config/cutover module that turns it on.
+export type PostOption = {
+  id: string;
+  label: string; // what the capability page shows
+  setOn: "page" | "account";
+  property?: string; // default Notion property name
+  max?: number; // the option's own limit (LinkedIn images)
+  defaultSec?: number; // used when the Page sets no value
+  switch: string;
+};
+
 export type PlatformSpec = {
   text: TextLimit; // caption / description / post body
   threadChunk?: TextLimit; // threads split long text into posts of this size
@@ -27,4 +39,5 @@ export type PlatformSpec = {
   frame?: {image?: Frame; video?: Frame; story?: Frame; carousel?: Frame};
   video?: VideoLength; // #62
   shortsMaxSec?: number; // YouTube: longest vertical video the app calls a Short (#108)
+  options?: readonly PostOption[]; // #67
 };
