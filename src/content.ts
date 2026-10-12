@@ -37,7 +37,7 @@ export async function getNotionPageRichTextContent(
 
   const {richText} = await getContentFromNotionBlocksAsync(
     pageChildrenIterator,
-    config.formattingOptions,
+    config.mediaLinks ? {...config.formattingOptions, mediaLinks: true} : config.formattingOptions,
     getChildrenIterator
   );
 
