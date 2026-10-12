@@ -1,9 +1,10 @@
 import {Effect, Schema} from "effect";
 import {deleteAccount} from "./delete";
+import {confirmEmailChange, requestEmailChange} from "./email-change";
 import {toFailure, type UserOpsError, type UserOpsFailure} from "./errors";
 import {enrollAffiliate, extendTrial, findLogin, logAffiliatePayout, requestPayout, updateEmail} from "./ops";
-import {DeleteBody, EnrollAffiliateBody, LimitRequestBody, PayoutRequestBody, UpdateEmailBody} from "./schema";
-import type {DeleteInput, EnrollInput, ExtendTrialInput, LogPayoutInput, UpdateEmailInput} from "./schema";
+import {DeleteBody, EnrollAffiliateBody, ExtendTrialBody, LimitRequestBody, PayoutRequestBody, UpdateEmailBody} from "./schema";
+import type {DeleteInput, EnrollInput, ExtendTrialInput, Login, LogPayoutInput, RequestEmailChangeInput, UpdateEmailInput} from "./schema";
 import {portsLayer, type UserOpsPorts, type UserOpsServices} from "./service";
 
 export * from "./errors";
@@ -14,12 +15,15 @@ export type {
   Affiliate,
   AffiliateFields,
   BillingFields,
+  ConfirmEmailOutput,
   DeleteBody,
   DeleteInput,
   DeleteOutput,
+  EmailChange,
   EnrollAffiliateBody,
   EnrollInput,
   EnrollOutput,
+  ExtendTrialBody,
   ExtendTrialInput,
   ExtendTrialOutput,
   LimitRequestBody,
@@ -31,6 +35,7 @@ export type {
   Payment,
   PayoutRequestBody,
   PayoutRequestOutput,
+  RequestEmailChangeInput,
   Subscription,
   UpdateEmailBody,
   UpdateEmailInput,
@@ -45,6 +50,8 @@ export type {DeletionRow, UserOpsPorts} from "./service";
 export const decodeDeleteBody = Schema.decodeUnknownSync(DeleteBody);
 
 export const decodeUpdateEmailBody = Schema.decodeUnknownSync(UpdateEmailBody);
+
+export const decodeExtendTrialBody = Schema.decodeUnknownSync(ExtendTrialBody);
 
 export const decodeEnrollAffiliateBody = Schema.decodeUnknownSync(EnrollAffiliateBody);
 
@@ -71,6 +78,8 @@ export function createUserOps(ports: UserOpsPorts) {
   return {
     findLogin: (email: string) => run(findLogin(email)),
     updateEmail: (input: UpdateEmailInput) => run(updateEmail(input)),
+    requestEmailChange: (input: RequestEmailChangeInput) => run(requestEmailChange(input)),
+    confirmEmailChange: (login: Login) => run(confirmEmailChange(login)),
     deleteAccount: (input: DeleteInput) => run(deleteAccount(input)),
     enrollAffiliate: (input: EnrollInput) => run(enrollAffiliate(input)),
     extendTrial: (input: ExtendTrialInput) => run(extendTrial(input)),

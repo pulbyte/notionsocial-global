@@ -1,7 +1,8 @@
 import {Schema} from "effect";
 
 // Account actions a user runs from the app and support runs from the Crisp modal (#31).
-export const USER_ACTIONS = ["delete", "update-email", "enroll-affiliate", "extend-trial", "payout-request", "limit-request"] as const;
+// confirm-email (#41): the app calls it after the user opened the Firebase verify link.
+export const USER_ACTIONS = ["delete", "update-email", "confirm-email", "enroll-affiliate", "extend-trial", "payout-request", "limit-request"] as const;
 
 export type UserAction = (typeof USER_ACTIONS)[number];
 
@@ -20,6 +21,9 @@ export const DeleteBody = Schema.Struct({
 
 export const UpdateEmailBody = Schema.Struct({email: Email});
 
+// #41: a short answer to "what do you need the extra week for?", shown to support only.
+export const ExtendTrialBody = Schema.Struct({feedback: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(1000)))});
+
 export const EnrollAffiliateBody = Schema.Struct({linkName: LinkName});
 
 export const PayoutRequestBody = Schema.Struct({
@@ -36,6 +40,8 @@ export type DeleteBody = typeof DeleteBody.Type;
 
 export type UpdateEmailBody = typeof UpdateEmailBody.Type;
 
+export type ExtendTrialBody = typeof ExtendTrialBody.Type;
+
 export type EnrollAffiliateBody = typeof EnrollAffiliateBody.Type;
 
 export type PayoutRequestBody = typeof PayoutRequestBody.Type;
@@ -48,7 +54,10 @@ export type Login = {uid: string; email: string};
 // users/{uid} fields the ops read. billing is written back whole by extendTrial, as before.
 export type BillingFields = {cust_id?: string; sub_id?: string | null; status?: string; [field: string]: string | number | boolean | null | undefined};
 
-export type UserFields = {billing?: BillingFields; affiliate_partner?: boolean; trial_extended_at?: number};
+// users/{uid}.email_change: a self-serve change waiting for the user to open the verify link (#41).
+export type EmailChange = {from: string; to: string; at: number};
+
+export type UserFields = {billing?: BillingFields; affiliate_partner?: boolean; trial_extended_at?: number; email_change?: EmailChange | null};
 
 export type Subscription = {status: string; trial_end: number | null; current_period_start?: number | null; current_period_end?: number | null};
 
@@ -82,6 +91,13 @@ export type UpdateEmailOutput = {
   partial?: "stripe-failed" | "crisp-sync-failed";
   warnings: string[];
 };
+
+export type RequestEmailChangeInput = {login: Login; newEmail: string};
+
+// none: nothing pending · waiting: the login still has the old email · synced: Stripe and Crisp follow.
+export type ConfirmEmailOutput =
+  | {state: "none" | "waiting"; uid: string}
+  | {state: "synced"; uid: string; change: EmailChange; billingCustId?: string; partial?: UpdateEmailOutput["partial"]; warnings: string[]};
 
 export type DeleteInput = {login: Login; reason: string; detail?: string};
 
