@@ -1,6 +1,6 @@
 import type {PlatformSpec, SpecPlatform} from "./schema";
 
-export {SPEC_PLATFORMS, type Frame, type PlatformSpec, type SpecPlatform, type TextLimit} from "./schema";
+export {SPEC_PLATFORMS, type Frame, type PlatformSpec, type SpecPlatform, type TextLimit, type VideoLength} from "./schema";
 
 export {PLAN_SPEC, type PlanSpec} from "./plans";
 
@@ -12,6 +12,7 @@ const IMG = ["jpg", "jpeg", "png"] as const;
 const META_MEDIA = {images: IMG, videos: ["mp4", "mov", "qt"]} as const;
 
 // Source of each value: survey 2026-10-05 on #33 (file:line in the issue comment).
+// video (#62): each platform's documented API length; post-process trims or pads into it.
 export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
   x: {
     text: {max: 280, unit: "weighted"},
@@ -20,11 +21,15 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     media: {max: 4, videoMax: 1, images: ["gif", "jpg", "png", "webp", "jpeg"], videos: ["mp4"]},
     bytesMB: {image: 5, gif: 15, video: 512},
     firstComment: {max: 280},
+    video: {minSec: 0.5, maxSec: 140},
   },
   facebook: {
     text: {max: 63206, unit: "utf16"},
     media: {max: 10, videoMax: 1, ...META_MEDIA},
     firstComment: {max: 8000},
+    // story images are padded to 9:16 (#62)
+    frame: {story: {width: {min: 720, max: 1080}, aspect: {min: "9:16", max: "9:16"}}},
+    video: {minSec: 3, maxSec: 14400},
   },
   instagram: {
     text: {max: 2200, unit: "utf16"},
@@ -35,6 +40,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
       image: {width: {min: 320, max: 1440}, aspect: {min: "3:4", max: "1.91:1"}},
       video: {width: {min: 1080, max: 1440}, aspect: {min: "4:5", max: "1.91:1"}},
     },
+    video: {minSec: 3, maxSec: 900},
   },
   linkedin: {
     text: {max: 3000, unit: "utf16"},
@@ -42,6 +48,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     media: {max: 10, videoMax: 1, images: ["jpg", "png", "gif", "jpeg"], videos: ["mp4"], docs: ["ppt", "pptx", "doc", "docx", "pdf"]},
     bytesMB: {image: 10, gif: 10, video: 500, doc: 100},
     firstComment: {max: 1250},
+    video: {minSec: 3, maxSec: 1800},
   },
   youtube: {
     text: {max: 5000, unit: "utf16"},
@@ -50,16 +57,21 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     media: {max: 1, videoMax: 1, images: IMG, videos: ["mp4", "mov", "qt"]},
     bytesMB: {image: 2},
     shortsMaxSec: 60, // app copy; YouTube decides what is a Short, publish does not check it
+    video: {minSec: 1, maxSec: 43200},
   },
   tiktok: {
     text: {max: 2200, unit: "utf16"},
     title: 90,
     media: {max: 35, videoMax: 1, images: ["webp", "jpeg", "jpg"], videos: ["mp4", "webm", "mov", "qt"]},
+    video: {minSec: 3, maxSec: 600},
   },
   pinterest: {
     text: {max: 500, unit: "utf16"},
     title: 100,
     media: {max: 5, videoMax: 1, images: ["jpeg", "jpg", "png"], videos: ["mp4", "m4v", "mov", "qt"]},
+    // Pinterest rejects a carousel whose images differ in ratio; 2:3 is one of the two it takes (#62)
+    frame: {carousel: {width: {min: 600, max: 1000}, aspect: {min: "2:3", max: "2:3"}}},
+    video: {minSec: 4, maxSec: 900},
   },
   threads: {
     text: {max: 500, unit: "utf16"},
@@ -67,6 +79,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     // videos: what the publisher sends (#108 decision 2)
     media: {max: 10, videoMax: 1, images: ["jpg", "jpeg", "png", "gif", "webp"], videos: ["mp4", "mov", "qt"]},
     bytesMB: {image: 5},
+    video: {minSec: 0, maxSec: 300},
   },
   bluesky: {
     text: {max: 300, unit: "utf16"},
@@ -74,6 +87,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     media: {max: 4, videoMax: 1, images: ["jpg", "jpeg", "png", "gif", "webp"], videos: ["mp4"]},
     bytesMB: {image: 1, video: 50},
     firstComment: {max: 300},
+    video: {minSec: 0, maxSec: 180},
   },
   gmb: {
     text: {max: 1500, unit: "utf16"},

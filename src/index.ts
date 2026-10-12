@@ -117,5 +117,7 @@ export {
   type PlatformSpec,
   type SpecPlatform,
   type TextLimit,
+  type Frame,
+  type VideoLength,
 } from "./platform-spec";
 export {healProps, statusFilterType, type Healed, type PropMeta, type PropsMeta, type Schema as NotionSchema} from "./notion-props";
