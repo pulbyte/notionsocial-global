@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {createUserOps, decodeDeleteBody, decodeEnrollAffiliateBody, decodePayoutRequestBody, decodeUpdateEmailBody, type UserOpsPorts} from "./index";
+import {createUserOps, decodeDeleteBody, decodeEnrollAffiliateBody, decodeExtendTrialBody, decodePayoutRequestBody, decodeUpdateEmailBody, type UserOpsPorts} from "./index";
 
 type Calls = string[];
 
@@ -170,4 +170,43 @@ test("bodies are decoded at the boundary", () => {
   expect(() => decodeUpdateEmailBody({email: "not an email"})).toThrow();
   expect(() => decodeEnrollAffiliateBody({linkName: "a b"})).toThrow();
   expect(() => decodePayoutRequestBody({amount: 0, method: "PayPal me@x.com"})).toThrow();
+  expect(decodeExtendTrialBody({})).toEqual({});
+  expect(() => decodeExtendTrialBody({feedback: "x".repeat(1001)})).toThrow();
+});
+
+// #41: self-serve email change waits for the Firebase verify link before Stripe and Crisp follow.
+const pending = {from: "user@x.com", to: "new@x.com", at: 7};
+
+test("request email change records it and changes no login, Stripe or Crisp", async () => {
+  const calls: Calls = [];
+  const r = await createUserOps(ports(calls)).requestEmailChange({login, newEmail: "new@x.com"});
+
+  expect(r).toMatchObject({ok: true, value: {from: "user@x.com", to: "new@x.com"}});
+  expect(calls).toEqual(["store.patchUser email_change"]);
+});
+
+test("request email change refuses an address another login holds", async () => {
+  const calls: Calls = [];
+  const taken = ports(calls, {auth: {findByEmail: (email) => Promise.resolve({uid: "uid-2", email})}});
+
+  expect(await createUserOps(taken).requestEmailChange({login, newEmail: "other@x.com"})).toMatchObject({ok: false, error: {code: "EmailTaken"}});
+  expect(calls).toEqual([]);
+});
+
+test("confirm email change: nothing pending, and link not opened yet, change nothing", async () => {
+  const calls: Calls = [];
+  const waiting = ports(calls, {store: {getUser: () => Promise.resolve({email_change: pending})}});
+
+  expect(await createUserOps(ports(calls)).confirmEmailChange(login)).toEqual({ok: true, value: {state: "none", uid: "uid-1"}});
+  expect(await createUserOps(waiting).confirmEmailChange(login)).toEqual({ok: true, value: {state: "waiting", uid: "uid-1"}});
+  expect(calls).toEqual([]);
+});
+
+test("confirm email change after the link: Stripe and Crisp follow, then the record clears", async () => {
+  const calls: Calls = [];
+  const opened = ports(calls, {store: {getUser: () => Promise.resolve({billing: {cust_id: "cus_1"}, email_change: pending})}});
+  const r = await createUserOps(opened).confirmEmailChange({uid: "uid-1", email: "New@x.com"});
+
+  expect(r).toMatchObject({ok: true, value: {state: "synced", change: pending, billingCustId: "cus_1", warnings: []}});
+  expect(calls).toEqual(["billing.setCustomerEmail", "crisp.setContactEmail", "store.patchUser email_change"]);
 });

@@ -32,7 +32,7 @@ const warnOnFail = <A, E>(warnings: string[], label: string, effect: Effect.Effe
   effect.pipe(Effect.catch((e) => Effect.sync(() => void warnings.push(`${label}: ${String(e)}`))));
 
 // Stripe and Crisp follow the login; their failures warn and leave the change in place.
-const syncAfterLogin = (uid: string, input: UpdateEmailInput, warnings: string[]) =>
+export const syncAfterLogin = (uid: string, input: Pick<UpdateEmailInput, "oldEmail" | "newEmail">, warnings: string[]) =>
   Effect.gen(function* () {
     const user = yield* warnOnFail(warnings, `users/${uid}`, (yield* Store).getUser(uid));
     const billingCustId = user?.billing?.cust_id;

@@ -41,8 +41,8 @@ test("any sequence of repeats sends at most once per window", () => {
   );
 });
 
-test("the welcome and setup emails send once per user, however late the repeat", () => {
-  for (const type of ["user.welcome", "setup.no_post"] as const) {
+test("the welcome, setup and email-changed emails send once per subject, however late the repeat", () => {
+  for (const type of ["user.welcome", "setup.no_post", "account.email_changed"] as const) {
     const e: AppEvent = {type, uid: "u1", subject: "u1", data: {}};
 
     expect(planDelivery(e, undefined, 0).send).toBe(true);

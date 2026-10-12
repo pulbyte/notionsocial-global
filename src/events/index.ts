@@ -24,6 +24,8 @@ export const ROUTES: Record<EventType, Route> = {
   // #31: a self-serve account action (subject "<action>:<status>") as a Crisp contact event;
   // a repeat inside the hour (a double click) is logged, not pushed again.
   "account.action": {channels: ["crisp"], dedupeMs: HOUR},
+  // #41: notice to the old address after a self-serve email change (subject: the change's time).
+  "account.email_changed": {channels: ["email"], dedupeMs: ONCE},
   // #109: the welcome email once per user; the checkout reminder at most every 3 days.
   "user.welcome": {channels: ["email"], dedupeMs: ONCE},
   // #58: one setup email to a user with a database and no post 24 h after connect.

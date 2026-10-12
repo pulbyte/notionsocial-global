@@ -231,6 +231,17 @@ export interface PublicApiRecord {
   hashed_api_key: string;
   user_id: string;
 }
+// users/{uid}.billing.promo (#41): what the applied promo code or coupon gives.
+export type BillingPromo = {
+  code: string | null;
+  coupon_id: string;
+  name: string | null;
+  percent_off: number | null;
+  amount_off: number | null;
+  currency: string | null;
+  duration: string;
+  ends_at: number | null;
+};
 export interface UserData {
   uid: string;
   uuid: string;
@@ -263,6 +274,11 @@ export interface UserData {
   };
 
   affiliate_partner?: boolean;
+  // #41: a self-serve email change waiting for the verify link; cleared once synced.
+  email_change?: {from: string; to: string; at: number} | null;
+  // #31/#41: the one self-serve trial extension; the trial-ending email already sent.
+  trial_extended_at?: number;
+  trial_email_sent_at?: number;
   billing: {
     plan_id: PRICING_PLAN_ID;
     trial_end: number;
@@ -275,6 +291,8 @@ export interface UserData {
     end_at: number;
     start_at: number;
     cancel_at_period_end?: boolean;
+    // #41: the discount on the subscription, from the Stripe webhook; null when none.
+    promo?: BillingPromo | null;
   };
   // This is the common settings for all the databases
   ndb_settings?: {

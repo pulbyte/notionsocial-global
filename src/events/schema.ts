@@ -10,6 +10,7 @@ export const EVENT_TYPES = [
   "ndb.broken",
   "account.deleted",
   "account.action",
+  "account.email_changed",
   "user.welcome",
   "setup.no_post",
   "billing.checkout_incomplete",
