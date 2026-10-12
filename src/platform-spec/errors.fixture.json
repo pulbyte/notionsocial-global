@@ -63,5 +63,10 @@
   "gmb-invalid-post": "Post content is invalid. Please check your text and media.",
   "gmb-media": "Media upload failed. Please check your image/video format and size.",
   "upload-timeout": "The file upload did not finish in time, so it was stopped. Please reschedule the post; if it happens again, use a smaller file.",
-  "li-processing": "LinkedIn is taking longer than expected to process your media. Please try again later."
+  "li-processing": "LinkedIn is taking longer than expected to process your media. Please try again later.",
+  "drive-restricted": "Google Drive did not send the file. Share it as 'Anyone with the link' (files over 100 MB must be uploaded to Notion), then reschedule.",
+  "canva-link": "Canva links are web pages, not media files. Download the design from Canva, upload the file to Notion, then reschedule.",
+  "external-media": "A media link did not return a file. Use a public, direct link to the file, or upload it to Notion, then reschedule.",
+  "meta-restricted-activity": "Meta blocked this post with its anti-spam check. Open the account in the Instagram or Facebook app, confirm any prompts, wait a few hours, then reschedule.",
+  "media-type-unsupported": "This media file type is not accepted by the platform. Convert the file to a supported type, then reschedule."
 }

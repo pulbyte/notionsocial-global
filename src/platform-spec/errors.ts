@@ -8,6 +8,7 @@ export type CatalogueEntry = {
   cause: string;
   fix: string;
   message: (web: string) => string;
+  link?: (web: string) => string; // help page; explain() falls back to the message's URL, then /docs
 };
 
 export const ERROR_CATALOGUE = {
@@ -79,16 +80,29 @@ export const ERROR_CATALOGUE = {
   // #53 publisher contract: a hung upload stopped at the per-file bound; LinkedIn media still processing after every re-check.
   "upload-timeout": {platform: "*", fault: "platform", cause: "Uploading a file to the platform did not finish within the time limit.", fix: "Reschedule the post; if it happens again, use a smaller file.", message: () => `The file upload did not finish in time, so it was stopped. Please reschedule the post; if it happens again, use a smaller file.`},
   "li-processing": {platform: "linkedin", fault: "platform", cause: "LinkedIn did not finish processing the media within the re-check window.", fix: "Reschedule the post later.", message: () => `LinkedIn is taking longer than expected to process your media. Please try again later.`},
+  // #51: media links and Meta's anti-spam block, seen in support chats with misleading texts.
+  "drive-restricted": {platform: "*", fault: "user", cause: "The Google Drive file is private or over 100 MB, so Drive sent a web page instead of the file.", fix: "Share the file as 'Anyone with the link', or upload files over 100 MB to Notion, then reschedule.", message: () => `Google Drive did not send the file. Share it as 'Anyone with the link' (files over 100 MB must be uploaded to Notion), then reschedule.`, link: () => `https://support.google.com/drive/answer/2494822`},
+  "canva-link": {platform: "*", fault: "user", cause: "A Canva link opens a web page, not a media file.", fix: "Download the design from Canva and upload the file to Notion, then reschedule.", message: () => `Canva links are web pages, not media files. Download the design from Canva, upload the file to Notion, then reschedule.`, link: (web) => `${web}/media-specs`},
+  "external-media": {platform: "*", fault: "user", cause: "A media link did not return a file the platform could download (private, expired or not a direct file link).", fix: "Use a public, direct link to the file, or upload the file to Notion, then reschedule.", message: () => `A media link did not return a file. Use a public, direct link to the file, or upload it to Notion, then reschedule.`, link: (web) => `${web}/media-specs`},
+  "meta-restricted-activity": {platform: "*", fault: "platform", cause: "Meta's anti-spam check blocked the post ('We restrict certain activity to protect our community').", fix: "Open the account in the Instagram or Facebook app, confirm any prompts, wait a few hours, then reschedule.", message: () => `Meta blocked this post with its anti-spam check. Open the account in the Instagram or Facebook app, confirm any prompts, wait a few hours, then reschedule.`},
+  "media-type-unsupported": {platform: "*", fault: "user", cause: "A media file type is not accepted by the platform.", fix: "Convert the file to a type the platform accepts, then reschedule.", message: () => `This media file type is not accepted by the platform. Convert the file to a supported type, then reschedule.`, link: (web) => `${web}/media-specs`},
 } satisfies Record<string, CatalogueEntry>;
 
 export type ErrorCode = keyof typeof ERROR_CATALOGUE;
 
-export type Explained = {code: ErrorCode; platform: string; fault: ErrorFault; cause: string; fix: string; message: string};
+export type Explained = {code: ErrorCode; platform: string; fault: ErrorFault; cause: string; fix: string; message: string; link: string};
+
+// First URL in a message, without the sentence's closing punctuation.
+const firstUrl = (text: string) => text.match(/https?:\/\/[^\s,]+/)?.[0]?.replace(/[.)]+$/, "");
 
 export function explain(code: ErrorCode, web = "https://notionsocial.app"): Explained {
   const e: CatalogueEntry = ERROR_CATALOGUE[code];
+  const message = e.message(web);
 
-  return {code, platform: e.platform, fault: e.fault, cause: e.cause, fix: e.fix, message: e.message(web)};
+  // #51: every entry has a link for the page and the email.
+  const link = e.link?.(web) ?? firstUrl(message) ?? `${web}/docs`;
+
+  return {code, platform: e.platform, fault: e.fault, cause: e.cause, fix: e.fix, message, link};
 }
 
 // The catalogue code a stored error text came from (#33): the longest catalogue message found
