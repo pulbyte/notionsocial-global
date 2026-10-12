@@ -23,6 +23,9 @@ export type PostOption = {
   property?: string; // default Notion property name
   max?: number; // the option's own limit (LinkedIn images)
   defaultSec?: number; // used when the Page sets no value
+  accountField?: string; // sm_accs field with the Account's default; a Page value overrides it (#232)
+  values?: readonly string[]; // values the platform takes (trial reel strategy, X subscriptions)
+  maxSec?: number; // the option's video length limit (X long video)
   switch: string;
 };
 

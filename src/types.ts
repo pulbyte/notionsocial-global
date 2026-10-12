@@ -226,6 +226,7 @@ export interface PostOptionsSchema {
   cta_value_prop?: string;
   gmb_post_type_prop?: string;
   gmb_question_text_prop?: string;
+  first_comment_delay_prop?: string; // #67: name of the page's First Comment Delay property
 }
 export interface PublicApiRecord {
   created_at: number;
@@ -416,6 +417,12 @@ export interface SocialAccountData {
     };
   };
   boards?: PinterestBoard[];
+  // #67 / #232 account defaults; a page value overrides them
+  default_board?: {id: string; name: string; privacy: "PUBLIC"};
+  default_playlist?: string; // YouTube playlist id or name
+  first_comment_delay?: number; // minutes
+  x_subscription?: string; // X subscription_type (None, Basic, Premium, PremiumPlus): long video
+  x_subscription_at?: number; // when x_subscription was read
   privacy_options?: string;
   video_duration_limit?: number;
   comment_disabled?: boolean;

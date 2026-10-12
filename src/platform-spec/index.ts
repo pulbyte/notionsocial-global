@@ -12,11 +12,13 @@ const IMG = ["jpg", "jpeg", "png"] as const;
 const META_MEDIA = {images: IMG, videos: ["mp4", "mov", "qt"]} as const;
 
 // #67: every platform with a first comment takes the same delay option.
+// #232: the account's default (minutes) applies when the page sets none.
 const FIRST_COMMENT_DELAY: PostOption = {
   id: "first-comment-delay",
-  label: "First comment delay: minutes or a date in the First Comment Delay property (default 45 seconds)",
+  label: "First comment delay: minutes or a date in the First Comment Delay property, else the account's default (45 seconds)",
   setOn: "page",
   property: "First Comment Delay",
+  accountField: "first_comment_delay",
   defaultSec: 45,
   switch: "first-comment-delay",
 };
@@ -44,7 +46,19 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     bytesMB: {image: 5, gif: 15, video: 512},
     firstComment: {max: 280},
     video: {minSec: 0.5, maxSec: 140},
-    options: [FIRST_COMMENT_DELAY],
+    options: [
+      FIRST_COMMENT_DELAY,
+      // #232: X Premium accounts post videos up to 3 hours (help.x.com "Posting videos"); others 140 s.
+      // values: the X subscription_type values that qualify.
+      {
+        id: "long-video",
+        label: "Videos longer than 140 seconds on X Premium accounts (up to 3 hours)",
+        setOn: "account",
+        maxSec: 10800,
+        values: ["Premium", "PremiumPlus"],
+        switch: "x-long-video",
+      },
+    ],
     draft: {unsupported: "the X API has no drafts; a created post is live"},
   },
   facebook: {
@@ -61,7 +75,18 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     text: {max: 2200, unit: "utf16"},
     media: {max: 10, videoMax: 1, ...META_MEDIA},
     firstComment: {max: 8000},
-    options: [FIRST_COMMENT_DELAY],
+    options: [
+      FIRST_COMMENT_DELAY,
+      // #232: trial_params.graduation_strategy on the reel container; a checked box = MANUAL.
+      {
+        id: "trial-reel",
+        label: "Trial reel: a reel marked in the Trial Reel property is shown to non-followers first",
+        setOn: "page",
+        property: "Trial Reel",
+        values: ["MANUAL", "SS_PERFORMANCE"],
+        switch: "instagram-trial-reels",
+      },
+    ],
     hashtags: {max: 30}, // Instagram rejects a caption with more (#50 pre-flight)
     frame: {
       image: {width: {min: 320, max: 1440}, aspect: {min: "3:4", max: "1.91:1"}},
@@ -92,7 +117,18 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
     bytesMB: {image: 2},
     shortsMaxSec: 60, // app copy; YouTube decides what is a Short, publish does not check it
     video: {minSec: 1, maxSec: 43200},
-    options: [SEND_TO_DRAFTS],
+    options: [
+      SEND_TO_DRAFTS,
+      // #232: playlistItems.insert after the upload (scope youtube.force-ssl, already requested).
+      {
+        id: "playlist",
+        label: "Playlist: the video is added to the playlist in the YouTube Playlist property, else the account's default",
+        setOn: "page",
+        property: "YouTube Playlist",
+        accountField: "default_playlist",
+        switch: "youtube-playlist",
+      },
+    ],
     draft: {where: "uploaded as private: open YouTube Studio to finish it and change the visibility"},
   },
   tiktok: {
