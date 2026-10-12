@@ -97,12 +97,15 @@ test("post options", () => {
   const ids = SPEC_PLATFORMS.flatMap((p) => (spec(p).options ?? []).map((o) => `${p}:${o.id}:${o.switch}`));
   expect(ids).toEqual([
     "x:first-comment-delay:first-comment-delay",
+    "x:long-video:x-long-video",
     "facebook:first-comment-delay:first-comment-delay",
     "facebook:draft:platform-drafts",
     "instagram:first-comment-delay:first-comment-delay",
+    "instagram:trial-reel:instagram-trial-reels",
     "linkedin:images-20:linkedin-images-20",
     "linkedin:first-comment-delay:first-comment-delay",
     "youtube:draft:platform-drafts",
+    "youtube:playlist:youtube-playlist",
     "tiktok:draft:platform-drafts",
     "pinterest:default-board:pinterest-default-board",
     "bluesky:first-comment-delay:first-comment-delay",
@@ -111,6 +114,11 @@ test("post options", () => {
   expect(postOption("linkedin", "images-20")?.max).toBe(20);
   expect(postOption("x", "first-comment-delay")).toMatchObject({defaultSec: 45, property: "First Comment Delay"});
   expect(postOption("pinterest", "nope")).toBeUndefined();
+  // #232
+  expect(postOption("x", "first-comment-delay")?.accountField).toBe("first_comment_delay");
+  expect(postOption("youtube", "playlist")).toMatchObject({property: "YouTube Playlist", accountField: "default_playlist"});
+  expect(postOption("instagram", "trial-reel")?.values).toEqual(["MANUAL", "SS_PERFORMANCE"]);
+  expect(postOption("x", "long-video")?.maxSec).toBeGreaterThan(spec("x").video?.maxSec ?? 0);
 
   // The delay option sits on every platform that takes a first comment, and only there.
   for (const p of SPEC_PLATFORMS) expect(!!postOption(p, "first-comment-delay")).toBe(!!spec(p).firstComment);
