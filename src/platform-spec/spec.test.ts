@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {PLATFORM_SPEC, platformSpecJson, SPEC_PLATFORMS, spec} from "./index";
+import {PLAN_SPEC, PLATFORM_SPEC, platformSpecJson, SPEC_PLATFORMS, spec} from "./index";
 
 // Pins the values publishers enforce today (#33 survey). Changing one is a product decision.
 test("enforced limits", () => {
@@ -37,5 +37,25 @@ test("instagram frame matches what post-process enforced", () => {
   expect(PLATFORM_SPEC.instagram.frame).toEqual({
     image: {width: {min: 320, max: 1440}, aspect: {min: "3:4", max: "1.91:1"}},
     video: {width: {min: 1080, max: 1440}, aspect: {min: "4:5", max: "1.91:1"}},
+  });
+});
+
+// #108 drift decisions (2026-10-12): the spec records what production does today.
+test("file types follow what each publisher sends", () => {
+  expect(PLATFORM_SPEC.facebook.media.images).toBe(PLATFORM_SPEC.instagram.media.images);
+  expect(PLATFORM_SPEC.facebook.media.videos).toBe(PLATFORM_SPEC.instagram.media.videos);
+  expect(PLATFORM_SPEC.instagram.media.videos).toEqual(["mp4", "mov", "qt"]);
+  expect(PLATFORM_SPEC.threads.media.videos).toEqual(["mp4", "mov", "qt"]);
+  expect(PLATFORM_SPEC.gmb.media).toMatchObject({videoMax: 0, videos: []});
+  expect(PLATFORM_SPEC.gmb.media.images).toContain("bmp");
+  expect(PLATFORM_SPEC.youtube.media.images).toEqual(["jpg", "jpeg", "png"]);
+  expect(PLATFORM_SPEC.youtube.shortsMaxSec).toBe(60);
+});
+
+test("plan caps are the plan table values", () => {
+  expect(PLAN_SPEC).toEqual({
+    free: {imageMB: 5, videoMB: 50, xThreads: false},
+    basic: {imageMB: 30, videoMB: 500, xThreads: true},
+    premium: {imageMB: 100, videoMB: 1000, xThreads: true},
   });
 });
