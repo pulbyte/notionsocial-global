@@ -11,6 +11,7 @@ export const EVENT_TYPES = [
   "account.deleted",
   "account.action",
   "user.welcome",
+  "setup.no_post",
   "billing.checkout_incomplete",
   "billing.payment_failed",
   "trial.ending",
