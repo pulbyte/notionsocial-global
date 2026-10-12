@@ -30,6 +30,13 @@ test.each([
   expect(uidsFor([value])).toEqual(["17841"]);
 });
 
+// #77: NotionSocial writes REDDIT@; users may type RD@.
+test.each([["REDDIT@acme_rd"], ["RD@acme_rd"], ["reddit@Acme_Rd"]])("%s resolves to the Reddit account", (value) => {
+  const rd: Account = {platform_uid: "rd1", platform: "reddit", username: "acme_rd"};
+
+  expect(uidsFor([value], [...accounts, rd])).toEqual(["rd1"]);
+});
+
 test.each([["X@acme_x"], ["TW@acme_x"], ["TWITTER@acme_x"]])("%s resolves to the X account", (value) => {
   expect(uidsFor([value])).toEqual(["1946"]);
 });

@@ -83,8 +83,8 @@ export function reachedPostQuota(ent: Entitlements, postsThisMonth: number): boo
   return ent.limits.postsPerMonth !== null && postsThisMonth >= ent.limits.postsPerMonth + ent.limits.postsGrace;
 }
 
-// #79 #80: Mastodon and Telegram are paid-only, like Bluesky.
-const NOT_ON_FREE = new Set(["twitter", "youtube", "tiktok", "pinterest", "bluesky", "gmb", "mastodon", "telegram"]);
+// #79 #80 #77: Mastodon, Telegram and Reddit are paid-only, like Bluesky.
+const NOT_ON_FREE = new Set(["twitter", "youtube", "tiktok", "pinterest", "bluesky", "gmb", "mastodon", "telegram", "reddit"]);
 
 const NOT_ON_BASIC = new Set(["youtube", "tiktok", "gmb"]);
 

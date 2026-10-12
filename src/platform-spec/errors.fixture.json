@@ -70,5 +70,18 @@
   "meta-restricted-activity": "Meta blocked this post with its anti-spam check. Open the account in the Instagram or Facebook app, confirm any prompts, wait a few hours, then reschedule.",
   "media-type-unsupported": "This media file type is not accepted by the platform. Convert the file to a supported type, then reschedule.",
   "telegram-not-admin": "Telegram refused the post: the bot is not an admin of this channel or cannot post there. In Telegram open the channel, go to Administrators, add your bot with the 'Post messages' right, then reschedule.",
-  "mastodon-server": "Your Mastodon server did not answer. Check that it is online, then reschedule the post."
+  "mastodon-server": "Your Mastodon server did not answer. Check that it is online, then reschedule the post.",
+  "reddit-no-subreddit": "Please choose the subreddit to post to in the \"Reddit - Subreddit\" property, then reschedule.",
+  "reddit-no-title": "Reddit posts need a title. Please write the post title in the page title, then reschedule.",
+  "reddit-subreddit-missing": "This subreddit does not exist or is private. Please check the name in the \"Reddit - Subreddit\" property, then reschedule.",
+  "reddit-not-allowed": "Your Reddit account is not allowed to post in this subreddit. Check the subreddit's rules or ask its moderators for access, then reschedule.",
+  "reddit-flair-required": "This subreddit requires a post flair. Please write one of its flairs in the \"Reddit - Flair\" property, then reschedule.",
+  "reddit-flair-unknown": "The flair in the \"Reddit - Flair\" property is not one of this subreddit's flairs. Please use one of its flairs, then reschedule.",
+  "reddit-post-type": "This subreddit does not accept this kind of post (text, link, image, gallery or video). Please change the post or pick another subreddit, then reschedule.",
+  "reddit-title-rules": "The post title does not meet this subreddit's title rules. Please edit the page title, then reschedule.",
+  "reddit-body-rules": "The post text does not meet this subreddit's rules. Please edit the post text, then reschedule.",
+  "reddit-rate-limit": "Reddit is limiting how often this account can post. Please wait and reschedule.",
+  "reddit-duplicate-link": "This link was already posted in this subreddit. Please post a different link or pick another subreddit.",
+  "reddit-video-cover": "Reddit videos need a cover image. Please add a JPG or PNG image to the media along with the video, then reschedule.",
+  "reddit-server": "Reddit's servers are not responding. Please try again later."
 }

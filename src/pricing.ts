@@ -32,6 +32,7 @@ type Platform =
   | "bluesky"
   | "mastodon"
   | "telegram"
+  | "reddit"
   | "threads"
   | "gmb";
 type SpecialPost = "reel" | "story" | "document" | "thread";
@@ -186,6 +187,7 @@ const BASIC_PRICES: PriceVariants = {
         "bluesky",
         "mastodon",
         "telegram",
+        "reddit",
       ],
       dailyTwitterPosts: -1,
       publishActions: true,
@@ -259,6 +261,7 @@ const PREMIUM_PRICES: PriceVariants = {
         "bluesky",
         "mastodon",
         "telegram",
+        "reddit",
         "threads",
         "gmb",
       ],

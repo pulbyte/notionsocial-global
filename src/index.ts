@@ -14,6 +14,23 @@ export * from "./images";
 export * from "./url";
 export * from "./buffer";
 export {MAX_PDF_PAGES, MediaLinkError, isPdf, pageRef, withPdfPages} from "./media-links";
+export {
+  checkRules,
+  decodeReddit,
+  FLAIR_PROP,
+  isFailure,
+  matchFlair,
+  planRedditPost,
+  redditErrorText,
+  redditPageFields,
+  submitFailure,
+  SUBREDDIT_PROP,
+  subredditName,
+  type Flair,
+  type RedditFailure,
+  type RedditPlan,
+  type SubredditRules,
+} from "./reddit";
 export {createCutover, type ConfigSource, type Cutover, type CutoverEvent} from "./cutover";
 export {
   aiAskable,
