@@ -24,6 +24,7 @@ import {mybusinessaccountmanagement_v1} from "googleapis";
 import {firestore} from "firebase-admin";
 import {postPublishStages} from "./publish";
 import {SmAccTagFormats} from "./env";
+import type {LinkSettings, LinkTools} from "./link-tools";
 import {
   GmbPostCtaActionType,
   GmbPostTopicType,
@@ -195,6 +196,8 @@ export interface NotionDatabase {
     add_line_break_on_paragraph_block?: boolean;
     disable_text_formatting?: boolean;
   };
+  // #82: UTM values and short links for links in captions (DB settings).
+  link_tools?: LinkSettings;
   template_page_id?: string;
 }
 
@@ -651,6 +654,8 @@ export interface UpdateNdbPayload {
   options?: NotionDatabase["options"];
   // #63: per-database caption options from DB settings.
   formatting_options?: NotionDatabase["formatting_options"];
+  // #82: link tools from DB settings.
+  link_tools?: NotionDatabase["link_tools"];
 }
 export type NotionPage = GetPageResponse;
 export type NotionProperties = Record<string, NotionProperty>;
@@ -774,6 +779,9 @@ export interface NotionPagePostConfig {
   // #65: Drive folders, Canva links, embeds and PDF pages as media; set by the caller from
   // config/cutover."media-extraction". Unset: the old extraction.
   mediaLinks?: boolean;
+  // #82: UTM tags and short links in captions; set by the caller from config/cutover."link-tools".
+  // Unset: links stay as written.
+  linkTools?: LinkTools;
   postOptions?: {
     gmbTopicType: GmbPostTopicType;
     gmbQuestionText?: string;

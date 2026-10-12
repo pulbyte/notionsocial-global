@@ -136,3 +136,13 @@ export {
 } from "./platform-spec";
 export {healProps, statusFilterType, type Healed, type PropMeta, type PropsMeta, type Schema as NotionSchema} from "./notion-props";
 export {fitText, plainText} from "./caption";
+export {
+  addUtm,
+  decodeLinkSettings,
+  linkTargets,
+  linkToolsFor,
+  withLinkTools,
+  type LinkSettings,
+  type LinkTools,
+  type Utm,
+} from "./link-tools";
