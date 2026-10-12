@@ -20,4 +20,5 @@ export type PlatformSpec = {
   bytesMB?: {image?: number; video?: number; doc?: number; gif?: number};
   firstComment?: {max: number};
   frame?: {image?: Frame; video?: Frame}; // post-process fits media into these (#108)
+  shortsMaxSec?: number; // YouTube: longest vertical video the app calls a Short (#108)
 };

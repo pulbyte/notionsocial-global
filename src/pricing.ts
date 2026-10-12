@@ -1,4 +1,5 @@
 import {dev} from "./env";
+import {PLAN_SPEC} from "./platform-spec";
 import type {STRIPE_SUB_STATUS} from "./types";
 /**
  * Variant for the pricing.
@@ -41,7 +42,7 @@ interface Features {
   publishActions: boolean;
   postMetrics: boolean;
   specialPosts?: SpecialPost[];
-  // Per-plan media caps in MB, decided 2026-10-08 (backend#108). env maxMediaSize still caps all plans.
+  // Per-plan media caps in MB from PLAN_SPEC (backend#108). env maxMediaSize still caps all plans.
   imageSizeLimit: 5 | 30 | 100;
   videoSizeLimit: 50 | 500 | 1000;
 }
@@ -108,8 +109,8 @@ const FREE_PRICES: PriceVariants = {
       platforms: ["facebook-page", "instagram", "linkedin-profile", "threads"],
       postMetrics: false,
       publishActions: false,
-      imageSizeLimit: 5,
-      videoSizeLimit: 50,
+      imageSizeLimit: PLAN_SPEC.free.imageMB,
+      videoSizeLimit: PLAN_SPEC.free.videoMB,
     },
     desc: FREE_DESC,
   },
@@ -127,8 +128,8 @@ const FREE_PRICES: PriceVariants = {
       platforms: ["facebook-page", "instagram", "linkedin-profile", "threads"],
       postMetrics: false,
       publishActions: false,
-      imageSizeLimit: 5,
-      videoSizeLimit: 50,
+      imageSizeLimit: PLAN_SPEC.free.imageMB,
+      videoSizeLimit: PLAN_SPEC.free.videoMB,
     },
     desc: FREE_DESC,
   },
@@ -153,8 +154,8 @@ const BASIC_PRICES: PriceVariants = {
       publishActions: true,
       postMetrics: true,
       specialPosts: ["reel", "story", "document"],
-      imageSizeLimit: 30,
-      videoSizeLimit: 500,
+      imageSizeLimit: PLAN_SPEC.basic.imageMB,
+      videoSizeLimit: PLAN_SPEC.basic.videoMB,
     },
     desc: "3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Reels, Stories & more.",
   },
@@ -186,8 +187,8 @@ const BASIC_PRICES: PriceVariants = {
       publishActions: true,
       postMetrics: true,
       specialPosts: ["reel", "story", "document", "thread"],
-      imageSizeLimit: 30,
-      videoSizeLimit: 500,
+      imageSizeLimit: PLAN_SPEC.basic.imageMB,
+      videoSizeLimit: PLAN_SPEC.basic.videoMB,
     },
     desc: "3 Social accounts, 1 Notion database, Unlimited posts, Post analytics, Publish actions, Twitter, Pinterest, Threads, Reels, Stories & more.",
   },
@@ -222,8 +223,8 @@ const PREMIUM_PRICES: PriceVariants = {
       publishActions: true,
       postMetrics: true,
       specialPosts: ["reel", "story", "document", "thread"],
-      imageSizeLimit: 100,
-      videoSizeLimit: 1000,
+      imageSizeLimit: PLAN_SPEC.premium.imageMB,
+      videoSizeLimit: PLAN_SPEC.premium.videoMB,
     },
     desc: "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories & more.",
   },
@@ -259,8 +260,8 @@ const PREMIUM_PRICES: PriceVariants = {
       publishActions: true,
       postMetrics: true,
       specialPosts: ["reel", "story", "document", "thread"],
-      imageSizeLimit: 100,
-      videoSizeLimit: 1000,
+      imageSizeLimit: PLAN_SPEC.premium.imageMB,
+      videoSizeLimit: PLAN_SPEC.premium.videoMB,
     },
     desc: "10 Social accounts, 5 Notion databases, Unlimited posts, Post analytics, Publish actions, Live Support, Twitter, YouTube, TikTok, Pinterest, Threads, Documents, Reels, Stories, Bluesky, Google My Business & more.",
   },

@@ -1,5 +1,6 @@
 import {SocialPlatformType} from "@pulbyte/social-stack-lib";
 import type {NotionBlockType, QueueName, StorageBucketName} from "./types";
+import {spec} from "./platform-spec";
 export const dev = ["development", "test"].includes(getEnv("NODE_ENV", "development"));
 export const prod = getEnv("NODE_ENV", "development") == "production";
 export const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24; // 30 days in seconds
@@ -35,19 +36,19 @@ export const videoMimeTypes = [
 ];
 export const docMimeTypes = ["ppt", "pptx", "doc", "docx", "pdf", "xls", "xlsx", "txt", "csv"];
 
-// Platform-specific supported media types
+// Platform-specific supported media types. #108: the lists that drifted read the spec.
 export const platformMimeTypeSupported = {
   x: {
     image: ["jpg", "png", "webp", "jpeg", "gif"],
     video: ["mp4"],
   },
   instagram: {
-    image: ["jpg", "jpeg", "png"],
-    video: ["mp4", "mov", "qt"],
+    image: spec("instagram").media.images,
+    video: spec("instagram").media.videos,
   },
   facebook: {
-    image: ["jpg", "jpeg", "png"],
-    video: ["mov", "mp4", "qt"],
+    image: spec("facebook").media.images,
+    video: spec("facebook").media.videos,
     storyImage: ["jpg", "jpeg", "png", "bmp", "gif", "tiff"],
   },
   linkedin: {
@@ -61,7 +62,7 @@ export const platformMimeTypeSupported = {
     video: ["mp4", "webm", "mov", "qt"],
   },
   youtube: {
-    image: imageMimeTypes, // YouTube uses images only for thumbnails
+    image: spec("youtube").media.images, // YouTube uses images only for thumbnails
     video: videoMimeTypes, // Uses global videoMimeTypes
   },
   pinterest: {
@@ -69,16 +70,16 @@ export const platformMimeTypeSupported = {
     video: ["mp4", "m4v", "mov", "qt"],
   },
   threads: {
-    image: ["jpg", "jpeg", "png", "gif", "webp"], // Based on Instagram's support
-    video: ["mp4"], // Limited video support
+    image: spec("threads").media.images,
+    video: spec("threads").media.videos,
   },
   bluesky: {
     image: ["jpg", "jpeg", "png", "gif", "webp"],
     video: ["mp4"],
   },
   gmb: {
-    image: ["jpg", "jpeg", "png", "gif", "webp"],
-    video: ["mp4", "mov", "avi"],
+    image: spec("gmb").media.images,
+    video: spec("gmb").media.videos,
   },
 };
 

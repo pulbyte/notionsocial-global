@@ -2,9 +2,14 @@ import type {PlatformSpec, SpecPlatform} from "./schema";
 
 export {SPEC_PLATFORMS, type Frame, type PlatformSpec, type SpecPlatform, type TextLimit} from "./schema";
 
+export {PLAN_SPEC, type PlanSpec} from "./plans";
+
 export {codeForMessage, ERROR_CATALOGUE, explain, type CatalogueEntry, type ErrorCode, type ErrorFault, type Explained} from "./errors";
 
 const IMG = ["jpg", "jpeg", "png"] as const;
+
+// Facebook and Instagram take the same files (#108 decision 7: one list).
+const META_MEDIA = {images: IMG, videos: ["mp4", "mov", "qt"]} as const;
 
 // Source of each value: survey 2026-10-05 on #33 (file:line in the issue comment).
 export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
@@ -18,12 +23,12 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
   },
   facebook: {
     text: {max: 63206, unit: "utf16"},
-    media: {max: 10, videoMax: 1, images: IMG, videos: ["mov", "mp4", "qt"]},
+    media: {max: 10, videoMax: 1, ...META_MEDIA},
     firstComment: {max: 8000},
   },
   instagram: {
     text: {max: 2200, unit: "utf16"},
-    media: {max: 10, videoMax: 1, images: IMG, videos: ["mp4", "mov", "qt"]},
+    media: {max: 10, videoMax: 1, ...META_MEDIA},
     firstComment: {max: 8000},
     frame: {
       image: {width: {min: 320, max: 1440}, aspect: {min: "3:4", max: "1.91:1"}},
@@ -40,8 +45,10 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
   youtube: {
     text: {max: 5000, unit: "utf16"},
     title: 100,
+    // images: thumbnail types the publisher sends (#108 decision 4)
     media: {max: 1, videoMax: 1, images: IMG, videos: ["mp4", "mov", "qt"]},
     bytesMB: {image: 2},
+    shortsMaxSec: 60, // app copy; YouTube decides what is a Short, publish does not check it
   },
   tiktok: {
     text: {max: 2200, unit: "utf16"},
@@ -56,6 +63,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
   threads: {
     text: {max: 500, unit: "utf16"},
     threadChunk: {max: 500, unit: "utf16"},
+    // videos: what the publisher sends (#108 decision 2)
     media: {max: 10, videoMax: 1, images: ["jpg", "jpeg", "png", "gif", "webp"], videos: ["mp4", "mov", "qt"]},
     bytesMB: {image: 5},
   },
@@ -68,6 +76,7 @@ export const PLATFORM_SPEC: Record<SpecPlatform, PlatformSpec> = {
   },
   gmb: {
     text: {max: 1500, unit: "utf16"},
+    // images only, bmp included: what the publisher sends (#108 decision 3)
     media: {max: 1, videoMax: 0, images: ["jpg", "jpeg", "png", "gif", "bmp", "webp"], videos: []},
     bytesMB: {image: 25},
   },

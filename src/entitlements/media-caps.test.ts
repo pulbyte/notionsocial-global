@@ -1,10 +1,29 @@
 import {expect, test} from "vitest";
+import {PLAN_SPEC} from "../platform-spec";
 import {getPlanByLabel} from "../pricing";
-import {getEntitlements, mediaOverPlanCap} from "./index";
+import {getEntitlements, mediaOverPlanCap, platformAccess} from "./index";
 
 const MB = 1024 * 1024;
 
+const LABELS = ["free", "basic", "premium"] as const;
+
 const userOn = (label: "free" | "basic" | "premium") => ({billing: {plan_id: getPlanByLabel(label, "prod").monthly.id, status: "active"}});
+
+// #108 decision 1: the plan table values live in PLAN_SPEC; pricing and entitlements read them.
+test.each(LABELS)("%s caps equal PLAN_SPEC", (label) => {
+  expect(getEntitlements(userOn(label)).limits).toMatchObject({imageMB: PLAN_SPEC[label].imageMB, videoMB: PLAN_SPEC[label].videoMB});
+});
+
+// #108 decision 6: X threads follow X access; there is no separate thread gate.
+test.each(LABELS)("%s: PLAN_SPEC xThreads equals X access", (label) => {
+  expect(platformAccess(getEntitlements(userOn(label)), "twitter").ok).toBe(PLAN_SPEC[label].xThreads);
+});
+
+// #108 decision 5: Threads is allowed on free and the free plan lists it.
+test("free plan may post to Threads and lists it", () => {
+  expect(platformAccess(getEntitlements(userOn("free")), "threads").ok).toBe(true);
+  expect(getPlanByLabel("free", "prod").monthly.features.platforms).toContain("threads");
+});
 
 // #108: the app's plan table.
 test.each([
