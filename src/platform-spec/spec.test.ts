@@ -59,3 +59,8 @@ test("plan caps are the plan table values", () => {
     premium: {imageMB: 100, videoMB: 1000, xThreads: true},
   });
 });
+
+// #50: pre-flight blocks Instagram when the caption has more hashtags than this.
+test("only instagram caps hashtags", () => {
+  expect(SPEC_PLATFORMS.filter((p) => spec(p).hashtags).map((p) => [p, spec(p).hashtags?.max])).toEqual([["instagram", 30]]);
+});
