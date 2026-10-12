@@ -18,6 +18,9 @@ export const ROUTES: Record<EventType, Route> = {
   "ndb.broken": {channels: ["email"], dedupeMs: 3 * DAY},
   // #40: the receipt after a self-serve delete; one per account.
   "account.deleted": {channels: ["email"], dedupeMs: DAY},
+  // #31: a self-serve account action (subject "<action>:<status>") as a Crisp contact event;
+  // a repeat inside the hour (a double click) is logged, not pushed again.
+  "account.action": {channels: ["crisp"], dedupeMs: HOUR},
   // #109: the welcome email once per user; the checkout reminder at most every 3 days.
   "user.welcome": {channels: ["email"], dedupeMs: 365 * DAY},
   "billing.checkout_incomplete": {channels: ["email"], dedupeMs: 3 * DAY},

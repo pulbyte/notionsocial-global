@@ -71,6 +71,23 @@ export {
   type Thresholds,
 } from "./decide";
 export {
+  createUserOps,
+  decodeDeleteBody,
+  decodeEnrollAffiliateBody,
+  decodeLimitRequestBody,
+  decodePayoutRequestBody,
+  decodeUpdateEmailBody,
+  DELETE_REASONS,
+  USER_ACTIONS,
+  USER_OPS_ERROR_CODES,
+  type DeleteOutput,
+  type OpResult,
+  type UserAction,
+  type UserOps,
+  type UserOpsFailure,
+  type UserOpsPorts,
+} from "./user-ops";
+export {
   dedupeKey,
   EVENT_TYPES,
   planDelivery,
