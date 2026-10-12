@@ -68,5 +68,7 @@
   "canva-link": "Canva links are web pages, not media files. Download the design from Canva, upload the file to Notion, then reschedule.",
   "external-media": "A media link did not return a file. Use a public, direct link to the file, or upload it to Notion, then reschedule.",
   "meta-restricted-activity": "Meta blocked this post with its anti-spam check. Open the account in the Instagram or Facebook app, confirm any prompts, wait a few hours, then reschedule.",
-  "media-type-unsupported": "This media file type is not accepted by the platform. Convert the file to a supported type, then reschedule."
+  "media-type-unsupported": "This media file type is not accepted by the platform. Convert the file to a supported type, then reschedule.",
+  "telegram-not-admin": "Telegram refused the post: the bot is not an admin of this channel or cannot post there. In Telegram open the channel, go to Administrators, add your bot with the 'Post messages' right, then reschedule.",
+  "mastodon-server": "Your Mastodon server did not answer. Check that it is online, then reschedule the post."
 }

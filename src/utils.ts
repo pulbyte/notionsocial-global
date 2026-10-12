@@ -74,6 +74,10 @@ export function getSmAccColor(platform: SocialPlatformType) {
       return "red";
     case "bluesky":
       return "blue";
+    case "mastodon":
+      return "purple";
+    case "telegram":
+      return "blue";
     default:
       return "default";
   }
@@ -103,6 +107,11 @@ export const getSocialPlatformImage = (platform: SocialPlatformType, imageUrl?: 
       return "https://res.cloudinary.com/pul/image/upload/v1746517720/icons/bluesky-glyph.svg";
     case "gmb":
       return "https://res.cloudinary.com/pul/image/upload/v1753071719/icons/gmb.svg";
+    // #79 #80: brand icons from Simple Icons until they are on Cloudinary.
+    case "mastodon":
+      return "https://cdn.simpleicons.org/mastodon";
+    case "telegram":
+      return "https://cdn.simpleicons.org/telegram";
     default:
       return "https://cdn.dribbble.com/users/1787323/screenshots/16418683/media/b698712269a006ae2b97c8cb787a6c14.png?compress=1&resize=1200x900&vertical=top";
   }

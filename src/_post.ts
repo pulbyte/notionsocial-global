@@ -7,6 +7,8 @@ import {
   LinkedInContent,
   ThreadsContent,
   BlueskyContent,
+  MastodonContent,
+  TelegramContent,
   PinterestContent,
   TikTokContent,
   XContent,
@@ -468,6 +470,39 @@ export function getBlueskyContent(
 
   // Process media in paragraphs if available
   return processParagraphsMedia<"file">(thread, "bluesky", pageContent.media);
+}
+
+// #79: Bluesky's shape: long text becomes a reply chain, property media goes on the first status.
+export function getMastodonContent(
+  pageContent: NotionPageContent,
+  config: NotionPagePostConfig
+): MastodonContent {
+  const paragraphs = fitParagraphs(
+    config.platformCaptions?.mastodon
+      ? getRichTextFromText(config.platformCaptions.mastodon, undefined, config.formattingOptions)
+          .paragraphs
+      : pageContent.richText?.paragraphs,
+    "mastodon",
+    config
+  );
+
+  const thread = chunkParagraphs(paragraphs, spec("mastodon").threadChunk!.max);
+
+  return processParagraphsMedia<"file">(thread, "mastodon", pageContent.media);
+}
+
+// #80: one message: the page text and all media (sent as an album).
+export function getTelegramContent(
+  pageContent: NotionPageContent,
+  config: NotionPagePostConfig
+): TelegramContent {
+  const text = fit(
+    config.platformCaptions?.telegram || pageContent.richText?.text || "",
+    "telegram",
+    config
+  );
+
+  return {text, media: processMediaForPlatform<"file">(pageContent.media, "telegram")};
 }
 
 /**

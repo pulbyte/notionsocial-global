@@ -139,6 +139,8 @@ export const binaryUploadSocialPlatforms: SocialPlatformType[] = [
   "youtube",
   "tiktok",
   "bluesky",
+  "mastodon",
+  "telegram",
 ];
 export const urlUploadSocialPlatforms: SocialPlatformType[] = [
   "facebook",

@@ -29,6 +29,10 @@ const PLATFORM_PREFIXES = new Map(Object.entries({
   YT: "youtube",
   YOUTUBE: "youtube",
   GMB: "gmb",
+  MASTO: "mastodon",
+  MASTODON: "mastodon",
+  TG: "telegram",
+  TELEGRAM: "telegram",
 }));
 
 const KIND_SUFFIXES = new Map<string, Kind>([
@@ -61,6 +65,8 @@ const WRITTEN_PREFIX = new Map(Object.entries({
   pinterest: "PIN",
   threads: "THREADS",
   bluesky: "BSKY",
+  mastodon: "MASTO",
+  telegram: "TG",
 }));
 
 export function writtenPrefix(platform: string): string {
