@@ -1,0 +1,176 @@
+########## default
+===== facebook (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== instagram (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== linkedin (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== tiktok (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== youtube (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== pinterest (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== gmb (68)
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== threads (72)
+[1]
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== bluesky (72)
+[1]
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+===== x (72)
+[1]
+Before the dashes
+---
+After the dashes
+—-
+Range 9-5 and em—dash stay
+
+########## line break per block
+===== facebook (73)
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+
+===== instagram (73)
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+
+===== linkedin (73)
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+
+===== tiktok (73)
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+
+===== youtube (73)
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+
+===== pinterest (73)
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+
+===== gmb (73)
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+
+===== threads (76)
+[1]
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+===== bluesky (76)
+[1]
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay
+===== x (76)
+[1]
+Before the dashes
+
+---
+
+After the dashes
+
+—-
+
+Range 9-5 and em—dash stay

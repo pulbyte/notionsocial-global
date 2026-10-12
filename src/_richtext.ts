@@ -32,7 +32,10 @@ export function convertSectionsToParagraphs(
   }));
 }
 
-export function getRichTextFromNotionBlocksSync(blocks): RichTextContent {
+export function getRichTextFromNotionBlocksSync(
+  blocks,
+  options?: FormattingOptions
+): RichTextContent {
   const limit = LONGEST_CAPTION;
   let parsedBlocks: ParsedNotionBlock[] = [];
 
@@ -46,7 +49,8 @@ export function getRichTextFromNotionBlocksSync(blocks): RichTextContent {
       block,
       nextBlock,
       listIndex,
-      limit
+      limit,
+      options
     );
     listIndex = _listIndex;
     if (!_limitLeft) break;
