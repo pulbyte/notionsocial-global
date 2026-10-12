@@ -26,6 +26,9 @@ export type PostOption = {
   switch: string;
 };
 
+// #73 Send to drafts: where a Draft post lands (shown on the Page), or why the API has none.
+export type DraftSupport = {where: string} | {unsupported: string};
+
 export type PlatformSpec = {
   text: TextLimit; // caption / description / post body
   threadChunk?: TextLimit; // threads split long text into posts of this size
@@ -40,4 +43,5 @@ export type PlatformSpec = {
   video?: VideoLength; // #62
   shortsMaxSec?: number; // YouTube: longest vertical video the app calls a Short (#108)
   options?: readonly PostOption[]; // #67
+  draft: DraftSupport; // #73
 };

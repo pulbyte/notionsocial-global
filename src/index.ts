@@ -112,6 +112,7 @@ export {
   SPEC_PLATFORMS,
   spec,
   type CatalogueEntry,
+  type DraftSupport,
   type ErrorCode,
   type ErrorFault,
   type Explained,
