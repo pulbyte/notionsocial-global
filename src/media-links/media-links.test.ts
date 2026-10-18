@@ -41,7 +41,9 @@ describe("Drive folder links", () => {
   it("posts a public folder's images in name order, through the Drive API when a key is set", async () => {
     const list = JSON.stringify({files: [{id: "f2", name: "10.png", mimeType: "image/png"}, {id: "f1", name: "2.jpg", mimeType: "image/jpeg"}, {id: "t1", name: "a.txt", mimeType: "text/plain"}]});
 
-    expect(await mediaFromLink(folder, deps({"https://www.googleapis.com/drive/v3/files?q=": ok(list)}, files, "KEY"))).toEqual([{name: "2.jpg"}, {name: "10.png"}]);
+    const routes = {"https://www.googleapis.com/drive/v3/files/FOLDER1?": ok("{}"), "https://www.googleapis.com/drive/v3/files?q=": ok(list)};
+
+    expect(await mediaFromLink(folder, deps(routes, files, "KEY"))).toEqual([{name: "2.jpg"}, {name: "10.png"}]);
   });
 
   it("reads the embedded folder page when no key is set", async () => {
@@ -51,6 +53,10 @@ describe("Drive folder links", () => {
   it("fails a private folder with the catalogue error", async () => {
     await catalogue(mediaFromLink(folder, deps({}, files)), "drive-restricted");
     await catalogue(mediaFromLink(folder, deps({"https://drive.google.com/embeddedfolderview": ok("", "https://accounts.google.com/signin")}, files)), "drive-restricted");
+  });
+
+  it("fails a private folder through the Drive API, which lists it as empty", async () => {
+    await catalogue(mediaFromLink(folder, deps({"https://www.googleapis.com/drive/v3/files?q=": ok(JSON.stringify({files: []}))}, files, "KEY")), "drive-restricted");
   });
 
   it("fails a folder holding a private file", async () => {

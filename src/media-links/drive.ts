@@ -11,6 +11,9 @@ const MAX_FOLDER_FILES = 35;
 
 const decodeList = Schema.decodeUnknownOption(Schema.fromJsonString(DriveFileList));
 
+// files.get answers 404 for a folder the key cannot see; files.list answers 200 with no files.
+const metaUrl = (id: string, key: string) => `https://www.googleapis.com/drive/v3/files/${id}?fields=id&key=${key}`;
+
 const apiUrl = (id: string, key: string) =>
   `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${id}' in parents and trashed = false`)}` +
   `&fields=files(id,name,mimeType)&pageSize=100&key=${key}`;
@@ -27,6 +30,9 @@ const byName = (a: DriveFile, b: DriveFile) => a.name.localeCompare(b.name, "en"
 // The postable files of a public Drive folder, by name (1.jpg, 2.jpg, ... 10.jpg).
 export async function listDriveFolder(id: string, get: HttpGet, apiKey?: string): Promise<DriveFile[]> {
   const folderUrl = `https://drive.google.com/drive/folders/${id}`;
+
+  if (apiKey && (await get(metaUrl(id, apiKey))).status !== 200) throw linkError("drive-restricted", folderUrl);
+
   const res = await get(apiKey ? apiUrl(id, apiKey) : `https://drive.google.com/embeddedfolderview?id=${id}`);
 
   // A private folder answers 404, or sends the page to Google's sign-in.
