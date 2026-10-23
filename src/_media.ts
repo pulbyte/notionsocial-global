@@ -99,10 +99,15 @@ export function getContentTypeFromMimeType(mt: string): string | null {
   const ct = mime.lookup(mt)?.[0];
   return ct || (mt === "video" ? "video/mp4" : mt === "image" ? "image/jpeg" : null);
 }
+// Some hosts serve MP4 as application/mp4, which maps to "mp4s" and then to a doc (2026-10-23).
+export function normalizeContentType(ct: string): string {
+  if (!ct) return ct;
+  return ct.split(";")[0].trim().toLowerCase() === "application/mp4" ? "video/mp4" : ct;
+}
 export function getMimeTypeFromContentType(ct: string): string | null {
   if (!ct) return null;
   // Remove codec parameters (e.g., "video/mp4;codecs=avc1" -> "video/mp4")
-  const cleanContentType = ct.split(";")[0].trim();
+  const cleanContentType = normalizeContentType(ct).split(";")[0].trim();
   const mt = mime.extension(cleanContentType)?.[0];
   return (
     mt || (cleanContentType === "video" ? "mp4" : cleanContentType === "image" ? "jpeg" : null)
@@ -121,7 +126,7 @@ export function getMediaTypeFromMimeType(mt: string, ct?: string): Media["type"]
 export function getMediaTypeFromContentType(ct: string): Media["type"] | null {
   if (!ct) return null;
   // Remove codec parameters (e.g., "video/mp4;codecs=avc1" -> "video/mp4")
-  const cleanContentType = ct.split(";")[0].trim();
+  const cleanContentType = normalizeContentType(ct).split(";")[0].trim();
   if (cleanContentType?.includes("image")) return "image";
   else if (cleanContentType?.includes("video")) return "video";
   else if (cleanContentType?.includes("application")) return "doc";

@@ -2,6 +2,7 @@ import {
   getContentTypeFromMimeType,
   getMediaTypeFromContentType,
   getMediaTypeFromMimeType,
+  normalizeContentType,
   getMimeTypeFromContentType,
 } from "./_media";
 import {getBrowserHeaders, axiosWithRetry} from "./http";
@@ -281,6 +282,7 @@ export async function getGdriveContentHeaders(url: string): Promise<{
     }
   }
 
+  contentType = normalizeContentType(contentType);
   const mimeType = getMimeTypeFromContentType(contentType);
   const mediaType =
     getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
@@ -338,6 +340,7 @@ export async function getUrlContentHeaders(url: string): Promise<{
     }
   }
 
+  contentType = normalizeContentType(contentType);
   const mimeType = getMimeTypeFromContentType(contentType);
   const mediaType =
     getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
