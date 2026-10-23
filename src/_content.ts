@@ -155,7 +155,26 @@ export function chunkText(text: string, maxTextLength: number) {
     }
   }
   chunks.push(currentChunk);
-  return chunks;
+  return chunks.flatMap((chunk) => (chunk.length > maxTextLength ? splitLong(chunk, maxTextLength) : [chunk]));
+}
+
+// Text with no spaces (Japanese, Chinese) is one "word"; cut it at the last line break or sentence
+// end before the limit, else at the limit. A 518-char Threads post went out whole (2026-10-23).
+function splitLong(text: string, max: number): string[] {
+  const out: string[] = [];
+  let rest = text;
+  while (rest.length > max) {
+    const head = rest.slice(0, max);
+    const line = head.lastIndexOf("\n");
+    const at = line >= max / 2 ? line : Math.max(...["。", "！", "？", "!", "?", "."].map((c) => head.lastIndexOf(c)));
+    let cut = at >= max / 2 ? at + 1 : max;
+    const code = rest.charCodeAt(cut - 1);
+    if (code >= 0xd800 && code <= 0xdbff) cut--; // keep a surrogate pair (emoji) whole
+    out.push(rest.slice(0, cut).trimEnd());
+    rest = rest.slice(cut).trimStart();
+  }
+  if (rest) out.push(rest);
+  return out.filter(Boolean);
 }
 
 export function chunkParagraphs(paragraphs: Paragraph[], maxTextLength: number): Paragraph[] {
