@@ -72,7 +72,7 @@ export async function processPropertyMedia(
   if (videoThumbnail) {
     const processedThumbnails = await processMedia(
       [videoThumbnail],
-      ["image"],
+      config.metadataOnly ? [] : ["image"],
       config._postRecord?.processed_media
     );
     videoThumbnail = processedThumbnails[0];
