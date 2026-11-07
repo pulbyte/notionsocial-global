@@ -776,6 +776,8 @@ export interface NotionPagePostConfig {
   smAccs: NotionDatabase["sm_accs"];
   smAccsPlatforms: SocialPlatformType[];
   filesToDownload: Array<"image" | "video" | "doc">;
+  // Pre-flight and previews read file names and types only; nothing is downloaded, covers included.
+  metadataOnly?: boolean;
   rules: NotionRules;
   isPostReadyToSchedule: boolean;
   formattingOptions: FormattingOptions;
