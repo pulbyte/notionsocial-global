@@ -271,18 +271,7 @@ export async function getGdriveContentHeaders(url: string): Promise<{
   const contentLength = Number(headers["content-length"]);
   const contentDisposition = headers["content-disposition"] as string;
 
-  // Handle simplified content types like "video" or "image"
-  if (["video", "image"].includes(contentType?.toLowerCase())) {
-    const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
-    if (contentTypeFromExt) {
-      console.warn(
-        `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
-      );
-      contentType = contentTypeFromExt;
-    }
-  }
-
-  contentType = normalizeContentType(contentType);
+  contentType = normalizeContentType(contentTypeOrExt(contentType, url));
   const mimeType = getMimeTypeFromContentType(contentType);
   const mediaType =
     getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
@@ -329,18 +318,7 @@ export async function getUrlContentHeaders(url: string): Promise<{
   const contentDisposition = (headers["content-disposition"] ||
     headers["Content-Disposition"]) as string;
 
-  // Handle simplified content types like "video" or "image"
-  if (["video", "image"].includes(contentType?.toLowerCase())) {
-    const contentTypeFromExt = getContentTypeFromMimeType(url?.split("?")[0]);
-    if (contentTypeFromExt) {
-      console.warn(
-        `Fetched media header[content-type] type is wrong=${contentType}, So making it ${contentTypeFromExt}`
-      );
-      contentType = contentTypeFromExt;
-    }
-  }
-
-  contentType = normalizeContentType(contentType);
+  contentType = normalizeContentType(contentTypeOrExt(contentType, url));
   const mimeType = getMimeTypeFromContentType(contentType);
   const mediaType =
     getMediaTypeFromMimeType(mimeType) || getMediaTypeFromContentType(contentType);
@@ -358,4 +336,15 @@ export async function getUrlContentHeaders(url: string): Promise<{
   }
 
   return {contentType, contentLength, mimeType, mediaType, name, url};
+}
+
+// Headers that don't name a type ("image", "video", a generic binary type or none) give way to the
+// file extension. Notion's storage served .jpg files as binary/octet-stream (2026-11-07).
+const UNTYPED = ["video", "image", "binary/octet-stream", "application/octet-stream", ""];
+export function contentTypeOrExt(contentType: string | undefined, url: string): string | undefined {
+  if (!UNTYPED.includes((contentType ?? "").split(";")[0].trim().toLowerCase())) return contentType;
+  const fromExt = getContentTypeFromMimeType(url?.split("?")[0]);
+  if (!fromExt) return contentType;
+  console.warn(`Fetched media header[content-type] type is wrong=${contentType}, So making it ${fromExt}`);
+  return fromExt;
 }
