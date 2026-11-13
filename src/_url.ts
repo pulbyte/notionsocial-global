@@ -57,8 +57,9 @@ export function extractUrlFromString(text: string, removeUrl?: boolean): [string
   if (!text) return ["", ""];
   let _text = (" " + text).slice(1);
 
+  // The last character can't be sentence punctuation: "site.co.uk," gives "site.co.uk".
   const urlRegex =
-    /(?<=\s|^)(https?:\/\/)?((www\.)?[a-zA-Z0-9-]+\.)+([a-zA-Z]{2,})(\/?[^\s]*[^\s.])?/gm;
+    /(?<=\s|^)(https?:\/\/)?((www\.)?[a-zA-Z0-9-]+\.)+([a-zA-Z]{2,})(\/?[^\s]*[^\s.,;:!?'")])?/gm;
   let firstUrl = "";
 
   const urlMatch = _text.match(urlRegex);
